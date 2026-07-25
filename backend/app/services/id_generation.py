@@ -33,3 +33,8 @@ def owner_resident_code(house_code: str) -> str:
 
 def tenant_resident_code(house_code: str, sequence: int) -> str:
     return f"{house_code}-T{sequence}"
+
+
+def complaint_code(sequence: int) -> str:
+    """CMP-000001, CMP-000002, ... — zero-padded to 6 digits, global sequence."""
+    return f"CMP-{sequence:06d}"
