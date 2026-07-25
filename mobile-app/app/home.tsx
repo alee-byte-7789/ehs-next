@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppButton } from "../components/AppButton";
 import { ScreenContainer } from "../components/ScreenContainer";
@@ -20,9 +20,12 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer>
-      <Text style={[styles.greeting, { color: theme.textPrimary }]}>
-        Hi, {resident?.full_name?.split(" ")[0] ?? "there"}
-      </Text>
+      <View style={styles.headerRow}>
+        <Image source={require("../assets/icon.png")} style={styles.headerLogo} resizeMode="contain" />
+        <Text style={[styles.greeting, { color: theme.textPrimary }]}>
+          Hi, {resident?.full_name?.split(" ")[0] ?? "there"}
+        </Text>
+      </View>
 
       <View style={styles.infoRow}>
         <View style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -84,6 +87,8 @@ function PanelTile({ label, onPress, theme }: { label: string; onPress: () => vo
 
 const styles = StyleSheet.create({
   greeting: { fontSize: 26, fontWeight: "700", marginBottom: spacing.md },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.md },
+  headerLogo: { width: 32, height: 32 },
   infoRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg },
   infoCard: { flex: 1, borderRadius: radii.md, borderWidth: 1, padding: spacing.md },
   cardLabel: { fontSize: 12, marginBottom: spacing.xs },

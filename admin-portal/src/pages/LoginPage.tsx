@@ -49,6 +49,7 @@ export function LoginPage() {
         onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-sm rounded-2xl border border-[color:var(--color-border)] bg-white p-8 shadow-sm"
       >
+        <img src="/logo-full.png" alt="EHS Next" className="mb-4 h-16 w-auto" />
         <h1 className="mb-1 text-2xl font-semibold text-[color:var(--color-text-primary)]">EHS Next</h1>
         <p className="mb-6 text-sm text-[color:var(--color-text-secondary)]">Housing Office Admin Portal</p>
 

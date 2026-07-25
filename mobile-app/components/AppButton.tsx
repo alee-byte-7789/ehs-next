@@ -1,4 +1,6 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, StyleSheet, Text } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 import { radii, spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
@@ -11,21 +13,35 @@ interface AppButtonProps {
   variant?: "primary" | "secondary";
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export function AppButton({ label, onPress, loading, disabled, variant = "primary" }: AppButtonProps) {
   const theme = useTheme();
   const isDisabled = disabled || loading;
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       disabled={isDisabled}
-      style={({ pressed }) => [
+      onPressIn={() => {
+        scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+      }}
+      style={[
         styles.base,
+        animatedStyle,
         {
           backgroundColor: variant === "primary" ? theme.primary : "transparent",
           borderColor: theme.primary,
           borderWidth: variant === "secondary" ? 1.5 : 0,
-          opacity: isDisabled ? 0.6 : pressed ? 0.85 : 1,
+          opacity: isDisabled ? 0.6 : 1,
         },
       ]}
     >
@@ -41,7 +57,7 @@ export function AppButton({ label, onPress, loading, disabled, variant = "primar
           {label}
         </Text>
       )}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 

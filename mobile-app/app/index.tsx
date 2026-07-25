@@ -1,24 +1,16 @@
 import { Redirect } from "expo-router";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
+import { AnimatedSplash } from "../components/AnimatedSplash";
 import { useAuth } from "../lib/auth-context";
 import { useResidentMe } from "../lib/resident-queries";
-import { spacing } from "../lib/theme";
-import { useTheme } from "../lib/use-theme";
 
 export default function SplashGate() {
   const { status, logout } = useAuth();
-  const theme = useTheme();
 
   const residentQuery = useResidentMe(status === "signed-in");
 
   if (status === "checking" || (status === "signed-in" && residentQuery.isPending)) {
-    return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.brand, { color: theme.textPrimary }]}>EHS Next</Text>
-      </View>
-    );
+    return <AnimatedSplash />;
   }
 
   if (status === "signed-out") {
@@ -39,16 +31,3 @@ export default function SplashGate() {
 
   return <Redirect href="/home" />;
 }
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.md,
-  },
-  brand: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-});

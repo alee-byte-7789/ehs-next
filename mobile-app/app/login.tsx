@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, Text } from "react-native";
+import { Image, StyleSheet, Text } from "react-native";
 import { z } from "zod";
 
 import { AppButton } from "../components/AppButton";
@@ -54,6 +54,7 @@ export default function LoginScreen() {
 
   return (
     <ScreenContainer>
+      <Image source={require("../assets/icon.png")} style={styles.logo} resizeMode="contain" />
       <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome back</Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
         Log in to EHS Next with your phone or email.
@@ -100,6 +101,12 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  logo: {
+    width: 64,
+    height: 64,
+    alignSelf: "center",
+    marginBottom: spacing.md,
+  },
   title: {
     fontSize: 28,
     fontWeight: "600",

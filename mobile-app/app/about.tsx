@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSocietyInfo } from "../lib/society-queries";
@@ -20,6 +20,7 @@ export default function AboutScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        <Image source={require("../assets/logo-full.png")} style={styles.logo} resizeMode="contain" />
         {isLoading && <Text style={{ color: theme.textSecondary }}>Loading...</Text>}
 
         {info && (
@@ -77,6 +78,7 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm, gap: spacing.xs },
   title: { fontSize: 24, fontWeight: "700" },
   content: { padding: spacing.lg },
+  logo: { width: "100%", height: 90, marginBottom: spacing.lg },
   card: { borderWidth: 1, borderRadius: radii.md, padding: spacing.md, marginBottom: spacing.md },
   body: { fontSize: 15, lineHeight: 22 },
   sectionLabel: { fontSize: 12, fontWeight: "600", textTransform: "uppercase", marginBottom: spacing.xs },
