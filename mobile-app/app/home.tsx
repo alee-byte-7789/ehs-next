@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppButton } from "../components/AppButton";
 import { ScreenContainer } from "../components/ScreenContainer";
@@ -24,58 +24,78 @@ export default function HomeScreen() {
         Hi, {resident?.full_name?.split(" ")[0] ?? "there"}
       </Text>
 
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.cardLabel, { color: theme.textSecondary }]}>Resident ID</Text>
-        <Text style={[styles.cardValue, { color: theme.textPrimary }]}>
-          {resident?.resident_code ?? "—"}
-        </Text>
+      <View style={styles.infoRow}>
+        <View style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.cardLabel, { color: theme.textSecondary }]}>Resident ID</Text>
+          <Text style={[styles.cardValue, { color: theme.textPrimary }]} numberOfLines={1}>
+            {resident?.resident_code ?? "—"}
+          </Text>
+        </View>
+        <View style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.cardLabel, { color: theme.textSecondary }]}>Status</Text>
+          <Text style={[styles.cardValue, { color: theme.primary }]}>{resident?.verification_status ?? "—"}</Text>
+        </View>
       </View>
 
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.cardLabel, { color: theme.textSecondary }]}>Status</Text>
-        <Text style={[styles.cardValue, { color: theme.primary }]}>
-          {resident?.verification_status ?? "—"}
-        </Text>
+      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Complaints</Text>
+      <View style={styles.actionRow}>
+        <AppButton label="Raise a Complaint" onPress={() => router.push("/complaints/new")} />
+      </View>
+      <View style={styles.actionRow}>
+        <AppButton label="My Complaints" variant="secondary" onPress={() => router.push("/complaints")} />
       </View>
 
-      <View style={{ marginBottom: spacing.md }}>
-        <AppButton label="My Complaints" onPress={() => router.push("/complaints")} />
+      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Society</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.panelScroll}>
+        <PanelTile
+          label="About EHS"
+          onPress={() => router.push("/about")}
+          theme={theme}
+        />
+        <PanelTile
+          label="Prayer Timings"
+          onPress={() => router.push("/prayer-timings")}
+          theme={theme}
+        />
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <AppButton label="Log out" variant="secondary" onPress={handleLogout} />
       </View>
-
-      <Text style={[styles.comingSoon, { color: theme.textSecondary }]}>
-        Feedback and emergency contacts land here once their backend
-        modules are built.
-      </Text>
-
-      <AppButton label="Log out" variant="secondary" onPress={handleLogout} />
     </ScreenContainer>
   );
 }
 
+function PanelTile({ label, onPress, theme }: { label: string; onPress: () => void; theme: ReturnType<typeof useTheme> }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.panelTile, { backgroundColor: theme.surface, borderColor: theme.border }]}
+    >
+      <Text style={[styles.panelLabel, { color: theme.textPrimary }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  greeting: {
-    fontSize: 26,
-    fontWeight: "600",
-    marginBottom: spacing.lg,
-  },
-  card: {
-    borderRadius: radii.md,
+  greeting: { fontSize: 26, fontWeight: "700", marginBottom: spacing.md },
+  infoRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg },
+  infoCard: { flex: 1, borderRadius: radii.md, borderWidth: 1, padding: spacing.md },
+  cardLabel: { fontSize: 12, marginBottom: spacing.xs },
+  cardValue: { fontSize: 16, fontWeight: "700" },
+  sectionLabel: { fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: spacing.sm, marginTop: spacing.sm },
+  actionRow: { marginBottom: spacing.sm },
+  panelScroll: { marginBottom: spacing.lg },
+  panelTile: {
     borderWidth: 1,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    borderRadius: radii.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    marginRight: spacing.sm,
+    minWidth: 140,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  cardLabel: {
-    fontSize: 13,
-    marginBottom: spacing.xs,
-  },
-  cardValue: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  comingSoon: {
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-  },
+  panelLabel: { fontSize: 14, fontWeight: "600", textAlign: "center" },
+  footer: { marginTop: spacing.md },
 });
