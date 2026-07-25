@@ -104,6 +104,8 @@ def list_complaints(
     assigned_admin_id: int | None = None,
     assigned_staff_id: int | None = None,
     search: str | None = None,
+    date_from=None,
+    date_to=None,
 ) -> list[Complaint]:
     return complaint_repository.list_all(
         db,
@@ -113,6 +115,8 @@ def list_complaints(
         assigned_admin_id=assigned_admin_id,
         assigned_staff_id=assigned_staff_id,
         search=search,
+        date_from=date_from,
+        date_to=date_to,
     )
 
 
@@ -183,7 +187,12 @@ def close_by_resident_early(db: Session, resident: Resident, complaint_id: int, 
 
 
 def reopen_by_resident(db: Session, resident: Resident, complaint_id: int) -> Complaint:
-    complaint = _require_owned_status(db, resident, complaint_id, ComplaintStatus.RESOLVED)
+    """Works from RESOLVED (the original "not satisfied" flow) or from
+    CLOSED (the issue recurred after being closed) — either way, once
+    reopened, `has_ever_been_reopened` already makes `close_by_resident`
+    refuse a future self-close, so the "admin-only close after reopen"
+    rule falls out of existing infrastructure with no extra work needed."""
+    complaint = _require_owned_status(db, resident, complaint_id, ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED)
     return _transition(db, complaint, ComplaintStatus.REOPENED, ChangedByType.RESIDENT, resident.id)
 
 
@@ -218,6 +227,12 @@ def reassign_staff(db: Session, complaint_id: int, new_staff_id: int, admin_id: 
     audit_log_repository.log(
         db, admin_id, "reassign_staff", "complaint", complaint_id,
         details=f"staff {old_staff_id} -> {new_staff_id}",
+    )
+    notification_service.notify_resident(
+        db, complaint.resident_id,
+        title=f"Complaint {complaint.complaint_code} reassigned",
+        body=f"Now assigned to {staff.full_name}.",
+        type_="complaint_reassigned",
     )
     db.commit()
     db.refresh(complaint)
@@ -287,7 +302,19 @@ def set_priority(
         note=f"Priority changed: {old_priority.value} -> {priority.value}",
     )
 
-    if priority in (ComplaintPriority.HIGH, ComplaintPriority.CRITICAL):
+    if complaint.assigned_admin_id:
+        # Spec: "the assigned administrator receives" a notification on
+        # every priority change — not just when it reaches High/Critical.
+        notification_service.notify_admin_by_id(
+            db, complaint.assigned_admin_id,
+            title=f"Priority changed: {complaint.complaint_code}",
+            body=f"{old_priority.value.title()} -> {priority.value.title()}",
+            type_="complaint_priority",
+        )
+    elif priority in (ComplaintPriority.HIGH, ComplaintPriority.CRITICAL):
+        # No one specifically assigned yet — broadcast so a High/Critical
+        # change is never silent, per the spec's separate
+        # "High/Critical Complaint" notification trigger.
         notification_service.notify_admins(
             db, _ADMIN_ROLES,
             title=f"{priority.value.upper()} priority: {complaint.complaint_code}",

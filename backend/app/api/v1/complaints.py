@@ -7,6 +7,8 @@ convention (see registrations.py for the admin-only case, auth.py for the
 resident-only case) — here we deliberately mix both since a complaint is
 one resource both actors work with.
 """
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -129,11 +131,14 @@ def list_complaints(
     assigned_admin_id: int | None = None,
     assigned_staff_id: int | None = None,
     search: str | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
     db: Session = Depends(get_db),
     _admin=Depends(require_admin_roles(AdminRole.HOUSING_OFFICE, AdminRole.IT_ADMIN, AdminRole.SUPER_ADMIN)),
 ) -> list[ComplaintOut]:
     return complaint_service.list_complaints(
-        db, status_filter, priority_filter, category_filter, assigned_admin_id, assigned_staff_id, search
+        db, status_filter, priority_filter, category_filter, assigned_admin_id, assigned_staff_id, search,
+        date_from, date_to,
     )
 
 

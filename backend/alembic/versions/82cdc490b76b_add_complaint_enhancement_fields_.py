@@ -23,6 +23,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
@@ -71,9 +72,17 @@ def upgrade() -> None:
         op.execute("ALTER TYPE adminrole ADD VALUE IF NOT EXISTS 'MAINTENANCE_ADMIN'")
         op.execute("ALTER TYPE adminrole ADD VALUE IF NOT EXISTS 'SUPPORT_STAFF'")
 
+    # `op.add_column` does NOT auto-create a new Postgres enum TYPE the way
+    # `op.create_table` does — it has to be created explicitly first, or
+    # Postgres errors with "type does not exist". This is the actual fix
+    # for that error (caught from a real run against the live database).
+    complaint_priority_enum = postgresql.ENUM('LOW', 'NORMAL', 'HIGH', 'CRITICAL', name='complaintpriority')
+    if bind.dialect.name == "postgresql":
+        complaint_priority_enum.create(bind, checkfirst=True)
+
     # server_default ensures this succeeds against existing rows in production.
     op.add_column('complaints', sa.Column(
-        'priority', sa.Enum('LOW', 'NORMAL', 'HIGH', 'CRITICAL', name='complaintpriority'),
+        'priority', complaint_priority_enum,
         nullable=False, server_default='NORMAL',
     ))
     op.add_column('complaints', sa.Column('assigned_admin_id', sa.Integer(), nullable=True))
@@ -93,6 +102,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    bind = op.get_bind()
     with op.batch_alter_table('complaints') as batch_op:
         batch_op.drop_constraint('fk_complaints_assigned_admin_id_admins', type_='foreignkey')
     op.drop_index(op.f('ix_complaints_priority'), table_name='complaints')
@@ -101,6 +111,8 @@ def downgrade() -> None:
     op.drop_column('complaints', 'closed_by_resident_early')
     op.drop_column('complaints', 'assigned_admin_id')
     op.drop_column('complaints', 'priority')
+    if bind.dialect.name == "postgresql":
+        postgresql.ENUM(name='complaintpriority').drop(bind, checkfirst=True)
     # Note: Postgres doesn't support removing enum values, so the added
     # 'maintenance_admin'/'support_staff' labels on adminrole intentionally
     # stay even on downgrade — this is standard practice for Postgres enums.

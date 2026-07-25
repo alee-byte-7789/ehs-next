@@ -20,6 +20,14 @@ def notify_admins(db: Session, roles: tuple[AdminRole, ...], title: str, body: s
     ]
 
 
+def notify_admin_by_id(db: Session, admin_id: int, title: str, body: str, type_: str) -> Notification:
+    """Targets one specific admin — used when a complaint has an
+    `assigned_admin_id`, per the enhancement spec's "the assigned
+    administrator receives..." (as opposed to notify_admins, which
+    broadcasts to everyone with a given role)."""
+    return notification_repository.create(db, NotificationRecipientType.ADMIN, admin_id, title, body, type_)
+
+
 def list_my_notifications(db: Session, recipient_type: NotificationRecipientType, recipient_id: int) -> list[Notification]:
     return notification_repository.list_for_recipient(db, recipient_type, recipient_id)
 

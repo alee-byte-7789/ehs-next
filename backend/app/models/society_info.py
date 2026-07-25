@@ -5,6 +5,11 @@ generic key-value table, since the content it holds (About text, office
 bearers) is small, fixed in shape, and doesn't need per-item versioning
 yet. If that changes later, this can be split into a proper content-blocks
 table without much migration pain.
+
+Now admin-editable (see app/api/v1/society_info.py's PUT endpoint) rather
+than seed-once-only — office bearer names/messages are exactly the kind
+of thing that changes over time (elections, new appointments) and
+shouldn't require a code change + migration each time.
 """
 from datetime import datetime, timezone
 
@@ -21,11 +26,15 @@ class SocietyInfo(Base):
 
     about_text: Mapped[str] = mapped_column(Text, nullable=False)
 
-    secretary_name: Mapped[str | None] = mapped_column(Text, nullable=True)
-    secretary_designation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    chairman_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    chairman_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     deputy_chairman_name: Mapped[str | None] = mapped_column(Text, nullable=True)
     deputy_chairman_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    secretary_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    secretary_designation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    secretary_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
