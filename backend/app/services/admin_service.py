@@ -12,10 +12,11 @@ from app.core.security import hash_password
 from app.models.admin import Admin
 from app.repositories import admin_repository
 from app.schemas.admin import CreateAdminRequest
+from app.services import audit_log_service
 from app.services.errors import ConflictError
 
 
-def create_admin(db: Session, req: CreateAdminRequest) -> Admin:
+def create_admin(db: Session, req: CreateAdminRequest, acting_admin_id: int | None = None) -> Admin:
     if admin_repository.email_taken(db, req.email):
         raise ConflictError(f"An admin with email {req.email} already exists.")
 
@@ -26,6 +27,8 @@ def create_admin(db: Session, req: CreateAdminRequest) -> Admin:
         role=req.role,
     )
     db.add(admin)
+    db.flush()
+    audit_log_service.log(db, acting_admin_id, "create_admin", "admin", admin.id, details=f"role={req.role.value}")
     db.commit()
     db.refresh(admin)
     return admin

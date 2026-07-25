@@ -31,9 +31,9 @@ def list_admins(
 def create_admin(
     req: CreateAdminRequest,
     db: Session = Depends(get_db),
-    _admin=Depends(require_admin_roles(*_super_admin_only)),
+    admin=Depends(require_admin_roles(*_super_admin_only)),
 ) -> AdminOut:
     try:
-        return admin_service.create_admin(db, req)
+        return admin_service.create_admin(db, req, acting_admin_id=admin.id)
     except ConflictError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc

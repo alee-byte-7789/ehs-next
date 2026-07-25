@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models.enums import ChangedByType, ComplaintCategory, ComplaintStatus
+from app.models.enums import ChangedByType, ComplaintCategory, ComplaintPriority, ComplaintStatus
 
 
 class ComplaintCreateRequest(BaseModel):
@@ -26,8 +26,12 @@ class ComplaintOut(BaseModel):
     description: str
     photo_urls: list[str] | None = None
     status: ComplaintStatus
+    priority: ComplaintPriority
     assigned_staff_id: int | None
+    assigned_admin_id: int | None
     close_count: int
+    closed_by_resident_early: bool
+    early_close_reason: str | None
     created_at: datetime
     updated_at: datetime
     closed_at: datetime | None
@@ -66,3 +70,59 @@ class AssignStaffRequest(BaseModel):
 class ActionNoteRequest(BaseModel):
     """Optional note attached to a status-changing action (accept/resolve/etc.)."""
     note: str | None = Field(default=None, max_length=1000)
+
+
+# --- Enhancement spec additions ---
+
+class EarlyCloseRequest(BaseModel):
+    reason: str = Field(min_length=3, max_length=1000)
+
+
+class ReassignStaffRequest(BaseModel):
+    staff_id: int
+
+
+class AssignDepartmentRequest(BaseModel):
+    admin_id: int
+
+
+class PriorityUpdateRequest(BaseModel):
+    priority: ComplaintPriority
+
+
+class RequestInfoRequest(BaseModel):
+    message: str = Field(min_length=3, max_length=1000)
+
+
+class InternalNoteCreateRequest(BaseModel):
+    note: str = Field(min_length=1, max_length=2000)
+
+
+class InternalNoteOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    complaint_id: int
+    admin_id: int
+    note: str
+    created_at: datetime
+
+
+class BulkAssignStaffRequest(BaseModel):
+    complaint_ids: list[int] = Field(min_length=1)
+    staff_id: int
+
+
+class BulkStatusRequest(BaseModel):
+    complaint_ids: list[int] = Field(min_length=1)
+    status: ComplaintStatus
+
+
+class BulkPriorityRequest(BaseModel):
+    complaint_ids: list[int] = Field(min_length=1)
+    priority: ComplaintPriority
+
+
+class BulkActionResult(BaseModel):
+    succeeded: list[int]
+    failed: list[dict]

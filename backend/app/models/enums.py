@@ -24,6 +24,8 @@ class AdminRole(str, Enum):
     HOUSING_OFFICE = "housing_office"
     IT_ADMIN = "it_admin"
     SUPER_ADMIN = "super_admin"
+    MAINTENANCE_ADMIN = "maintenance_admin"
+    SUPPORT_STAFF = "support_staff"
 
 
 class StaffCategory(str, Enum):
@@ -86,3 +88,10 @@ class NotificationRecipientType(str, Enum):
 class MosqueName(str, Enum):
     BILAL_MOSQUE = "bilal_mosque"
     MARKAZI_JAMIA_MOSQUE = "markazi_jamia_mosque"
+
+
+class ComplaintPriority(str, Enum):
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    CRITICAL = "critical"

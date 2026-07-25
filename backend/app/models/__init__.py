@@ -16,6 +16,8 @@ from app.models.notification import Notification
 from app.models.refresh_token import RefreshToken
 from app.models.society_info import SocietyInfo
 from app.models.prayer_timing import PrayerTiming
+from app.models.complaint_internal_note import ComplaintInternalNote
+from app.models.audit_log import AuditLog
 
 __all__ = [
     "House",
@@ -31,4 +33,6 @@ __all__ = [
     "RefreshToken",
     "SocietyInfo",
     "PrayerTiming",
+    "ComplaintInternalNote",
+    "AuditLog",
 ]
