@@ -4,9 +4,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppButton } from "../../components/AppButton";
+import { AppTextField } from "../../components/AppTextField";
+import { StarRating } from "../../components/StarRating";
 import { StatusBadge } from "../../components/StatusBadge";
 import { extractApiErrorMessage } from "../../lib/api-client";
 import { useCloseComplaint, useMyComplaintDetail, useReopenComplaint } from "../../lib/complaint-queries";
+import { useGiveFeedback } from "../../lib/feedback-queries";
 import { radii, spacing } from "../../lib/theme";
 import { useTheme } from "../../lib/use-theme";
 import type { ComplaintHistoryOut } from "../../lib/types";
@@ -28,6 +31,13 @@ const ACTOR_LABELS: Record<string, string> = {
   system: "System",
 };
 
+const PRIORITY_COLORS: Record<string, string> = {
+  low: "#10B981",
+  normal: "#6B7280",
+  high: "#F59E0B",
+  critical: "#EF4444",
+};
+
 export default function ComplaintDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const complaintId = Number(id);
@@ -35,7 +45,12 @@ export default function ComplaintDetailScreen() {
   const { data: complaint, isLoading, isError } = useMyComplaintDetail(complaintId);
   const closeComplaint = useCloseComplaint();
   const reopenComplaint = useReopenComplaint();
+  const giveFeedback = useGiveFeedback(complaintId);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
   const handleClose = async () => {
     setActionError(null);
@@ -55,6 +70,22 @@ export default function ComplaintDetailScreen() {
     }
   };
 
+  const handleFeedback = async () => {
+    setFeedbackError(null);
+    try {
+      await giveFeedback.mutateAsync({ rating, comment: comment.trim() || undefined });
+      setFeedbackSubmitted(true);
+    } catch (err) {
+      setFeedbackError(extractApiErrorMessage(err, "Could not submit feedback."));
+    }
+  };
+
+  // Resident may satisfy-close or reopen only while RESOLVED; reopen is
+  // also available from CLOSED (the issue recurred) — once reopened this
+  // way, only an admin can close it again (enforced server-side).
+  const canActOnResolved = complaint?.status === "resolved";
+  const canReopenClosed = complaint?.status === "closed";
+
   return (
     <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
@@ -70,14 +101,21 @@ export default function ComplaintDetailScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.titleRow}>
             <Text style={[styles.code, { color: theme.textSecondary }]}>{complaint.complaint_code}</Text>
-            <StatusBadge status={complaint.status} />
+            <View style={styles.badgeRow}>
+              {complaint.priority !== "normal" && (
+                <View style={[styles.priorityChip, { backgroundColor: PRIORITY_COLORS[complaint.priority] }]}>
+                  <Text style={styles.priorityText}>{complaint.priority.toUpperCase()}</Text>
+                </View>
+              )}
+              <StatusBadge status={complaint.status} />
+            </View>
           </View>
           <Text style={[styles.subcategory, { color: theme.textPrimary }]}>{complaint.subcategory}</Text>
           <Text style={[styles.description, { color: theme.textSecondary }]}>{complaint.description}</Text>
 
           {actionError && <Text style={{ color: theme.danger, marginTop: spacing.md }}>{actionError}</Text>}
 
-          {complaint.status === "resolved" && (
+          {canActOnResolved && (
             <View style={styles.actionRow}>
               <AppButton label="I'm satisfied — Close" onPress={handleClose} loading={closeComplaint.isPending} />
               <AppButton
@@ -86,6 +124,43 @@ export default function ComplaintDetailScreen() {
                 onPress={handleReopen}
                 loading={reopenComplaint.isPending}
               />
+            </View>
+          )}
+
+          {canReopenClosed && (
+            <View style={styles.actionRow}>
+              <AppButton
+                label="Issue happened again — Reopen"
+                variant="secondary"
+                onPress={handleReopen}
+                loading={reopenComplaint.isPending}
+              />
+            </View>
+          )}
+
+          {(complaint.status === "resolved" || complaint.status === "closed") && !feedbackSubmitted && (
+            <View style={[styles.feedbackCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Text style={[styles.feedbackTitle, { color: theme.textPrimary }]}>Rate this resolution</Text>
+              <StarRating value={rating} onChange={setRating} />
+              <AppTextField
+                label="Comment (optional)"
+                placeholder="Anything else you'd like to share?"
+                value={comment}
+                onChangeText={setComment}
+                multiline
+              />
+              {feedbackError && <Text style={{ color: theme.danger, fontSize: 12, marginBottom: spacing.sm }}>{feedbackError}</Text>}
+              <AppButton
+                label="Submit Feedback"
+                onPress={handleFeedback}
+                loading={giveFeedback.isPending}
+                disabled={rating === 0}
+              />
+            </View>
+          )}
+          {feedbackSubmitted && (
+            <View style={[styles.feedbackCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Text style={{ color: theme.primary, fontWeight: "600" }}>Thanks for your feedback!</Text>
             </View>
           )}
 
@@ -123,10 +198,15 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   content: { padding: spacing.lg },
   titleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing.xs },
+  badgeRow: { flexDirection: "row", gap: spacing.xs, alignItems: "center" },
+  priorityChip: { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radii.md },
+  priorityText: { color: "#FFFFFF", fontSize: 11, fontWeight: "700" },
   code: { fontSize: 13, fontWeight: "600" },
   subcategory: { fontSize: 22, fontWeight: "700", marginBottom: spacing.sm },
   description: { fontSize: 15, lineHeight: 21, marginBottom: spacing.md },
   actionRow: { gap: spacing.sm, marginBottom: spacing.lg },
+  feedbackCard: { borderWidth: 1, borderRadius: radii.md, padding: spacing.md, marginBottom: spacing.lg },
+  feedbackTitle: { fontSize: 15, fontWeight: "700", marginBottom: spacing.sm },
   timelineTitle: { fontSize: 16, fontWeight: "700", marginTop: spacing.md, marginBottom: spacing.md },
   timeline: { gap: 0 },
   timelineRow: { flexDirection: "row" },

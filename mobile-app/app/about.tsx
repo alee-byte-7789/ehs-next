@@ -28,6 +28,18 @@ export default function AboutScreen() {
               <Text style={[styles.body, { color: theme.textPrimary }]}>{info.about_text}</Text>
             </View>
 
+            {info.chairman_name && (
+              <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Chairman</Text>
+                <Text style={[styles.personName, { color: theme.textPrimary }]}>{info.chairman_name}</Text>
+                {info.chairman_message && (
+                  <Text style={[styles.messageBody, { color: theme.textSecondary }]}>
+                    "{info.chairman_message}"
+                  </Text>
+                )}
+              </View>
+            )}
+
             {info.deputy_chairman_name && (
               <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Deputy Chairman</Text>
@@ -47,6 +59,11 @@ export default function AboutScreen() {
               <Text style={[styles.personName, { color: theme.textPrimary }]}>
                 {info.secretary_name ?? "To be announced"}
               </Text>
+              {info.secretary_message && (
+                <Text style={[styles.messageBody, { color: theme.textSecondary }]}>
+                  "{info.secretary_message}"
+                </Text>
+              )}
             </View>
           </>
         )}

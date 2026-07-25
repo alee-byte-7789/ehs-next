@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminManagementPage } from "./pages/AdminManagementPage";
+import { AuditLogPage } from "./pages/AuditLogPage";
 import { ComplaintDetailPage } from "./pages/ComplaintDetailPage";
 import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -49,6 +50,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <StaffPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/audit-logs"
+        element={
+          <ProtectedRoute>
+            <AuditLogPage />
           </ProtectedRoute>
         }
       />

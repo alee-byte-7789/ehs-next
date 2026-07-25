@@ -9,6 +9,13 @@ import { spacing, radii } from "../../lib/theme";
 import { useTheme } from "../../lib/use-theme";
 import type { ComplaintOut } from "../../lib/types";
 
+const PRIORITY_COLORS: Record<string, string> = {
+  low: "#10B981",
+  normal: "#6B7280",
+  high: "#F59E0B",
+  critical: "#EF4444",
+};
+
 export default function ComplaintsListScreen() {
   const theme = useTheme();
   const { data: complaints, isLoading, isError, refetch, isRefetching } = useMyComplaints();
@@ -49,7 +56,14 @@ export default function ComplaintsListScreen() {
           >
             <View style={styles.cardTop}>
               <Text style={[styles.code, { color: theme.textSecondary }]}>{item.complaint_code}</Text>
-              <StatusBadge status={item.status} />
+              <View style={{ flexDirection: "row", gap: spacing.xs, alignItems: "center" }}>
+                {item.priority !== "normal" && (
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: PRIORITY_COLORS[item.priority] }}>
+                    {item.priority.toUpperCase()}
+                  </Text>
+                )}
+                <StatusBadge status={item.status} />
+              </View>
             </View>
             <Text style={[styles.subcategory, { color: theme.textPrimary }]}>{item.subcategory}</Text>
             <Text numberOfLines={2} style={[styles.description, { color: theme.textSecondary }]}>

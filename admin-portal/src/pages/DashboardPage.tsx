@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "../components/Button";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAuth } from "../lib/auth-context";
+import { useDashboardCounts } from "../lib/complaint-queries";
 import { useAdminMe } from "../lib/registration-queries";
 import {
   useApproveRegistration,
@@ -16,6 +17,7 @@ export function DashboardPage() {
   const { logout } = useAuth();
   const { data: admin } = useAdminMe(true);
   const { data: pending, isLoading, isError } = usePendingRegistrations();
+  const { data: counts } = useDashboardCounts();
   const approve = useApproveRegistration();
   const reject = useRejectRegistration();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -68,6 +70,11 @@ export function DashboardPage() {
               Manage Admins
             </Link>
           )}
+          {admin?.role === "super_admin" && (
+            <Link to="/audit-logs" className="text-sm font-medium text-[color:var(--color-primary)]">
+              Audit Logs
+            </Link>
+          )}
           <Button variant="secondary" onClick={logout}>
             Log out
           </Button>
@@ -75,6 +82,17 @@ export function DashboardPage() {
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-8">
+        {counts && (
+          <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <WidgetCard label="Open" value={counts.open} />
+            <WidgetCard label="Pending" value={counts.pending} />
+            <WidgetCard label="Resolved Today" value={counts.resolved_today} />
+            <WidgetCard label="High Priority" value={counts.high_priority} color="var(--color-status-pending)" />
+            <WidgetCard label="Critical" value={counts.critical} color="var(--color-status-reopened)" />
+            {counts.assigned_to_me !== undefined && <WidgetCard label="Assigned to Me" value={counts.assigned_to_me} />}
+          </div>
+        )}
+
         <h2 className="mb-4 text-base font-semibold text-[color:var(--color-text-primary)]">
           Pending Registrations
         </h2>
@@ -153,6 +171,17 @@ export function DashboardPage() {
           </div>
         )}
       </main>
+    </div>
+  );
+}
+
+function WidgetCard({ label, value, color }: { label: string; value: number; color?: string }) {
+  return (
+    <div className="rounded-xl border border-[color:var(--color-border)] bg-white p-4">
+      <p className="text-2xl font-bold" style={{ color: color ?? "var(--color-text-primary)" }}>
+        {value}
+      </p>
+      <p className="text-xs text-[color:var(--color-text-secondary)]">{label}</p>
     </div>
   );
 }

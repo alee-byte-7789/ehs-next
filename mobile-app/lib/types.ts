@@ -87,8 +87,12 @@ export interface ComplaintOut {
   description: string;
   photo_urls: string[] | null;
   status: ComplaintStatus;
+  priority: ComplaintPriority;
   assigned_staff_id: number | null;
+  assigned_admin_id: number | null;
   close_count: number;
+  closed_by_resident_early: boolean;
+  early_close_reason: string | null;
   created_at: string;
   updated_at: string;
   closed_at: string | null;
@@ -108,14 +112,35 @@ export interface ComplaintDetailOut extends ComplaintOut {
   history: ComplaintHistoryOut[];
 }
 
+export type ComplaintPriority = "low" | "normal" | "high" | "critical";
+
+// --- Feedback ---
+
+export interface FeedbackCreateRequest {
+  rating: number;
+  comment?: string | null;
+}
+
+export interface FeedbackOut {
+  id: number;
+  complaint_id: number;
+  resident_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
 // --- Society Info ---
 
 export interface SocietyInfoOut {
   about_text: string;
-  secretary_name: string | null;
-  secretary_designation: string | null;
+  chairman_name: string | null;
+  chairman_message: string | null;
   deputy_chairman_name: string | null;
   deputy_chairman_message: string | null;
+  secretary_name: string | null;
+  secretary_designation: string | null;
+  secretary_message: string | null;
   updated_at: string;
 }
 

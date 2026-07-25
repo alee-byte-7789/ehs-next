@@ -68,6 +68,7 @@ export type ComplaintStatus =
   | "resolved"
   | "closed"
   | "reopened";
+export type ComplaintPriority = "low" | "normal" | "high" | "critical";
 export type ChangedByType = "resident" | "admin" | "staff" | "system";
 
 export interface ComplaintOut {
@@ -80,8 +81,12 @@ export interface ComplaintOut {
   description: string;
   photo_urls: string[] | null;
   status: ComplaintStatus;
+  priority: ComplaintPriority;
   assigned_staff_id: number | null;
+  assigned_admin_id: number | null;
   close_count: number;
+  closed_by_resident_early: boolean;
+  early_close_reason: string | null;
   created_at: string;
   updated_at: string;
   closed_at: string | null;
@@ -99,6 +104,49 @@ export interface ComplaintHistoryOut {
 
 export interface ComplaintDetailOut extends ComplaintOut {
   history: ComplaintHistoryOut[];
+}
+
+// --- Enhancement spec: internal notes, audit log, feedback ---
+
+export interface InternalNoteOut {
+  id: number;
+  complaint_id: number;
+  admin_id: number;
+  note: string;
+  created_at: string;
+}
+
+export interface AuditLogOut {
+  id: number;
+  actor_admin_id: number | null;
+  action: string;
+  entity_type: string;
+  entity_id: number | null;
+  details: string | null;
+  created_at: string;
+}
+
+export interface FeedbackOut {
+  id: number;
+  complaint_id: number;
+  resident_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
+export interface BulkActionResult {
+  succeeded: number[];
+  failed: { complaint_id: number; error: string }[];
+}
+
+export interface DashboardCounts {
+  open: number;
+  pending: number;
+  resolved_today: number;
+  high_priority: number;
+  critical: number;
+  assigned_to_me?: number;
 }
 
 // --- Staff ---
