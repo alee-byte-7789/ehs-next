@@ -34,6 +34,13 @@ export interface AdminLoginRequest {
   password: string;
 }
 
+export interface CreateAdminRequest {
+  full_name: string;
+  email: string;
+  password: string;
+  role: AdminRole;
+}
+
 export interface TokenPair {
   access_token: string;
   refresh_token: string;

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { Button } from "../components/Button";
 import { StatusBadge } from "../components/StatusBadge";
@@ -55,9 +56,16 @@ export function DashboardPage() {
             </p>
           )}
         </div>
-        <Button variant="secondary" onClick={logout}>
-          Log out
-        </Button>
+        <div className="flex items-center gap-3">
+          {admin?.role === "super_admin" && (
+            <Link to="/admins" className="text-sm font-medium text-[color:var(--color-primary)]">
+              Manage Admins
+            </Link>
+          )}
+          <Button variant="secondary" onClick={logout}>
+            Log out
+          </Button>
+        </div>
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-8">
