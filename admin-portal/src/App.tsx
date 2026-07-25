@@ -2,8 +2,11 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminManagementPage } from "./pages/AdminManagementPage";
+import { ComplaintDetailPage } from "./pages/ComplaintDetailPage";
+import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
+import { StaffPage } from "./pages/StaffPage";
 
 export default function App() {
   return (
@@ -22,6 +25,30 @@ export default function App() {
         element={
           <ProtectedRoute>
             <AdminManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/complaints"
+        element={
+          <ProtectedRoute>
+            <ComplaintsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/complaints/:id"
+        element={
+          <ProtectedRoute>
+            <ComplaintDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff"
+        element={
+          <ProtectedRoute>
+            <StaffPage />
           </ProtectedRoute>
         }
       />

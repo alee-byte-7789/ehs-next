@@ -57,6 +57,12 @@ export function DashboardPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          <Link to="/complaints" className="text-sm font-medium text-[color:var(--color-primary)]">
+            Complaints
+          </Link>
+          <Link to="/staff" className="text-sm font-medium text-[color:var(--color-primary)]">
+            Staff
+          </Link>
           {admin?.role === "super_admin" && (
             <Link to="/admins" className="text-sm font-medium text-[color:var(--color-primary)]">
               Manage Admins

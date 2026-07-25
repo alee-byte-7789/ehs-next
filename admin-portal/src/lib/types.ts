@@ -56,3 +56,66 @@ export interface RegistrationRejectedOut {
   message: string;
   resident_id: number;
 }
+
+// --- Complaints ---
+
+export type ComplaintCategory = "general" | "infrastructure" | "internal";
+export type ComplaintStatus =
+  | "pending"
+  | "accepted"
+  | "assigned"
+  | "in_progress"
+  | "resolved"
+  | "closed"
+  | "reopened";
+export type ChangedByType = "resident" | "admin" | "staff" | "system";
+
+export interface ComplaintOut {
+  id: number;
+  complaint_code: string;
+  resident_id: number;
+  house_id: number;
+  category: ComplaintCategory;
+  subcategory: string;
+  description: string;
+  photo_urls: string[] | null;
+  status: ComplaintStatus;
+  assigned_staff_id: number | null;
+  close_count: number;
+  created_at: string;
+  updated_at: string;
+  closed_at: string | null;
+}
+
+export interface ComplaintHistoryOut {
+  id: number;
+  from_status: ComplaintStatus | null;
+  to_status: ComplaintStatus;
+  changed_by_type: ChangedByType;
+  changed_by_id: number | null;
+  note: string | null;
+  timestamp: string;
+}
+
+export interface ComplaintDetailOut extends ComplaintOut {
+  history: ComplaintHistoryOut[];
+}
+
+// --- Staff ---
+
+export type StaffCategory = "electrician" | "plumber" | "mason" | "security" | "sanitation" | "other";
+
+export interface StaffOut {
+  id: number;
+  full_name: string;
+  phone: string;
+  category: StaffCategory;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface StaffCreateRequest {
+  full_name: string;
+  phone: string;
+  category: StaffCategory;
+}

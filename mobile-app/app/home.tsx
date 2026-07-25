@@ -38,10 +38,13 @@ export default function HomeScreen() {
         </Text>
       </View>
 
+      <View style={{ marginBottom: spacing.md }}>
+        <AppButton label="My Complaints" onPress={() => router.push("/complaints")} />
+      </View>
+
       <Text style={[styles.comingSoon, { color: theme.textSecondary }]}>
-        Complaints, feedback, and emergency contacts land here once their
-        backend modules are built — this dashboard is wired to your real
-        account already, so nothing here is a placeholder.
+        Feedback and emergency contacts land here once their backend
+        modules are built.
       </Text>
 
       <AppButton label="Log out" variant="secondary" onPress={handleLogout} />

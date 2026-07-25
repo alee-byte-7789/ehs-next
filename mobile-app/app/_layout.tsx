@@ -16,6 +16,9 @@ export default function RootLayout() {
             <Stack.Screen name="register" />
             <Stack.Screen name="pending" />
             <Stack.Screen name="home" />
+            <Stack.Screen name="complaints/index" />
+            <Stack.Screen name="complaints/new" />
+            <Stack.Screen name="complaints/[id]" />
           </Stack>
         </AuthProvider>
       </QueryClientProvider>
