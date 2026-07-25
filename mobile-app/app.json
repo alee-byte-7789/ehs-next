@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "EHS Next",
+    "slug": "ehs-next",
+    "scheme": "ehsnext",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.ehsnext.residentapp"
+    },
+    "android": {
+      "package": "org.ehsnext.residentapp",
+      "adaptiveIcon": {
+        "backgroundColor": "#10B981",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "static",
+      "name": "EHS Next",
+      "shortName": "EHS Next",
+      "themeColor": "#10B981",
+      "backgroundColor": "#FFFFFF",
+      "display": "standalone"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
