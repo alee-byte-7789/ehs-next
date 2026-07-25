@@ -39,6 +39,18 @@ export function useCloseComplaint() {
   });
 }
 
+export function useCloseComplaintEarly() {
+  const queryClient = useQueryClient();
+  return useMutation<ComplaintOut, unknown, { complaintId: number; reason: string }>({
+    mutationFn: async ({ complaintId, reason }) =>
+      (await apiClient.post<ComplaintOut>(`/complaints/${complaintId}/close-early`, { reason })).data,
+    onSuccess: (_data, { complaintId }) => {
+      queryClient.invalidateQueries({ queryKey: ["complaints", "mine"] });
+      queryClient.invalidateQueries({ queryKey: ["complaints", "mine", complaintId] });
+    },
+  });
+}
+
 export function useReopenComplaint() {
   const queryClient = useQueryClient();
   return useMutation<ComplaintOut, unknown, number>({

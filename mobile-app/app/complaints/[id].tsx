@@ -8,7 +8,7 @@ import { AppTextField } from "../../components/AppTextField";
 import { StarRating } from "../../components/StarRating";
 import { StatusBadge } from "../../components/StatusBadge";
 import { extractApiErrorMessage } from "../../lib/api-client";
-import { useCloseComplaint, useMyComplaintDetail, useReopenComplaint } from "../../lib/complaint-queries";
+import { useCloseComplaint, useCloseComplaintEarly, useMyComplaintDetail, useReopenComplaint } from "../../lib/complaint-queries";
 import { useGiveFeedback } from "../../lib/feedback-queries";
 import { radii, spacing } from "../../lib/theme";
 import { useTheme } from "../../lib/use-theme";
@@ -44,6 +44,7 @@ export default function ComplaintDetailScreen() {
   const theme = useTheme();
   const { data: complaint, isLoading, isError } = useMyComplaintDetail(complaintId);
   const closeComplaint = useCloseComplaint();
+  const closeEarly = useCloseComplaintEarly();
   const reopenComplaint = useReopenComplaint();
   const giveFeedback = useGiveFeedback(complaintId);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -51,6 +52,8 @@ export default function ComplaintDetailScreen() {
   const [comment, setComment] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [showEarlyClose, setShowEarlyClose] = useState(false);
+  const [earlyCloseReason, setEarlyCloseReason] = useState("");
 
   const handleClose = async () => {
     setActionError(null);
@@ -70,6 +73,20 @@ export default function ComplaintDetailScreen() {
     }
   };
 
+  const handleEarlyClose = async () => {
+    setActionError(null);
+    if (!earlyCloseReason.trim()) {
+      setActionError("Please tell us briefly why — e.g. the issue resolved itself.");
+      return;
+    }
+    try {
+      await closeEarly.mutateAsync({ complaintId, reason: earlyCloseReason.trim() });
+      setShowEarlyClose(false);
+    } catch (err) {
+      setActionError(extractApiErrorMessage(err, "Could not close this complaint."));
+    }
+  };
+
   const handleFeedback = async () => {
     setFeedbackError(null);
     try {
@@ -83,6 +100,10 @@ export default function ComplaintDetailScreen() {
   // Resident may satisfy-close or reopen only while RESOLVED; reopen is
   // also available from CLOSED (the issue recurred) — once reopened this
   // way, only an admin can close it again (enforced server-side).
+  // Resident may close a complaint early ONLY while it's still pending —
+  // no admin has accepted or started work yet. The moment an admin acts,
+  // this option disappears (enforced server-side too, not just hidden here).
+  const canCloseEarly = complaint?.status === "pending";
   const canActOnResolved = complaint?.status === "resolved";
   const canReopenClosed = complaint?.status === "closed";
 
@@ -114,6 +135,32 @@ export default function ComplaintDetailScreen() {
           <Text style={[styles.description, { color: theme.textSecondary }]}>{complaint.description}</Text>
 
           {actionError && <Text style={{ color: theme.danger, marginTop: spacing.md }}>{actionError}</Text>}
+
+          {canCloseEarly && !showEarlyClose && (
+            <View style={styles.actionRow}>
+              <AppButton
+                label="Issue resolved itself — Close"
+                variant="secondary"
+                onPress={() => setShowEarlyClose(true)}
+              />
+            </View>
+          )}
+
+          {canCloseEarly && showEarlyClose && (
+            <View style={[styles.feedbackCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <AppTextField
+                label="Why are you closing this?"
+                placeholder="e.g. Neighbor fixed it, no longer an issue"
+                value={earlyCloseReason}
+                onChangeText={setEarlyCloseReason}
+                multiline
+              />
+              <View style={{ flexDirection: "row", gap: spacing.sm }}>
+                <AppButton label="Confirm Close" onPress={handleEarlyClose} loading={closeEarly.isPending} />
+                <AppButton label="Cancel" variant="secondary" onPress={() => setShowEarlyClose(false)} />
+              </View>
+            </View>
+          )}
 
           {canActOnResolved && (
             <View style={styles.actionRow}>

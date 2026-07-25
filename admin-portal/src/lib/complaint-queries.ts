@@ -31,6 +31,12 @@ export function useComplaints(filters: ComplaintFilters) {
       if (filters.search) params.search = filters.search;
       return (await apiClient.get<ComplaintOut[]>("/complaints", { params })).data;
     },
+    // Near-real-time sync (Section 3 of the spec): WebSockets/SSE aren't
+    // viable on Vercel's serverless functions (no persistent connections),
+    // so efficient polling is the correct choice for this architecture.
+    // 12s while the tab is open, paused when it's not (refetchIntervalInBackground
+    // defaults to false) — new complaints show up without a manual refresh.
+    refetchInterval: 12_000,
   });
 }
 
@@ -39,6 +45,7 @@ export function useComplaintDetail(complaintId: number) {
     queryKey: ["complaints", "detail", complaintId],
     queryFn: async () => (await apiClient.get<ComplaintDetailOut>(`/complaints/${complaintId}`)).data,
     enabled: Number.isFinite(complaintId),
+    refetchInterval: 15_000,
   });
 }
 
@@ -46,6 +53,7 @@ export function useDashboardCounts() {
   return useQuery<DashboardCounts>({
     queryKey: ["complaints", "dashboard"],
     queryFn: async () => (await apiClient.get<DashboardCounts>("/complaints/dashboard")).data,
+    refetchInterval: 20_000,
   });
 }
 

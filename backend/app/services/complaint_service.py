@@ -149,7 +149,13 @@ def start_progress(db: Session, complaint_id: int, admin_id: int) -> Complaint:
 
 
 def resolve(db: Session, complaint_id: int, admin_id: int) -> Complaint:
-    complaint = _require_status(db, complaint_id, ComplaintStatus.IN_PROGRESS)
+    """Staff assignment is NOT mandatory before resolving — an admin who
+    reviews a complaint and finds it already fixed (or trivial) can jump
+    straight from `accepted` to `resolved` without ever assigning staff.
+    `assigned`/`in_progress` still work too, for the normal full pipeline."""
+    complaint = _require_status(
+        db, complaint_id, ComplaintStatus.ACCEPTED, ComplaintStatus.ASSIGNED, ComplaintStatus.IN_PROGRESS
+    )
     return _transition(db, complaint, ComplaintStatus.RESOLVED, ChangedByType.ADMIN, admin_id)
 
 
@@ -199,7 +205,10 @@ def reopen_by_resident(db: Session, resident: Resident, complaint_id: int) -> Co
 # --- Admin-only close (bypasses the "never reopened" restriction) ---
 
 def close_by_admin(db: Session, complaint_id: int, admin_id: int) -> Complaint:
-    complaint = _require_status(db, complaint_id, ComplaintStatus.RESOLVED)
+    """Also works directly from `accepted` — an admin who reviews a
+    complaint and finds it's a non-issue (or already resolved by someone
+    else) can close it in one step, without a mandatory resolve step first."""
+    complaint = _require_status(db, complaint_id, ComplaintStatus.ACCEPTED, ComplaintStatus.RESOLVED)
     complaint.closed_at = _now()
     return _transition(db, complaint, ComplaintStatus.CLOSED, ChangedByType.ADMIN, admin_id)
 

@@ -1,3 +1,4 @@
+import { History, LogOut, MessageSquareWarning, ShieldCheck, Users } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -59,24 +60,26 @@ export function DashboardPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/complaints" className="text-sm font-medium text-[color:var(--color-primary)]">
-            Complaints
+          <Link to="/complaints" className="flex items-center gap-1.5 text-sm font-medium text-[color:var(--color-primary)]">
+            <MessageSquareWarning size={16} /> Complaints
           </Link>
-          <Link to="/staff" className="text-sm font-medium text-[color:var(--color-primary)]">
-            Staff
+          <Link to="/staff" className="flex items-center gap-1.5 text-sm font-medium text-[color:var(--color-primary)]">
+            <Users size={16} /> Staff
           </Link>
           {admin?.role === "super_admin" && (
-            <Link to="/admins" className="text-sm font-medium text-[color:var(--color-primary)]">
-              Manage Admins
+            <Link to="/admins" className="flex items-center gap-1.5 text-sm font-medium text-[color:var(--color-primary)]">
+              <ShieldCheck size={16} /> Manage Admins
             </Link>
           )}
           {admin?.role === "super_admin" && (
-            <Link to="/audit-logs" className="text-sm font-medium text-[color:var(--color-primary)]">
-              Audit Logs
+            <Link to="/audit-logs" className="flex items-center gap-1.5 text-sm font-medium text-[color:var(--color-primary)]">
+              <History size={16} /> Audit Logs
             </Link>
           )}
           <Button variant="secondary" onClick={logout}>
-            Log out
+            <span className="flex items-center gap-1.5">
+              <LogOut size={16} /> Log out
+            </span>
           </Button>
         </div>
       </header>

@@ -206,15 +206,15 @@ export function ComplaintDetailPage() {
               </Button>
             )}
 
-            {complaint.status === "in_progress" && (
+            {(complaint.status === "accepted" || complaint.status === "assigned" || complaint.status === "in_progress") && (
               <Button loading={resolve.isPending} onClick={() => runAction(resolve)}>
                 Mark Resolved
               </Button>
             )}
 
-            {complaint.status === "resolved" && (
+            {(complaint.status === "accepted" || complaint.status === "resolved") && (
               <Button variant="secondary" loading={adminClose.isPending} onClick={() => runAction(adminClose)}>
-                Force Close (admin)
+                {complaint.status === "accepted" ? "Close (no work needed)" : "Force Close (admin)"}
               </Button>
             )}
 
