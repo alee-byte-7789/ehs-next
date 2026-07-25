@@ -2,10 +2,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.v1.deps import get_db
+from app.api.v1.deps import get_current_resident, get_db
 from app.core.security import SubjectType
+from app.models.resident import Resident
 from app.schemas.auth import (
     AdminLoginRequest,
+    ChangePasswordRequest,
     LoginRequest,
     LogoutRequest,
     MessageResponse,
@@ -68,3 +70,16 @@ def logout(req: LogoutRequest, db: Session = Depends(get_db)) -> MessageResponse
     # already invalid/expired — logout should never surface an error.
     auth_service.revoke_refresh_token(db, req.refresh_token)
     return MessageResponse(message="Logged out.")
+
+
+@router.post("/change-password", response_model=MessageResponse)
+def change_password(
+    req: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    resident: Resident = Depends(get_current_resident),
+) -> MessageResponse:
+    try:
+        auth_service.change_password(db, resident, req.current_password, req.new_password)
+    except AuthenticationError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+    return MessageResponse(message="Password changed successfully.")

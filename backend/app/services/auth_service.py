@@ -141,6 +141,13 @@ def revoke_refresh_token(db: Session, refresh_token: str) -> None:
         db.commit()
 
 
+def change_password(db: Session, resident: Resident, current_password: str, new_password: str) -> None:
+    if not verify_password(current_password, resident.password_hash):
+        raise AuthenticationError("Current password is incorrect.")
+    resident.password_hash = hash_password(new_password)
+    db.commit()
+
+
 def _current_role(db: Session, subject_type: SubjectType, subject_id: int) -> str:
     """Re-reads the role from the DB (not from the old token) so a role
     change or de-activation takes effect on the very next refresh."""

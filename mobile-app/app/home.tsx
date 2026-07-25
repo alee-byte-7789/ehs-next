@@ -57,6 +57,11 @@ export default function HomeScreen() {
           onPress={() => router.push("/prayer-timings")}
           theme={theme}
         />
+        <PanelTile
+          label="Settings"
+          onPress={() => router.push("/settings")}
+          theme={theme}
+        />
       </ScrollView>
 
       <View style={styles.footer}>
