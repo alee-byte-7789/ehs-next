@@ -31,12 +31,15 @@ from sqlalchemy.orm import Session
 
 from app.models.complaint import Complaint
 from app.models.complaint_history import ComplaintHistory
-from app.models.enums import ChangedByType, ComplaintStatus
+from app.models.enums import AdminRole, ChangedByType, ComplaintStatus
 from app.models.resident import Resident
 from app.repositories import complaint_repository, staff_repository
 from app.schemas.complaint import ComplaintCreateRequest
+from app.services import notification_service
 from app.services.errors import InvalidStateError, NotFoundError
 from app.services.id_generation import complaint_code as build_complaint_code
+
+_ADMIN_ROLES = (AdminRole.HOUSING_OFFICE, AdminRole.SUPER_ADMIN)
 
 
 def create_complaint(db: Session, resident: Resident, req: ComplaintCreateRequest) -> Complaint:
@@ -56,6 +59,13 @@ def create_complaint(db: Session, resident: Resident, req: ComplaintCreateReques
 
     _record_history(db, complaint, from_status=None, to_status=ComplaintStatus.PENDING,
                      changed_by_type=ChangedByType.RESIDENT, changed_by_id=resident.id)
+
+    notification_service.notify_admins(
+        db, _ADMIN_ROLES,
+        title=f"New complaint: {complaint.complaint_code}",
+        body=f"{req.subcategory}: {req.description[:120]}",
+        type_="complaint_new",
+    )
 
     db.commit()
     db.refresh(complaint)
@@ -183,9 +193,34 @@ def _transition(
     from_status = complaint.status
     complaint.status = to_status
     _record_history(db, complaint, from_status, to_status, changed_by_type, changed_by_id, note)
+    _notify_for_transition(db, complaint, to_status, changed_by_type)
     db.commit()
     db.refresh(complaint)
     return complaint
+
+
+def _notify_for_transition(
+    db: Session, complaint: Complaint, to_status: ComplaintStatus, changed_by_type: ChangedByType
+) -> None:
+    """Resident hears about admin-driven progress on their own complaint;
+    admins hear when a resident reopens one — each side only gets notified
+    about the other side's actions, not their own."""
+    status_label = to_status.value.replace("_", " ")
+
+    if changed_by_type == ChangedByType.ADMIN:
+        notification_service.notify_resident(
+            db, complaint.resident_id,
+            title=f"Complaint {complaint.complaint_code} updated",
+            body=f"Your complaint is now '{status_label}'.",
+            type_="complaint_status",
+        )
+    elif to_status == ComplaintStatus.REOPENED:
+        notification_service.notify_admins(
+            db, _ADMIN_ROLES,
+            title=f"Complaint {complaint.complaint_code} reopened",
+            body="A resident was not satisfied with the resolution and reopened this complaint.",
+            type_="complaint_reopened",
+        )
 
 
 def _record_history(

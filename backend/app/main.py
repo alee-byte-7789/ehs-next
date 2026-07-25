@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import admins, auth, complaints, me, ops, prayer_timings, registrations, society_info, staff
+from app.api.v1 import admins, auth, complaints, me, notifications, ops, prayer_timings, registrations, society_info, staff
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -26,6 +26,7 @@ app.include_router(complaints.router, prefix=settings.api_v1_prefix)
 app.include_router(staff.router, prefix=settings.api_v1_prefix)
 app.include_router(society_info.router, prefix=settings.api_v1_prefix)
 app.include_router(prayer_timings.router, prefix=settings.api_v1_prefix)
+app.include_router(notifications.router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/health", tags=["health"])

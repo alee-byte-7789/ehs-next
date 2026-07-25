@@ -18,3 +18,7 @@ def email_taken(db: Session, email: str) -> bool:
 
 def list_all(db: Session) -> list[Admin]:
     return db.query(Admin).order_by(Admin.created_at).all()
+
+
+def list_by_roles(db: Session, roles: tuple) -> list[Admin]:
+    return db.query(Admin).filter(Admin.role.in_(roles)).all()
