@@ -1,7 +1,8 @@
 import { router } from "expo-router";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ThemedLogo } from "../components/ThemedLogo";
 import { useSocietyInfo } from "../lib/society-queries";
 import { radii, spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
@@ -20,7 +21,7 @@ export default function AboutScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Image source={require("../assets/logo-full.png")} style={styles.logo} resizeMode="contain" />
+        <ThemedLogo style={styles.logo} />
         {isLoading && <Text style={{ color: theme.textSecondary }}>Loading...</Text>}
 
         {info && (

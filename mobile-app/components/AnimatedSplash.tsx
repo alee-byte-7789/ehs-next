@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useTheme } from "../lib/use-theme";
+import { ThemedLogo } from "./ThemedLogo";
 
 /**
  * A real, working entrance animation — not a static splash image. Logo
@@ -42,9 +43,8 @@ export function AnimatedSplash() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Animated.View style={[styles.accentRing, { borderColor: theme.primary }, accentStyle]} />
       <Animated.View style={[styles.logoWrap, logoStyle]}>
-        <Image source={require("../assets/icon.png")} style={styles.logo} resizeMode="contain" />
+        <ThemedLogo style={styles.logo} />
       </Animated.View>
-      <Animated.Text style={[styles.brand, { color: theme.textPrimary }, logoStyle]}>EHS Next</Animated.Text>
     </View>
   );
 }
@@ -63,16 +63,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   logoWrap: {
-    width: 96,
-    height: 96,
+    width: 140,
+    height: 100,
     marginBottom: 16,
   },
   logo: {
     width: "100%",
     height: "100%",
-  },
-  brand: {
-    fontSize: 22,
-    fontWeight: "700",
   },
 });

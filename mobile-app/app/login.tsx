@@ -2,10 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Image, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { z } from "zod";
 
 import { AppButton } from "../components/AppButton";
+import { ThemedLogo } from "../components/ThemedLogo";
 import { AppTextField } from "../components/AppTextField";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { extractApiErrorMessage } from "../lib/api-client";
@@ -54,7 +55,7 @@ export default function LoginScreen() {
 
   return (
     <ScreenContainer>
-      <Image source={require("../assets/icon.png")} style={styles.logo} resizeMode="contain" />
+      <ThemedLogo style={styles.logo} />
       <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome back</Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
         Log in to EHS Next with your phone or email.

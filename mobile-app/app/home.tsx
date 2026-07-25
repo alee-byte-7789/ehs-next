@@ -1,7 +1,8 @@
 import { router } from "expo-router";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppButton } from "../components/AppButton";
+import { ThemedLogo } from "../components/ThemedLogo";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { useAuth } from "../lib/auth-context";
 import { useResidentMe } from "../lib/resident-queries";
@@ -21,7 +22,7 @@ export default function HomeScreen() {
   return (
     <ScreenContainer>
       <View style={styles.headerRow}>
-        <Image source={require("../assets/icon.png")} style={styles.headerLogo} resizeMode="contain" />
+        <ThemedLogo style={styles.headerLogo} />
         <Text style={[styles.greeting, { color: theme.textPrimary }]}>
           Hi, {resident?.full_name?.split(" ")[0] ?? "there"}
         </Text>
