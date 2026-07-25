@@ -14,6 +14,8 @@ from app.models.application_feedback import ApplicationFeedback
 from app.models.emergency_contact import EmergencyContact
 from app.models.notification import Notification
 from app.models.refresh_token import RefreshToken
+from app.models.society_info import SocietyInfo
+from app.models.prayer_timing import PrayerTiming
 
 __all__ = [
     "House",
@@ -27,4 +29,6 @@ __all__ = [
     "EmergencyContact",
     "Notification",
     "RefreshToken",
+    "SocietyInfo",
+    "PrayerTiming",
 ]

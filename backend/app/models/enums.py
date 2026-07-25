@@ -81,3 +81,8 @@ class NotificationRecipientType(str, Enum):
     RESIDENT = "resident"
     ADMIN = "admin"
     STAFF = "staff"
+
+
+class MosqueName(str, Enum):
+    BILAL_MOSQUE = "bilal_mosque"
+    MARKAZI_JAMIA_MOSQUE = "markazi_jamia_mosque"
