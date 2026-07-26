@@ -10,26 +10,10 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { extractApiErrorMessage } from "../../lib/api-client";
 import { useCloseComplaint, useCloseComplaintEarly, useMyComplaintDetail, useReopenComplaint } from "../../lib/complaint-queries";
 import { useGiveFeedback } from "../../lib/feedback-queries";
+import { useTranslation } from "../../lib/i18n";
 import { radii, spacing } from "../../lib/theme";
 import { useTheme } from "../../lib/use-theme";
 import type { ComplaintHistoryOut } from "../../lib/types";
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  accepted: "Accepted",
-  assigned: "Assigned",
-  in_progress: "In Progress",
-  resolved: "Resolved",
-  closed: "Closed",
-  reopened: "Reopened",
-};
-
-const ACTOR_LABELS: Record<string, string> = {
-  resident: "You",
-  admin: "Housing Office",
-  staff: "Maintenance Staff",
-  system: "System",
-};
 
 const PRIORITY_COLORS: Record<string, string> = {
   low: "#10B981",
@@ -42,6 +26,22 @@ export default function ComplaintDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const complaintId = Number(id);
   const theme = useTheme();
+  const { t } = useTranslation();
+  const STATUS_LABELS: Record<string, string> = {
+    pending: t("pendingStatus"),
+    accepted: t("acceptedStatus"),
+    assigned: t("assignedStatus"),
+    in_progress: t("inProgressStatus"),
+    resolved: t("resolvedStatus"),
+    closed: t("closedStatus"),
+    reopened: t("reopenedStatus"),
+  };
+  const ACTOR_LABELS: Record<string, string> = {
+    resident: t("you"),
+    admin: t("housingOffice"),
+    staff: t("maintenanceStaff"),
+    system: t("system"),
+  };
   const { data: complaint, isLoading, isError } = useMyComplaintDetail(complaintId);
   const closeComplaint = useCloseComplaint();
   const closeEarly = useCloseComplaintEarly();
@@ -111,12 +111,12 @@ export default function ComplaintDetailScreen() {
     <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
-          <Text style={{ color: theme.primary, fontSize: 15 }}>← Back</Text>
+          <Text style={{ color: theme.primary, fontSize: 15 }}>← {t("back")}</Text>
         </Pressable>
       </View>
 
-      {isLoading && <Text style={{ color: theme.textSecondary, padding: spacing.lg }}>Loading...</Text>}
-      {isError && <Text style={{ color: theme.danger, padding: spacing.lg }}>Could not load this complaint.</Text>}
+      {isLoading && <Text style={{ color: theme.textSecondary, padding: spacing.lg }}>{t("loading")}</Text>}
+      {isError && <Text style={{ color: theme.danger, padding: spacing.lg }}>{t("couldNotLoadComplaint")}</Text>}
 
       {complaint && (
         <ScrollView contentContainerStyle={styles.content}>
@@ -139,7 +139,7 @@ export default function ComplaintDetailScreen() {
           {canCloseEarly && !showEarlyClose && (
             <View style={styles.actionRow}>
               <AppButton
-                label="Issue resolved itself — Close"
+                label={t("issueResolvedItselfClose")}
                 variant="secondary"
                 onPress={() => setShowEarlyClose(true)}
               />
@@ -149,24 +149,24 @@ export default function ComplaintDetailScreen() {
           {canCloseEarly && showEarlyClose && (
             <View style={[styles.feedbackCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <AppTextField
-                label="Why are you closing this?"
+                label={t("whyClosing")}
                 placeholder="e.g. Neighbor fixed it, no longer an issue"
                 value={earlyCloseReason}
                 onChangeText={setEarlyCloseReason}
                 multiline
               />
               <View style={{ flexDirection: "row", gap: spacing.sm }}>
-                <AppButton label="Confirm Close" onPress={handleEarlyClose} loading={closeEarly.isPending} />
-                <AppButton label="Cancel" variant="secondary" onPress={() => setShowEarlyClose(false)} />
+                <AppButton label={t("confirmClose")} onPress={handleEarlyClose} loading={closeEarly.isPending} />
+                <AppButton label={t("cancel")} variant="secondary" onPress={() => setShowEarlyClose(false)} />
               </View>
             </View>
           )}
 
           {canActOnResolved && (
             <View style={styles.actionRow}>
-              <AppButton label="I'm satisfied — Close" onPress={handleClose} loading={closeComplaint.isPending} />
+              <AppButton label={t("imSatisfiedClose")} onPress={handleClose} loading={closeComplaint.isPending} />
               <AppButton
-                label="Not satisfied — Reopen"
+                label={t("notSatisfiedReopen")}
                 variant="secondary"
                 onPress={handleReopen}
                 loading={reopenComplaint.isPending}
@@ -177,7 +177,7 @@ export default function ComplaintDetailScreen() {
           {canReopenClosed && (
             <View style={styles.actionRow}>
               <AppButton
-                label="Issue happened again — Reopen"
+                label={t("issueHappenedAgain")}
                 variant="secondary"
                 onPress={handleReopen}
                 loading={reopenComplaint.isPending}
@@ -187,18 +187,18 @@ export default function ComplaintDetailScreen() {
 
           {(complaint.status === "resolved" || complaint.status === "closed") && !feedbackSubmitted && (
             <View style={[styles.feedbackCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Text style={[styles.feedbackTitle, { color: theme.textPrimary }]}>Rate this resolution</Text>
+              <Text style={[styles.feedbackTitle, { color: theme.textPrimary }]}>{t("rateResolution")}</Text>
               <StarRating value={rating} onChange={setRating} />
               <AppTextField
-                label="Comment (optional)"
-                placeholder="Anything else you'd like to share?"
+                label={t("commentOptional")}
+                placeholder={t("anythingElseShare")}
                 value={comment}
                 onChangeText={setComment}
                 multiline
               />
               {feedbackError && <Text style={{ color: theme.danger, fontSize: 12, marginBottom: spacing.sm }}>{feedbackError}</Text>}
               <AppButton
-                label="Submit Feedback"
+                label={t("submitFeedback")}
                 onPress={handleFeedback}
                 loading={giveFeedback.isPending}
                 disabled={rating === 0}
@@ -207,11 +207,11 @@ export default function ComplaintDetailScreen() {
           )}
           {feedbackSubmitted && (
             <View style={[styles.feedbackCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Text style={{ color: theme.primary, fontWeight: "600" }}>Thanks for your feedback!</Text>
+              <Text style={{ color: theme.primary, fontWeight: "600" }}>{t("thanksForFeedback")}</Text>
             </View>
           )}
 
-          <Text style={[styles.timelineTitle, { color: theme.textPrimary }]}>Timeline</Text>
+          <Text style={[styles.timelineTitle, { color: theme.textPrimary }]}>{t("timeline")}</Text>
           <View style={[styles.timeline, { borderColor: theme.border }]}>
             {complaint.history.map((entry: ComplaintHistoryOut, index: number) => (
               <View key={entry.id} style={styles.timelineRow}>

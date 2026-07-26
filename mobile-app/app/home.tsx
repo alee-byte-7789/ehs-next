@@ -6,6 +6,7 @@ import { AppButton } from "../components/AppButton";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { ThemedLogo } from "../components/ThemedLogo";
 import { useAuth } from "../lib/auth-context";
+import { useTranslation } from "../lib/i18n";
 import { useResidentMe } from "../lib/resident-queries";
 import { radii, shadow, spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
@@ -14,6 +15,7 @@ export default function HomeScreen() {
   const { logout } = useAuth();
   const theme = useTheme();
   const { data: resident } = useResidentMe(true);
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await logout();
@@ -25,47 +27,47 @@ export default function HomeScreen() {
       <View style={styles.headerRow}>
         <ThemedLogo style={styles.headerLogo} />
         <Text style={[styles.greeting, { color: theme.textPrimary }]}>
-          Hi, {resident?.full_name?.split(" ")[0] ?? "there"}
+          {t("hi")}, {resident?.full_name?.split(" ")[0] ?? "there"}
         </Text>
       </View>
 
       <View style={styles.infoRow}>
         <View style={[styles.infoCard, { backgroundColor: theme.secondaryTint }, shadow.card]}>
-          <Text style={[styles.cardLabel, { color: theme.secondary }]}>Resident ID</Text>
+          <Text style={[styles.cardLabel, { color: theme.secondary }]}>{t("residentId")}</Text>
           <Text style={[styles.cardValue, { color: theme.textPrimary }]} numberOfLines={1}>
             {resident?.resident_code ?? "—"}
           </Text>
         </View>
         <View style={[styles.infoCard, { backgroundColor: theme.primaryTint }, shadow.card]}>
-          <Text style={[styles.cardLabel, { color: theme.primary }]}>Status</Text>
+          <Text style={[styles.cardLabel, { color: theme.primary }]}>{t("status")}</Text>
           <Text style={[styles.cardValue, { color: theme.primary }]}>{resident?.verification_status ?? "—"}</Text>
         </View>
       </View>
 
-      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Complaints</Text>
+      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>{t("complaints")}</Text>
       <View style={styles.actionRow}>
-        <AppButton label="Raise a Complaint" onPress={() => router.push("/complaints/new")} />
+        <AppButton label={t("raiseComplaint")} onPress={() => router.push("/complaints/new")} />
       </View>
       <View style={styles.actionRow}>
-        <AppButton label="My Complaints" variant="secondary" onPress={() => router.push("/complaints")} />
+        <AppButton label={t("myComplaints")} variant="secondary" onPress={() => router.push("/complaints")} />
       </View>
 
-      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Society</Text>
+      <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>{t("society")}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.panelScroll}>
         <PanelTile
-          label="EHS Map"
+          label={t("ehsMap")}
           icon="map-outline"
           onPress={() => router.push("/ehs-map")}
           theme={theme}
         />
         <PanelTile
-          label="Prayer Timings"
+          label={t("prayerTimings")}
           icon="time-outline"
           onPress={() => router.push("/prayer-timings")}
           theme={theme}
         />
         <PanelTile
-          label="Settings"
+          label={t("settings")}
           icon="settings-outline"
           onPress={() => router.push("/settings")}
           theme={theme}
@@ -73,7 +75,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <AppButton label="Log out" variant="secondary" onPress={handleLogout} />
+        <AppButton label={t("logout")} variant="secondary" onPress={handleLogout} />
       </View>
     </ScreenContainer>
   );

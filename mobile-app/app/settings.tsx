@@ -18,8 +18,15 @@ import {
   type Language,
   type ThemeMode,
 } from "../lib/settings-context";
-import { radii, shadow, spacing } from "../lib/theme";
+import { radii, shadow, spacing, type ColorThemeName } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
+
+const COLOR_THEME_OPTIONS: { value: ColorThemeName; swatchColor: string }[] = [
+  { value: "green", swatchColor: "#10B981" },
+  { value: "red", swatchColor: "#DC2626" },
+  { value: "yellow", swatchColor: "#D97706" },
+  { value: "blue", swatchColor: "#2563EB" },
+];
 
 export default function SettingsScreen() {
   const theme = useTheme();
@@ -92,6 +99,25 @@ export default function SettingsScreen() {
             theme={theme}
             scale={scale}
           />
+
+          <Text style={[styles.colorThemeLabel, { color: theme.textSecondary, fontSize: 12 * scale }]}>
+            {t("colorTheme")}
+          </Text>
+          <View style={styles.swatchRow}>
+            {COLOR_THEME_OPTIONS.map((opt) => (
+              <Pressable
+                key={opt.value}
+                onPress={() => settings.setColorTheme(opt.value)}
+                style={[
+                  styles.swatch,
+                  { backgroundColor: opt.swatchColor },
+                  settings.colorTheme === opt.value && { borderColor: theme.textPrimary, borderWidth: 3 },
+                ]}
+              >
+                {settings.colorTheme === opt.value && <Ionicons name="checkmark" size={18} color="#FFFFFF" />}
+              </Pressable>
+            ))}
+          </View>
         </SectionCard>
 
         {/* Display */}
@@ -286,6 +312,17 @@ const styles = StyleSheet.create({
   cardTitleRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginBottom: spacing.sm },
   cardTitle: { fontWeight: "700" },
   segmentRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  colorThemeLabel: { fontWeight: "600", marginTop: spacing.md, marginBottom: spacing.sm },
+  swatchRow: { flexDirection: "row", gap: spacing.sm },
+  swatch: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 0,
+    borderColor: "transparent",
+  },
   segment: { borderWidth: 1.5, borderRadius: radii.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
   toggleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: spacing.xs },
   accountInfoBox: { borderRadius: radii.md, padding: spacing.sm, marginBottom: spacing.md },

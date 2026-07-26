@@ -11,15 +11,10 @@ import { ScreenContainer } from "../../components/ScreenContainer";
 import { extractApiErrorMessage } from "../../lib/api-client";
 import { SUBCATEGORY_OPTIONS } from "../../lib/complaint-subcategories";
 import { useCreateComplaint } from "../../lib/complaint-queries";
+import { useTranslation } from "../../lib/i18n";
 import { radii, spacing } from "../../lib/theme";
 import { useTheme } from "../../lib/use-theme";
 import type { ComplaintCategory } from "../../lib/types";
-
-const CATEGORY_OPTIONS: { value: ComplaintCategory; label: string }[] = [
-  { value: "general", label: "General" },
-  { value: "infrastructure", label: "Infrastructure" },
-  { value: "internal", label: "Internal / Society" },
-];
 
 const schema = z
   .object({
@@ -38,8 +33,15 @@ type FormValues = z.infer<typeof schema>;
 
 export default function NewComplaintScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const createComplaint = useCreateComplaint();
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const CATEGORY_OPTIONS: { value: ComplaintCategory; label: string }[] = [
+    { value: "general", label: t("general") },
+    { value: "infrastructure", label: t("infrastructure") },
+    { value: "internal", label: t("internalSociety") },
+  ];
 
   const {
     control,
@@ -79,9 +81,9 @@ export default function NewComplaintScreen() {
 
   return (
     <ScreenContainer>
-      <Text style={[styles.title, { color: theme.textPrimary }]}>Raise a Complaint</Text>
+      <Text style={[styles.title, { color: theme.textPrimary }]}>{t("raiseComplaint")}</Text>
 
-      <Text style={[styles.label, { color: theme.textSecondary }]}>Category</Text>
+      <Text style={[styles.label, { color: theme.textSecondary }]}>{t("category")}</Text>
       <View style={styles.chipRow}>
         {CATEGORY_OPTIONS.map((opt) => (
           <Controller
@@ -108,7 +110,7 @@ export default function NewComplaintScreen() {
         ))}
       </View>
 
-      <Text style={[styles.label, { color: theme.textSecondary }]}>What's the issue?</Text>
+      <Text style={[styles.label, { color: theme.textSecondary }]}>{t("whatsTheIssue")}</Text>
       <Controller
         control={control}
         name="subcategory"
@@ -142,8 +144,8 @@ export default function NewComplaintScreen() {
           name="customSubcategory"
           render={({ field }) => (
             <AppTextField
-              label="Describe the issue type"
-              placeholder="e.g. Elevator Malfunction"
+              label={t("describeIssueType")}
+              placeholder="e.g. Boundary Wall Damage"
               value={field.value}
               onChangeText={field.onChange}
               error={errors.customSubcategory?.message}
@@ -157,7 +159,7 @@ export default function NewComplaintScreen() {
         name="description"
         render={({ field }) => (
           <AppTextField
-            label="Description"
+            label={t("description")}
             placeholder="Describe the issue in a bit more detail..."
             multiline
             numberOfLines={5}
@@ -171,7 +173,7 @@ export default function NewComplaintScreen() {
 
       {serverError && <Text style={{ color: theme.danger, marginBottom: spacing.md, textAlign: "center" }}>{serverError}</Text>}
 
-      <AppButton label="Submit Complaint" onPress={handleSubmit(onSubmit)} loading={createComplaint.isPending} />
+      <AppButton label={t("submitComplaint")} onPress={handleSubmit(onSubmit)} loading={createComplaint.isPending} />
     </ScreenContainer>
   );
 }

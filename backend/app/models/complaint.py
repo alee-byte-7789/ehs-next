@@ -92,3 +92,22 @@ class Complaint(Base):
 
     def __repr__(self) -> str:
         return f"<Complaint {self.complaint_code} [{self.status.value}]>"
+
+    # --- Convenience properties for API responses ---
+    # Admins triaging complaints need to immediately see WHERE and WHO
+    # without a separate lookup — these expose the related House/Resident
+    # data directly so ComplaintOut can include them with no extra
+    # service-layer plumbing (Pydantic's from_attributes=True reads plain
+    # properties the same way it reads columns).
+
+    @property
+    def house_code(self) -> str:
+        return self.house.house_code
+
+    @property
+    def resident_name(self) -> str:
+        return self.resident.full_name
+
+    @property
+    def resident_phone(self) -> str:
+        return self.resident.phone

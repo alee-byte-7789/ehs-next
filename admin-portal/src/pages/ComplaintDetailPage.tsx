@@ -118,6 +118,20 @@ export function ComplaintDetailPage() {
             <span className="text-xs capitalize text-[color:var(--color-text-secondary)]">{complaint.category}</span>
           </div>
           <h2 className="mb-2 text-xl font-semibold text-[color:var(--color-text-primary)]">{complaint.subcategory}</h2>
+          <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg bg-[color:var(--color-surface)] px-3 py-2 text-sm">
+            <span>
+              <span className="text-[color:var(--color-text-secondary)]">House: </span>
+              <span className="font-semibold text-[color:var(--color-text-primary)]">{complaint.house_code}</span>
+            </span>
+            <span>
+              <span className="text-[color:var(--color-text-secondary)]">Resident: </span>
+              <span className="font-semibold text-[color:var(--color-text-primary)]">{complaint.resident_name}</span>
+            </span>
+            <span>
+              <span className="text-[color:var(--color-text-secondary)]">Phone: </span>
+              <span className="font-semibold text-[color:var(--color-text-primary)]">{complaint.resident_phone}</span>
+            </span>
+          </div>
           <p className="mb-4 text-sm text-[color:var(--color-text-secondary)]">{complaint.description}</p>
 
           <div className="mb-4 flex items-center gap-2">

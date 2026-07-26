@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppButton } from "../components/AppButton";
 import { AppTextField } from "../components/AppTextField";
 import { useAdminAuth } from "../lib/admin-auth-context";
+import { useTranslation } from "../lib/i18n";
 import { useUpdatePrayerTiming } from "../lib/admin-prayer-timing-mutations";
 import { usePrayerTimings } from "../lib/society-queries";
 import { radii, shadow, spacing } from "../lib/theme";
@@ -18,30 +19,22 @@ const MOSQUE_LABELS: Record<MosqueName, string> = {
   markazi_jamia_mosque: "Markazi Jamia Mosque",
 };
 
-const PRAYER_FIELDS: { key: keyof PrayerTimingOut; label: string }[] = [
-  { key: "fajr", label: "Fajr" },
-  { key: "zuhr", label: "Zuhr" },
-  { key: "asr", label: "Asr" },
-  { key: "maghrib", label: "Maghrib" },
-  { key: "isha", label: "Isha" },
-  { key: "jummah", label: "Jummah" },
-];
-
 export default function PrayerTimingsScreen() {
   const theme = useTheme();
   const { data: timings, isLoading } = usePrayerTimings();
   const { isAdminSignedIn, logout } = useAdminAuth();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backRow}>
           <Ionicons name="arrow-back" size={18} color={theme.primary} />
-          <Text style={{ color: theme.primary, fontSize: 15 }}>Back</Text>
+          <Text style={{ color: theme.primary, fontSize: 15 }}>{t("back")}</Text>
         </Pressable>
         <View style={styles.titleRow}>
           <Ionicons name="moon-outline" size={22} color={theme.secondary} />
-          <Text style={[styles.title, { color: theme.textPrimary }]}>Prayer Timings</Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>{t("prayerTimings")}</Text>
         </View>
       </View>
 
@@ -70,6 +63,15 @@ export default function PrayerTimingsScreen() {
 
 function MosqueCard({ timing, isAdmin }: { timing: PrayerTimingOut; isAdmin: boolean }) {
   const theme = useTheme();
+  const { t } = useTranslation();
+  const PRAYER_FIELDS_LOCALIZED: { key: keyof PrayerTimingOut; label: string }[] = [
+    { key: "fajr", label: t("fajr") },
+    { key: "zuhr", label: t("zuhr") },
+    { key: "asr", label: t("asr") },
+    { key: "maghrib", label: t("maghrib") },
+    { key: "isha", label: t("isha") },
+    { key: "jummah", label: t("jummah") },
+  ];
   const [editing, setEditing] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
   const updateTiming = useUpdatePrayerTiming();
@@ -104,13 +106,13 @@ function MosqueCard({ timing, isAdmin }: { timing: PrayerTimingOut; isAdmin: boo
         <Text style={[styles.mosqueName, { color: theme.textPrimary }]}>{MOSQUE_LABELS[timing.mosque_name]}</Text>
         {isAdmin && !editing && (
           <Pressable onPress={() => setEditing(true)}>
-            <Text style={{ color: theme.primary, fontWeight: "600", fontSize: 13 }}>Edit</Text>
+            <Text style={{ color: theme.primary, fontWeight: "600", fontSize: 13 }}>{t("edit")}</Text>
           </Pressable>
         )}
       </View>
 
       {!editing &&
-        PRAYER_FIELDS.map((f) => {
+        PRAYER_FIELDS_LOCALIZED.map((f) => {
           const value = timing[f.key] as string | null;
           if (!value) return null;
           return (
@@ -123,7 +125,7 @@ function MosqueCard({ timing, isAdmin }: { timing: PrayerTimingOut; isAdmin: boo
 
       {editing && (
         <View>
-          {PRAYER_FIELDS.map((f) => (
+          {PRAYER_FIELDS_LOCALIZED.map((f) => (
             <AppTextField
               key={f.key}
               label={f.label}

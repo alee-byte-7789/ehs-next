@@ -151,6 +151,7 @@ export function ComplaintsPage() {
                 <tr>
                   <th className="px-4 py-3"></th>
                   <th className="px-4 py-3">Code</th>
+                  <th className="px-4 py-3">House</th>
                   <th className="px-4 py-3">Title</th>
                   <th className="px-4 py-3">Priority</th>
                   <th className="px-4 py-3">Status</th>
@@ -170,6 +171,7 @@ export function ComplaintsPage() {
                           {c.complaint_code}
                         </Link>
                       </td>
+                      <td className="px-4 py-3 font-semibold text-[color:var(--color-secondary,#1E3A5F)]">{c.house_code}</td>
                       <td className="px-4 py-3 text-[color:var(--color-text-primary)]">{c.subcategory}</td>
                       <td className="px-4 py-3">
                         {c.priority !== "normal" && (

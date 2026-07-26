@@ -1,6 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
+import type { ColorThemeName } from "./theme";
+
 export type ThemeMode = "system" | "light" | "dark";
 export type FontScale = "small" | "default" | "large" | "extra_large";
 export type Language = "en" | "ur";
@@ -14,6 +16,7 @@ export interface NotificationPrefs {
 
 interface Settings {
   themeMode: ThemeMode;
+  colorTheme: ColorThemeName;
   fontScale: FontScale;
   language: Language;
   notifications: NotificationPrefs;
@@ -21,6 +24,7 @@ interface Settings {
 
 interface SettingsContextValue extends Settings {
   setThemeMode: (mode: ThemeMode) => void;
+  setColorTheme: (theme: ColorThemeName) => void;
   setFontScale: (scale: FontScale) => void;
   setLanguage: (lang: Language) => void;
   setNotificationPref: (key: keyof NotificationPrefs, value: boolean) => void;
@@ -31,6 +35,7 @@ const STORAGE_KEY = "ehs_app_settings";
 
 const DEFAULT_SETTINGS: Settings = {
   themeMode: "system",
+  colorTheme: "green",
   fontScale: "default",
   language: "en",
   notifications: {
@@ -80,6 +85,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     ...settings,
     isLoaded,
     setThemeMode: (themeMode) => persist({ ...settings, themeMode }),
+    setColorTheme: (colorTheme) => persist({ ...settings, colorTheme }),
     setFontScale: (fontScale) => persist({ ...settings, fontScale }),
     setLanguage: (language) => persist({ ...settings, language }),
     setNotificationPref: (key, val) =>

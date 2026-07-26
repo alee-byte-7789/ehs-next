@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppButton } from "../../components/AppButton";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useMyComplaints } from "../../lib/complaint-queries";
+import { useTranslation } from "../../lib/i18n";
 import { spacing, radii } from "../../lib/theme";
 import { useTheme } from "../../lib/use-theme";
 import type { ComplaintOut } from "../../lib/types";
@@ -19,27 +20,28 @@ const PRIORITY_COLORS: Record<string, string> = {
 export default function ComplaintsListScreen() {
   const theme = useTheme();
   const { data: complaints, isLoading, isError, refetch, isRefetching } = useMyComplaints();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
-          <Text style={{ color: theme.primary, fontSize: 15 }}>← Home</Text>
+          <Text style={{ color: theme.primary, fontSize: 15 }}>← {t("home")}</Text>
         </Pressable>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>My Complaints</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>{t("myComplaints")}</Text>
       </View>
 
-      {isLoading && <Text style={{ color: theme.textSecondary, padding: spacing.lg }}>Loading...</Text>}
+      {isLoading && <Text style={{ color: theme.textSecondary, padding: spacing.lg }}>{t("loading")}</Text>}
       {isError && (
         <Text style={{ color: theme.danger, padding: spacing.lg }}>
-          Could not load your complaints. Pull down to try again.
+          {t("couldNotLoadComplaints")}
         </Text>
       )}
 
       {complaints && complaints.length === 0 && (
         <View style={styles.emptyState}>
           <Text style={{ color: theme.textSecondary, textAlign: "center", marginBottom: spacing.md }}>
-            You haven't raised any complaints yet.
+            {t("noComplaintsYet")}
           </Text>
         </View>
       )}
@@ -74,7 +76,7 @@ export default function ComplaintsListScreen() {
       />
 
       <View style={styles.footer}>
-        <AppButton label="Raise a Complaint" onPress={() => router.push("/complaints/new")} />
+        <AppButton label={t("raiseComplaint")} onPress={() => router.push("/complaints/new")} />
       </View>
     </SafeAreaView>
   );

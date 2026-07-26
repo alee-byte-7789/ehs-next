@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Platform, useColorScheme as useRNColorScheme } from "react-native";
 
-import { colors } from "./theme";
+import { getThemeColors } from "./theme";
 import { useSettings } from "./settings-context";
 
 /**
@@ -42,8 +42,8 @@ function useSystemColorScheme(): "light" | "dark" {
 
 export function useTheme() {
   const systemScheme = useSystemColorScheme();
-  const { themeMode } = useSettings();
+  const { themeMode, colorTheme } = useSettings();
 
   const effectiveScheme = themeMode === "system" ? systemScheme : themeMode;
-  return effectiveScheme === "dark" ? colors.dark : colors.light;
+  return getThemeColors(effectiveScheme, colorTheme);
 }

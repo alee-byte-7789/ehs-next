@@ -6,7 +6,7 @@ import type { ComplaintCategory } from "./types";
  * which reveals a free-text field when selected (see new.tsx).
  */
 export const SUBCATEGORY_OPTIONS: Record<ComplaintCategory, string[]> = {
-  general: ["Noise Complaint", "Parking Issue", "Pet Nuisance", "Security Concern", "Other"],
+  general: ["Parking Issue", "Pet Nuisance", "Security Concern", "Other"],
   infrastructure: [
     "Water Leakage",
     "Electricity Issue",

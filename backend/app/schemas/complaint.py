@@ -21,6 +21,9 @@ class ComplaintOut(BaseModel):
     complaint_code: str
     resident_id: int
     house_id: int
+    house_code: str
+    resident_name: str
+    resident_phone: str
     category: ComplaintCategory
     subcategory: str
     description: str

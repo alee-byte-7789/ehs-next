@@ -76,6 +76,9 @@ export interface ComplaintOut {
   complaint_code: string;
   resident_id: number;
   house_id: number;
+  house_code: string;
+  resident_name: string;
+  resident_phone: string;
   category: ComplaintCategory;
   subcategory: string;
   description: string;

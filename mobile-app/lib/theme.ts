@@ -4,40 +4,62 @@
  * these values so the "one design system, two apps" intent holds.
  */
 /**
- * Design tokens. Palette derived from the actual EHS Next logo (navy
- * blue house + emerald green arrow) — a deliberate two-color system with
- * muted neutrals, not a rainbow. `secondary` (navy) is used for visual
- * variety on things like panel tiles and info cards, `primary` (emerald)
- * stays reserved for actions/CTAs so it keeps its meaning.
+ * Design tokens. Two independent axes:
+ *   - mode: light / dark — controls neutrals (background, text, etc.)
+ *   - colorTheme: green / red / yellow / blue — controls the accent
+ *     (`primary`) only, so any color theme works correctly in either mode.
+ * `secondary` (navy) stays fixed to the logo's branding regardless of
+ * colorTheme — it's not a user-facing "theme color," just a design accent.
  */
-export const colors = {
+export type ColorThemeName = "green" | "red" | "yellow" | "blue";
+
+const accents: Record<ColorThemeName, { light: string; dark: string; tintLight: string; tintDark: string }> = {
+  green: { light: "#10B981", dark: "#10B981", tintLight: "#ECFDF5", tintDark: "#0F2A22" },
+  red: { light: "#DC2626", dark: "#EF4444", tintLight: "#FEF2F2", tintDark: "#3A1414" },
+  yellow: { light: "#D97706", dark: "#F59E0B", tintLight: "#FFFBEB", tintDark: "#3A2A0A" },
+  blue: { light: "#2563EB", dark: "#3B82F6", tintLight: "#EFF6FF", tintDark: "#122740" },
+};
+
+const neutrals = {
   light: {
-    primary: "#10B981",
-    primaryTint: "#ECFDF5",
-    secondary: "#1E3A5F",
-    secondaryTint: "#EFF4F9",
     background: "#FFFFFF",
     surface: "#F5F6F7",
     surfaceElevated: "#FFFFFF",
+    secondary: "#1E3A5F",
+    secondaryTint: "#EFF4F9",
     textPrimary: "#111827",
     textSecondary: "#6B7280",
     border: "#E5E7EB",
     danger: "#EF4444",
   },
   dark: {
-    primary: "#10B981",
-    primaryTint: "#0F2A22",
-    secondary: "#5B8DBE",
-    secondaryTint: "#16232E",
     background: "#121212",
     surface: "#1E1E1E",
     surfaceElevated: "#252525",
+    secondary: "#5B8DBE",
+    secondaryTint: "#16232E",
     textPrimary: "#FFFFFF",
     textSecondary: "#9CA3AF",
     accent: "#34D399",
     border: "#2C2C2C",
     danger: "#F87171",
   },
+} as const;
+
+export function getThemeColors(mode: "light" | "dark", colorTheme: ColorThemeName) {
+  const accent = accents[colorTheme];
+  return {
+    ...neutrals[mode],
+    primary: mode === "dark" ? accent.dark : accent.light,
+    primaryTint: mode === "dark" ? accent.tintDark : accent.tintLight,
+  };
+}
+
+// Kept for any code that still imports the static palette directly —
+// defaults to the green theme, same visual result as before this change.
+export const colors = {
+  light: getThemeColors("light", "green"),
+  dark: getThemeColors("dark", "green"),
 } as const;
 
 export const shadow = {

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppTextField } from "../components/AppTextField";
+import { useTranslation } from "../lib/i18n";
 import { radii, shadow, spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
 
@@ -17,6 +18,7 @@ import { useTheme } from "../lib/use-theme";
  */
 export default function EhsMapScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
 
   const trimmedSearch = useMemo(() => search.trim(), [search]);
@@ -26,14 +28,14 @@ export default function EhsMapScreen() {
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={20} color={theme.primary} />
-          <Text style={{ color: theme.primary, fontSize: 15 }}>Back</Text>
+          <Text style={{ color: theme.primary, fontSize: 15 }}>{t("back")}</Text>
         </Pressable>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>EHS Map</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>{t("ehsMap")}</Text>
       </View>
 
       <View style={styles.searchWrap}>
         <AppTextField
-          label="Search house number or street"
+          label={t("searchHouseOrStreet")}
           placeholder="e.g. B-026 or Street 4"
           value={search}
           onChangeText={setSearch}
@@ -48,18 +50,18 @@ export default function EhsMapScreen() {
 }
 
 function MapCanvas({ theme, searchQuery }: { theme: ReturnType<typeof useTheme>; searchQuery: string }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.mapPlaceholder, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }, shadow.card]}>
       <Ionicons name="map-outline" size={48} color={theme.secondary} />
-      <Text style={[styles.mapPlaceholderTitle, { color: theme.textPrimary }]}>Map coming soon</Text>
+      <Text style={[styles.mapPlaceholderTitle, { color: theme.textPrimary }]}>{t("mapComingSoon")}</Text>
       <Text style={[styles.mapPlaceholderBody, { color: theme.textSecondary }]}>
-        The society map will appear here once it's added. You'll be able to search any house
-        number or street and jump straight to it.
+        {t("mapDescription")}
       </Text>
       {searchQuery.length > 0 && (
         <View style={[styles.searchEcho, { backgroundColor: theme.primaryTint }]}>
           <Text style={{ color: theme.primary, fontSize: 13, fontWeight: "600" }}>
-            Searching for "{searchQuery}" — will highlight on the map once it's ready
+            {t("searchingFor")} "{searchQuery}"
           </Text>
         </View>
       )}

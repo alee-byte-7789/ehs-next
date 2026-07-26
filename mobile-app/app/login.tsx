@@ -11,6 +11,7 @@ import { AppTextField } from "../components/AppTextField";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { extractApiErrorMessage } from "../lib/api-client";
 import { useAuth } from "../lib/auth-context";
+import { useTranslation } from "../lib/i18n";
 import { spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
 
@@ -23,6 +24,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function LoginScreen() {
   const { login } = useAuth();
+  const { t } = useTranslation();
   const theme = useTheme();
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -56,9 +58,9 @@ export default function LoginScreen() {
   return (
     <ScreenContainer>
       <ThemedLogo style={styles.logo} />
-      <Text style={[styles.title, { color: theme.textPrimary }]}>Welcome back</Text>
+      <Text style={[styles.title, { color: theme.textPrimary }]}>{t("welcomeBack")}</Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-        Log in to EHS Next with your phone or email.
+        {t("loginSubtitle")}
       </Text>
 
       <Controller
@@ -66,7 +68,7 @@ export default function LoginScreen() {
         name="identifier"
         render={({ field }) => (
           <AppTextField
-            label="Phone or email"
+            label={t("phoneOrEmail")}
             autoCapitalize="none"
             keyboardType="email-address"
             value={field.value}
@@ -81,7 +83,7 @@ export default function LoginScreen() {
         name="password"
         render={({ field }) => (
           <AppTextField
-            label="Password"
+            label={t("password")}
             secureTextEntry
             value={field.value}
             onChangeText={field.onChange}
@@ -92,10 +94,10 @@ export default function LoginScreen() {
 
       {serverError ? <Text style={[styles.serverError, { color: theme.danger }]}>{serverError}</Text> : null}
 
-      <AppButton label="Log in" onPress={handleSubmit(onSubmit)} loading={submitting} />
+      <AppButton label={t("login")} onPress={handleSubmit(onSubmit)} loading={submitting} />
 
       <Link href="/register" style={[styles.link, { color: theme.primary }]}>
-        New here? Register your house
+        {t("newHereRegister")}
       </Link>
     </ScreenContainer>
   );
