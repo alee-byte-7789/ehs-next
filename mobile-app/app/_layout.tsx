@@ -19,14 +19,11 @@ export default function RootLayout() {
                 <Stack.Screen name="login" />
                 <Stack.Screen name="register" />
                 <Stack.Screen name="pending" />
-                <Stack.Screen name="home" />
-                <Stack.Screen name="complaints/index" />
+                <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="complaints/new" />
                 <Stack.Screen name="complaints/[id]" />
                 <Stack.Screen name="prayer-timings" />
                 <Stack.Screen name="admin-login" />
-                <Stack.Screen name="settings" />
-                <Stack.Screen name="notifications" />
               </Stack>
             </AdminAuthProvider>
           </AuthProvider>

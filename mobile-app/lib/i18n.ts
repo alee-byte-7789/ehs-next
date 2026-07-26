@@ -47,6 +47,9 @@ const translations = {
     myComplaints: "My Complaints",
     society: "Society",
     prayerTimings: "Prayer Timings",
+    heroSubtitle: "Here's what's happening in your home today.",
+    raiseComplaintSubtitle: "Something not working? Let us know.",
+    myComplaintsSubtitle: "Track status and history",
 
     welcomeBack: "Welcome back",
     loginSubtitle: "Log in to EHS Next with your phone or email.",
@@ -148,6 +151,9 @@ const translations = {
     myComplaints: "میری شکایات",
     society: "سوسائٹی",
     prayerTimings: "نماز کے اوقات",
+    heroSubtitle: "آج آپ کے گھر میں کیا ہو رہا ہے۔",
+    raiseComplaintSubtitle: "کچھ کام نہیں کر رہا؟ ہمیں بتائیں۔",
+    myComplaintsSubtitle: "حیثیت اور تاریخ دیکھیں",
 
     welcomeBack: "خوش آمدید",
     loginSubtitle: "اپنے فون یا ای میل کے ساتھ ای ایچ ایس نیکسٹ میں لاگ ان کریں۔",
