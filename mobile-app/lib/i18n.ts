@@ -46,7 +46,6 @@ const translations = {
     raiseComplaint: "Raise a Complaint",
     myComplaints: "My Complaints",
     society: "Society",
-    ehsMap: "EHS Map",
     prayerTimings: "Prayer Timings",
 
     welcomeBack: "Welcome back",
@@ -60,6 +59,9 @@ const translations = {
     registerHere: "Register here",
 
     noComplaintsYet: "You haven't raised any complaints yet.",
+    notifications_title: "Notifications",
+    noNotificationsYet: "You're all caught up — no notifications yet.",
+    markAllRead: "Mark all as read",
     home: "Home",
     loading: "Loading...",
     couldNotLoadComplaints: "Could not load your complaints. Pull down to try again.",
@@ -105,10 +107,6 @@ const translations = {
     jummah: "Jummah",
     edit: "Edit",
 
-    searchHouseOrStreet: "Search house number or street",
-    mapComingSoon: "Map coming soon",
-    mapDescription: "The society map will appear here once it's added. You'll be able to search any house number or street and jump straight to it.",
-    searchingFor: "Searching for",
   },
   ur: {
     settings: "ترتیبات",
@@ -149,7 +147,6 @@ const translations = {
     raiseComplaint: "شکایت درج کریں",
     myComplaints: "میری شکایات",
     society: "سوسائٹی",
-    ehsMap: "ای ایچ ایس نقشہ",
     prayerTimings: "نماز کے اوقات",
 
     welcomeBack: "خوش آمدید",
@@ -163,6 +160,9 @@ const translations = {
     registerHere: "یہاں رجسٹر کریں",
 
     noComplaintsYet: "آپ نے ابھی تک کوئی شکایت درج نہیں کی۔",
+    notifications_title: "اطلاعات",
+    noNotificationsYet: "آپ اپ ٹو ڈیٹ ہیں — ابھی کوئی اطلاع نہیں۔",
+    markAllRead: "سب کو پڑھا ہوا نشان زد کریں",
     home: "ہوم",
     loading: "لوڈ ہو رہا ہے...",
     couldNotLoadComplaints: "آپ کی شکایات لوڈ نہیں ہو سکیں۔ دوبارہ کوشش کرنے کے لیے نیچے کھینچیں۔",
@@ -208,10 +208,6 @@ const translations = {
     jummah: "جمعہ",
     edit: "ترمیم",
 
-    searchHouseOrStreet: "گھر کا نمبر یا گلی تلاش کریں",
-    mapComingSoon: "نقشہ جلد آ رہا ہے",
-    mapDescription: "سوسائٹی کا نقشہ یہاں شامل ہونے کے بعد ظاہر ہوگا۔ آپ کسی بھی گھر کے نمبر یا گلی کو تلاش کر کے فوراً وہاں پہنچ سکیں گے۔",
-    searchingFor: "تلاش کیا جا رہا ہے",
   },
 } as const;
 

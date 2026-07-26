@@ -7,6 +7,7 @@ import { ScreenContainer } from "../components/ScreenContainer";
 import { ThemedLogo } from "../components/ThemedLogo";
 import { useAuth } from "../lib/auth-context";
 import { useTranslation } from "../lib/i18n";
+import { useUnreadNotificationCount } from "../lib/notification-queries";
 import { useResidentMe } from "../lib/resident-queries";
 import { radii, shadow, spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
@@ -16,6 +17,7 @@ export default function HomeScreen() {
   const theme = useTheme();
   const { data: resident } = useResidentMe(true);
   const { t } = useTranslation();
+  const { data: unread } = useUnreadNotificationCount();
 
   const handleLogout = async () => {
     await logout();
@@ -26,9 +28,17 @@ export default function HomeScreen() {
     <ScreenContainer>
       <View style={styles.headerRow}>
         <ThemedLogo style={styles.headerLogo} />
-        <Text style={[styles.greeting, { color: theme.textPrimary }]}>
+        <Text style={[styles.greeting, { color: theme.textPrimary, flex: 1 }]}>
           {t("hi")}, {resident?.full_name?.split(" ")[0] ?? "there"}
         </Text>
+        <Pressable onPress={() => router.push("/notifications")} style={styles.bellWrap}>
+          <Ionicons name="notifications-outline" size={24} color={theme.textPrimary} />
+          {!!unread?.count && (
+            <View style={[styles.badge, { backgroundColor: theme.danger }]}>
+              <Text style={styles.badgeText}>{unread.count > 9 ? "9+" : unread.count}</Text>
+            </View>
+          )}
+        </Pressable>
       </View>
 
       <View style={styles.infoRow}>
@@ -54,12 +64,6 @@ export default function HomeScreen() {
 
       <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>{t("society")}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.panelScroll}>
-        <PanelTile
-          label={t("ehsMap")}
-          icon="map-outline"
-          onPress={() => router.push("/ehs-map")}
-          theme={theme}
-        />
         <PanelTile
           label={t("prayerTimings")}
           icon="time-outline"
@@ -106,6 +110,19 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 26, fontWeight: "700" },
   headerRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.lg },
   headerLogo: { width: 32, height: 32 },
+  bellWrap: { position: "relative", padding: 4 },
+  badge: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  badgeText: { color: "#FFFFFF", fontSize: 9, fontWeight: "700" },
   infoRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg },
   infoCard: { flex: 1, borderRadius: radii.lg, padding: spacing.md },
   cardLabel: { fontSize: 12, fontWeight: "600", marginBottom: spacing.xs },

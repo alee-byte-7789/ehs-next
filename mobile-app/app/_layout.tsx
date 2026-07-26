@@ -26,7 +26,7 @@ export default function RootLayout() {
                 <Stack.Screen name="prayer-timings" />
                 <Stack.Screen name="admin-login" />
                 <Stack.Screen name="settings" />
-                <Stack.Screen name="ehs-map" />
+                <Stack.Screen name="notifications" />
               </Stack>
             </AdminAuthProvider>
           </AuthProvider>

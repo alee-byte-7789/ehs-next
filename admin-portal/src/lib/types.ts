@@ -170,3 +170,16 @@ export interface StaffCreateRequest {
   phone: string;
   category: StaffCategory;
 }
+
+// --- Notifications ---
+
+export interface NotificationOut {
+  id: number;
+  recipient_type: "resident" | "admin";
+  recipient_id: number;
+  title: string;
+  body: string;
+  type: string;
+  is_read: boolean;
+  created_at: string;
+}

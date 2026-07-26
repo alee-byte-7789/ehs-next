@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "../components/Button";
+import { NotificationBell } from "../components/NotificationBell";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAuth } from "../lib/auth-context";
 import { useDashboardCounts } from "../lib/complaint-queries";
@@ -60,6 +61,7 @@ export function DashboardPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          <NotificationBell />
           <Link to="/complaints" className="flex items-center gap-1.5 text-sm font-medium text-[color:var(--color-primary)]">
             <MessageSquareWarning size={16} /> Complaints
           </Link>
