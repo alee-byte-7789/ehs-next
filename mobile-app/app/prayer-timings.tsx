@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -8,7 +9,7 @@ import { AppTextField } from "../components/AppTextField";
 import { useAdminAuth } from "../lib/admin-auth-context";
 import { useUpdatePrayerTiming } from "../lib/admin-prayer-timing-mutations";
 import { usePrayerTimings } from "../lib/society-queries";
-import { radii, spacing } from "../lib/theme";
+import { radii, shadow, spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
 import type { MosqueName, PrayerTimingOut } from "../lib/types";
 
@@ -34,10 +35,14 @@ export default function PrayerTimingsScreen() {
   return (
     <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={{ color: theme.primary, fontSize: 15 }}>← Back</Text>
+        <Pressable onPress={() => router.back()} style={styles.backRow}>
+          <Ionicons name="arrow-back" size={18} color={theme.primary} />
+          <Text style={{ color: theme.primary, fontSize: 15 }}>Back</Text>
         </Pressable>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>Prayer Timings</Text>
+        <View style={styles.titleRow}>
+          <Ionicons name="moon-outline" size={22} color={theme.secondary} />
+          <Text style={[styles.title, { color: theme.textPrimary }]}>Prayer Timings</Text>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -94,7 +99,7 @@ function MosqueCard({ timing, isAdmin }: { timing: PrayerTimingOut; isAdmin: boo
   };
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+    <View style={[styles.card, { backgroundColor: theme.surfaceElevated }, shadow.card]}>
       <View style={styles.cardHeader}>
         <Text style={[styles.mosqueName, { color: theme.textPrimary }]}>{MOSQUE_LABELS[timing.mosque_name]}</Text>
         {isAdmin && !editing && (
@@ -140,9 +145,11 @@ function MosqueCard({ timing, isAdmin }: { timing: PrayerTimingOut; isAdmin: boo
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm, gap: spacing.xs },
+  backRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
   title: { fontSize: 24, fontWeight: "700" },
   content: { padding: spacing.lg },
-  card: { borderWidth: 1, borderRadius: radii.md, padding: spacing.md, marginBottom: spacing.md },
+  card: { borderRadius: radii.lg, padding: spacing.md, marginBottom: spacing.md },
   cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing.sm },
   mosqueName: { fontSize: 16, fontWeight: "700" },
   row: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },

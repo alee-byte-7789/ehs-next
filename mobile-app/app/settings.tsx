@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
@@ -17,7 +18,7 @@ import {
   type Language,
   type ThemeMode,
 } from "../lib/settings-context";
-import { radii, spacing } from "../lib/theme";
+import { radii, shadow, spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
 
 export default function SettingsScreen() {
@@ -65,7 +66,7 @@ export default function SettingsScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Language */}
-        <SectionCard title={t("language")} theme={theme} scale={scale}>
+        <SectionCard title={t("language")} icon="language-outline" theme={theme} scale={scale}>
           <SegmentedRow
             options={[
               { value: "en" as Language, label: t("english") },
@@ -79,7 +80,7 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* Appearance */}
-        <SectionCard title={t("appearance")} theme={theme} scale={scale}>
+        <SectionCard title={t("appearance")} icon="contrast-outline" theme={theme} scale={scale}>
           <SegmentedRow
             options={[
               { value: "system" as ThemeMode, label: t("followSystem") },
@@ -94,7 +95,7 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* Display */}
-        <SectionCard title={t("display")} subtitle={t("fontSize")} theme={theme} scale={scale}>
+        <SectionCard title={t("display")} subtitle={t("fontSize")} icon="text-outline" theme={theme} scale={scale}>
           <SegmentedRow
             options={[
               { value: "small" as FontScale, label: t("small") },
@@ -110,7 +111,7 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* Notifications */}
-        <SectionCard title={t("notifications")} theme={theme} scale={scale}>
+        <SectionCard title={t("notifications")} icon="notifications-outline" theme={theme} scale={scale}>
           <ToggleRow label={t("complaintUpdates")} value={settings.notifications.complaintUpdates} onChange={(v) => settings.setNotificationPref("complaintUpdates", v)} theme={theme} scale={scale} />
           <ToggleRow label={t("announcements")} value={settings.notifications.announcements} onChange={(v) => settings.setNotificationPref("announcements", v)} theme={theme} scale={scale} />
           <ToggleRow label={t("emergencyAlerts")} value={settings.notifications.emergencyAlerts} onChange={(v) => settings.setNotificationPref("emergencyAlerts", v)} theme={theme} scale={scale} />
@@ -118,12 +119,27 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* Account */}
-        <SectionCard title={t("account")} theme={theme} scale={scale}>
-          <View style={styles.profileRow}>
-            <Text style={{ color: theme.textSecondary, fontSize: 13 * scale }}>{t("profile")}</Text>
-            <Text style={{ color: theme.textPrimary, fontSize: 15 * scale, fontWeight: "600" }}>
-              {resident?.full_name} · {resident?.resident_code ?? "—"}
-            </Text>
+        <SectionCard title={t("account")} icon="person-circle-outline" theme={theme} scale={scale}>
+          <View style={[styles.accountInfoBox, { backgroundColor: theme.secondaryTint }]}>
+            <AccountInfoRow icon="person-outline" label="Name" value={resident?.full_name ?? "—"} theme={theme} scale={scale} />
+            <AccountInfoRow icon="id-card-outline" label="Resident ID" value={resident?.resident_code ?? "—"} theme={theme} scale={scale} />
+            <AccountInfoRow icon="call-outline" label="Phone" value={resident?.phone ?? "—"} theme={theme} scale={scale} />
+            {resident?.email && <AccountInfoRow icon="mail-outline" label="Email" value={resident.email} theme={theme} scale={scale} />}
+            <AccountInfoRow
+              icon="home-outline"
+              label="Resident Type"
+              value={resident?.resident_type === "owner" ? "Owner" : "Tenant"}
+              theme={theme}
+              scale={scale}
+            />
+            <AccountInfoRow
+              icon="checkmark-circle-outline"
+              label="Verification"
+              value={resident?.verification_status ?? "—"}
+              theme={theme}
+              scale={scale}
+              valueColor={theme.primary}
+            />
           </View>
 
           {!showChangePassword && (
@@ -157,19 +173,24 @@ export default function SettingsScreen() {
 function SectionCard({
   title,
   subtitle,
+  icon,
   theme,
   scale,
   children,
 }: {
   title: string;
   subtitle?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
   theme: ReturnType<typeof useTheme>;
   scale: number;
   children: React.ReactNode;
 }) {
   return (
-    <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-      <Text style={[styles.cardTitle, { color: theme.textPrimary, fontSize: 15 * scale }]}>{title}</Text>
+    <View style={[styles.card, { backgroundColor: theme.surfaceElevated }, shadow.card]}>
+      <View style={styles.cardTitleRow}>
+        {icon && <Ionicons name={icon} size={18} color={theme.primary} />}
+        <Text style={[styles.cardTitle, { color: theme.textPrimary, fontSize: 15 * scale }]}>{title}</Text>
+      </View>
       {subtitle && <Text style={{ color: theme.textSecondary, fontSize: 12 * scale, marginBottom: spacing.sm }}>{subtitle}</Text>}
       {children}
     </View>
@@ -230,16 +251,44 @@ function ToggleRow({
   );
 }
 
+function AccountInfoRow({
+  icon,
+  label,
+  value,
+  theme,
+  scale,
+  valueColor,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+  theme: ReturnType<typeof useTheme>;
+  scale: number;
+  valueColor?: string;
+}) {
+  return (
+    <View style={styles.accountInfoRow}>
+      <Ionicons name={icon} size={16} color={theme.secondary} style={{ width: 22 }} />
+      <Text style={{ color: theme.textSecondary, fontSize: 13 * scale, flex: 1 }}>{label}</Text>
+      <Text style={{ color: valueColor ?? theme.textPrimary, fontSize: 13 * scale, fontWeight: "600" }} numberOfLines={1}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm, gap: spacing.xs },
   title: { fontWeight: "700" },
   content: { padding: spacing.lg },
-  card: { borderWidth: 1, borderRadius: radii.md, padding: spacing.md, marginBottom: spacing.md },
-  cardTitle: { fontWeight: "700", marginBottom: spacing.sm },
+  card: { borderRadius: radii.lg, padding: spacing.md, marginBottom: spacing.md },
+  cardTitleRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginBottom: spacing.sm },
+  cardTitle: { fontWeight: "700" },
   segmentRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   segment: { borderWidth: 1.5, borderRadius: radii.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
   toggleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: spacing.xs },
-  profileRow: { marginBottom: spacing.md },
+  accountInfoBox: { borderRadius: radii.md, padding: spacing.sm, marginBottom: spacing.md },
+  accountInfoRow: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.xs, gap: spacing.xs },
   linkRow: { paddingVertical: spacing.sm },
 });

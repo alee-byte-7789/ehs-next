@@ -23,10 +23,10 @@ export default function RootLayout() {
                 <Stack.Screen name="complaints/index" />
                 <Stack.Screen name="complaints/new" />
                 <Stack.Screen name="complaints/[id]" />
-                <Stack.Screen name="about" />
                 <Stack.Screen name="prayer-timings" />
                 <Stack.Screen name="admin-login" />
                 <Stack.Screen name="settings" />
+                <Stack.Screen name="ehs-map" />
               </Stack>
             </AdminAuthProvider>
           </AuthProvider>
