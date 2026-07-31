@@ -1,10 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useEffect } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { ScreenContainer } from "../../components/ScreenContainer";
 import { ThemedLogo } from "../../components/ThemedLogo";
 import { useTranslation } from "../../lib/i18n";
+import { registerForWebPush } from "../../lib/fcm-web-push";
+import { registerForPushNotifications } from "../../lib/push-notifications";
 import { useResidentMe } from "../../lib/resident-queries";
 import { radii, shadow, spacing } from "../../lib/theme";
 import { useTheme } from "../../lib/use-theme";
@@ -13,6 +16,14 @@ export default function HomeScreen() {
   const theme = useTheme();
   const { data: resident } = useResidentMe(true);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    // Fire-and-forget — both registration functions handle their own
+    // platform checks and errors. registerForPushNotifications (Expo) is
+    // a no-op on web; registerForWebPush (Firebase) is a no-op on native.
+    registerForPushNotifications();
+    registerForWebPush();
+  }, []);
 
   const firstName = resident?.full_name?.split(" ")[0] ?? "there";
 

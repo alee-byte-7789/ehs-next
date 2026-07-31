@@ -23,6 +23,12 @@ class Admin(Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[AdminRole] = mapped_column(Enum(AdminRole), nullable=False)
 
+    # Same Expo push token mechanism as Resident — only populated if this
+    # admin uses the mobile app's admin-login feature on the native APK,
+    # not the (web-only) Admin Portal.
+    push_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    fcm_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

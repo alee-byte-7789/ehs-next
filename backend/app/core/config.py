@@ -61,6 +61,12 @@ class Settings(BaseSettings):
     # running migrations against the production database.
     migration_secret: str | None = None
 
+    # Firebase service account JSON (as a single-line string), used to send
+    # FCM push notifications for the PWA. Optional — if unset, FCM sending
+    # silently no-ops (same pattern as Expo push failures: never break the
+    # underlying action that triggered a notification).
+    firebase_service_account_json: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

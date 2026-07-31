@@ -40,6 +40,19 @@ class Resident(Base):
     is_employee: Mapped[bool] = mapped_column(Boolean, default=False)
     employee_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
+    # Expo push token — set when the resident opens the native Android app
+    # (built via EAS) and grants notification permission. Only works in the
+    # native app, not the PWA — browsers can't register OS-level push tokens
+    # the same way. Nullable since most residents may only ever use the PWA.
+    push_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    # Firebase Cloud Messaging web push token — separate from push_token
+    # above (Expo's push service, used by the native APK). This one is
+    # set when the resident grants notification permission in the PWA,
+    # which is the primary distribution channel — Expo's push token
+    # mechanism only works in the installed native app.
+    fcm_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     # Tenant branch (only populated when resident_type == TENANT)
     owner_house_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
     owner_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
