@@ -67,6 +67,27 @@ class Settings(BaseSettings):
     # underlying action that triggered a notification).
     firebase_service_account_json: str | None = None
 
+    # --- Zoho Mail (email notifications) ---
+    # All optional — if zoho_smtp_user/zoho_smtp_password are unset, email
+    # sending silently no-ops (same defensive pattern as FCM/Expo push
+    # above: a missing credential must never break the action that
+    # triggered a notification).
+    zoho_smtp_host: str = "smtp.zoho.com"
+    zoho_smtp_port: int = 465
+    zoho_smtp_user: str | None = None
+    zoho_smtp_password: str | None = None
+    zoho_sender_email: str | None = None  # defaults to zoho_smtp_user if unset
+    zoho_sender_name: str = "EHS Next"
+
+    # --- Society leadership notification routing ---
+    # Deliberately separate from SocietyInfo (the public "About" content) —
+    # these are operational email addresses used for routing notifications,
+    # not bio/content data shown to residents.
+    chairman_email: str | None = None
+    deputy_chairman_email: str | None = None
+    secretary_email: str | None = None
+    support_email: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

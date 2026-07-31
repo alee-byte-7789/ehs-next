@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.enums import ResidentType, VerificationStatus
+from app.models.enums import NotificationPreference, ResidentType, VerificationStatus
 
 
 class Resident(Base):
@@ -52,6 +52,12 @@ class Resident(Base):
     # which is the primary distribution channel — Expo's push token
     # mechanism only works in the installed native app.
     fcm_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    # Future-proofing: no Settings UI toggle exists for this yet, but every
+    # notification call site already respects it — see notification_service.py.
+    notification_preference: Mapped[NotificationPreference] = mapped_column(
+        Enum(NotificationPreference), default=NotificationPreference.PUSH_AND_EMAIL, nullable=False
+    )
 
     # Tenant branch (only populated when resident_type == TENANT)
     owner_house_number: Mapped[str | None] = mapped_column(String(20), nullable=True)

@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.enums import ResidentType, VerificationStatus
+from app.models.enums import NotificationPreference, ResidentType, VerificationStatus
 
 
 class ResidentOut(BaseModel):
@@ -19,4 +19,5 @@ class ResidentOut(BaseModel):
     is_employee: bool
     employee_number: str | None
     verification_status: VerificationStatus
+    notification_preference: NotificationPreference
     created_at: datetime

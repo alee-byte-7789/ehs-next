@@ -41,7 +41,7 @@ from app.repositories import (
     staff_repository,
 )
 from app.schemas.complaint import ComplaintCreateRequest
-from app.services import notification_service
+from app.services import email_templates, notification_service
 from app.services.errors import InvalidStateError, NotFoundError
 from app.services.id_generation import complaint_code as build_complaint_code
 
@@ -72,6 +72,17 @@ def create_complaint(db: Session, resident: Resident, req: ComplaintCreateReques
         body=f"{req.subcategory}: {req.description[:120]}",
         type_="complaint_new",
     )
+
+    leadership_subject, leadership_html = email_templates.new_complaint_email(
+        complaint_code=complaint.complaint_code,
+        resident_name=resident.full_name,
+        house_code=complaint.house_code,
+        category=req.category.value,
+        subcategory=req.subcategory,
+        priority=complaint.priority.value,
+        description=req.description,
+    )
+    notification_service.notify_leadership_by_email(leadership_subject, leadership_html)
 
     db.commit()
     db.refresh(complaint)
@@ -139,8 +150,23 @@ def assign(db: Session, complaint_id: int, staff_id: int, admin_id: int) -> Comp
         raise NotFoundError(f"No active staff member with id {staff_id}.")
 
     complaint.assigned_staff_id = staff_id
-    return _transition(db, complaint, ComplaintStatus.ASSIGNED, ChangedByType.ADMIN, admin_id,
-                        note=f"Assigned to {staff.full_name}")
+    result = _transition(db, complaint, ComplaintStatus.ASSIGNED, ChangedByType.ADMIN, admin_id,
+                          note=f"Assigned to {staff.full_name}")
+
+    subject, html = email_templates.complaint_assigned_email(
+        complaint_code=complaint.complaint_code,
+        assigned_department=staff.category.value,
+        status=ComplaintStatus.ASSIGNED.value,
+    )
+    notification_service.notify_resident(
+        db, complaint.resident_id,
+        title=f"Complaint {complaint.complaint_code} assigned",
+        body=f"Assigned to {staff.full_name} ({staff.category.value}).",
+        type_="complaint_assigned",
+        email_content=(subject, html),
+    )
+    db.commit()  # notify_resident's notification insert is flushed, not committed — _transition() already committed before this ran
+    return result
 
 
 def start_progress(db: Session, complaint_id: int, admin_id: int) -> Complaint:
@@ -480,15 +506,31 @@ def _notify_for_transition(
 ) -> None:
     """Resident hears about admin-driven progress on their own complaint;
     admins hear when a resident reopens one — each side only gets notified
-    about the other side's actions, not their own."""
+    about the other side's actions, not their own.
+
+    ASSIGNED is deliberately skipped here — `assign()` already sends a
+    more specific "Complaint Assigned" notification (with its own email
+    template) right after calling this, so firing the generic one too
+    would double-notify the resident for one action.
+    """
     status_label = to_status.value.replace("_", " ")
 
+    if to_status == ComplaintStatus.ASSIGNED:
+        return
+
     if changed_by_type == ChangedByType.ADMIN:
+        if to_status == ComplaintStatus.RESOLVED:
+            subject, html = email_templates.complaint_resolved_email(complaint.complaint_code)
+        else:
+            subject, html = email_templates.complaint_status_changed_email(
+                complaint.complaint_code, to_status.value
+            )
         notification_service.notify_resident(
             db, complaint.resident_id,
             title=f"Complaint {complaint.complaint_code} updated",
             body=f"Your complaint is now '{status_label}'.",
             type_="complaint_status",
+            email_content=(subject, html),
         )
     elif to_status == ComplaintStatus.REOPENED:
         notification_service.notify_admins(
@@ -497,6 +539,13 @@ def _notify_for_transition(
             body="A resident was not satisfied with the resolution and reopened this complaint.",
             type_="complaint_reopened",
         )
+        subject, html = email_templates.complaint_reopened_email(
+            complaint_code=complaint.complaint_code,
+            resident_name=complaint.resident_name,
+            house_code=complaint.house_code,
+            original_description=complaint.description,
+        )
+        notification_service.notify_leadership_by_email(subject, html)
 
 
 def _record_history(

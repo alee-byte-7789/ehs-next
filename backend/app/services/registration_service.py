@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.models.enums import ResidentType, VerificationStatus
 from app.models.resident import Resident
 from app.repositories import house_repository, resident_repository
+from app.services import email_templates, notification_service
 from app.services.errors import ConflictError, InvalidStateError, NotFoundError
 from app.services.id_generation import owner_resident_code, tenant_resident_code
 
@@ -43,6 +44,16 @@ def approve(db: Session, resident_id: int) -> Resident:
     resident.verification_status = VerificationStatus.APPROVED
     db.commit()
     db.refresh(resident)
+
+    subject, html = email_templates.registration_approved_email(resident.full_name, resident.resident_code)
+    notification_service.notify_resident(
+        db, resident.id,
+        title="Your account has been approved",
+        body="You can now log in and start using EHS Next.",
+        type_="registration_approved",
+        email_content=(subject, html),
+    )
+    db.commit()  # notify_resident's notification insert is flushed, not committed — this closes that gap
     return resident
 
 

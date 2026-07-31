@@ -95,3 +95,14 @@ class ComplaintPriority(str, Enum):
     NORMAL = "normal"
     HIGH = "high"
     CRITICAL = "critical"
+
+
+class NotificationPreference(str, Enum):
+    """Future-proofing per the email notification spec: even before a
+    Settings UI exists to change this, the architecture supports it —
+    every notification-sending call site checks this before sending
+    push/email."""
+    PUSH_AND_EMAIL = "push_and_email"
+    PUSH_ONLY = "push_only"
+    EMAIL_ONLY = "email_only"
+    NONE = "none"
