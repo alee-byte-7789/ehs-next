@@ -1,0 +1,86 @@
+import { Ionicons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
+
+import { useAppTheme } from "../../lib/theme/theme-context";
+import { Card } from "./Card";
+import { Pressable } from "./Pressable";
+
+interface QuickActionCardProps {
+  label: string;
+  description: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+  badge?: number;
+}
+
+export function QuickActionCard({ label, description, icon, onPress, badge }: QuickActionCardProps) {
+  const { colors } = useAppTheme();
+
+  return (
+    <Pressable onPress={onPress} style={styles.pressWrap} scaleTo={0.96}>
+      <Card padding={colors.spacing.md} style={styles.card}>
+        <View
+          style={[
+            styles.iconWrap,
+            { backgroundColor: colors.primaryTint, borderRadius: colors.radii.md },
+          ]}
+        >
+          <Ionicons name={icon} size={22} color={colors.primary} />
+          {badge ? (
+            <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.surfaceElevated }]}>
+              <Text style={styles.badgeText}>{badge > 9 ? "9+" : badge}</Text>
+            </View>
+          ) : null}
+        </View>
+        <Text style={[styles.label, { color: colors.textPrimary }]} numberOfLines={1}>
+          {label}
+        </Text>
+        <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>
+          {description}
+        </Text>
+      </Card>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  pressWrap: {
+    width: "47%",
+  },
+  card: {
+    minHeight: 128,
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  iconWrap: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "700",
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  description: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+});

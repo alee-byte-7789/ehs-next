@@ -1,61 +1,32 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet, Text, View } from "react-native";
 
-import { AppButton } from "../components/AppButton";
-import { AppTextField } from "../components/AppTextField";
-import { extractApiErrorMessage } from "../lib/api-client";
-import { useChangePassword } from "../lib/account-queries";
+import { ScreenContainer } from "../components/ScreenContainer";
+import { Card } from "../components/ui/Card";
+import { Pressable } from "../components/ui/Pressable";
+import { ScreenHeader } from "../components/ui/ScreenHeader";
 import { useAuth } from "../lib/auth-context";
-import { useTranslation } from "../lib/i18n";
-import { useResidentMe } from "../lib/resident-queries";
-import {
-  fontScaleMultiplier,
-  useSettings,
-  type FontScale,
-  type Language,
-  type ThemeMode,
-} from "../lib/settings-context";
-import { radii, shadow, spacing, type ColorThemeName } from "../lib/theme";
-import { useTheme } from "../lib/use-theme";
+import { ACCENTS, ACCENT_ORDER, type AccentKey } from "../lib/theme/palette";
+import { useAppTheme, type ThemeMode } from "../lib/theme/theme-context";
+import type { DisplaySize } from "../lib/theme/palette";
 
-const COLOR_THEME_OPTIONS: { value: ColorThemeName; swatchColor: string }[] = [
-  { value: "green", swatchColor: "#10B981" },
-  { value: "red", swatchColor: "#DC2626" },
-  { value: "yellow", swatchColor: "#D97706" },
-  { value: "blue", swatchColor: "#2563EB" },
+const MODE_OPTIONS: { key: ThemeMode; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: "system", label: "Follow System", icon: "phone-portrait-outline" },
+  { key: "light", label: "Light", icon: "sunny-outline" },
+  { key: "dark", label: "Dark", icon: "moon-outline" },
+];
+
+const DISPLAY_OPTIONS: { key: DisplaySize; label: string }[] = [
+  { key: "small", label: "Small" },
+  { key: "default", label: "Default" },
+  { key: "large", label: "Large" },
+  { key: "xlarge", label: "Extra Large" },
 ];
 
 export default function SettingsScreen() {
-  const theme = useTheme();
-  const { t } = useTranslation();
+  const { colors, mode, setMode, accent, setAccent, displaySize, setDisplaySize } = useAppTheme();
   const { logout } = useAuth();
-  const { data: resident } = useResidentMe(true);
-  const settings = useSettings();
-  const changePassword = useChangePassword();
-
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [pwError, setPwError] = useState<string | null>(null);
-  const [pwSuccess, setPwSuccess] = useState(false);
-
-  const scale = fontScaleMultiplier(settings.fontScale);
-
-  const handleChangePassword = async () => {
-    setPwError(null);
-    setPwSuccess(false);
-    try {
-      await changePassword.mutateAsync({ current_password: currentPassword, new_password: newPassword });
-      setPwSuccess(true);
-      setCurrentPassword("");
-      setNewPassword("");
-    } catch (err) {
-      setPwError(extractApiErrorMessage(err, "Could not change password."));
-    }
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -63,269 +34,226 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={{ color: theme.primary, fontSize: 15 * scale }}>← {t("back")}</Text>
-        </Pressable>
-        <Text style={[styles.title, { color: theme.textPrimary, fontSize: 24 * scale }]}>{t("settings")}</Text>
-      </View>
+    <ScreenContainer>
+      <ScreenHeader title="Settings" subtitle="Personalize how EHS Next looks and feels" />
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Language */}
-        <SectionCard title={t("language")} icon="language-outline" theme={theme} scale={scale}>
-          <SegmentedRow
-            options={[
-              { value: "en" as Language, label: t("english") },
-              { value: "ur" as Language, label: t("urdu") },
-            ]}
-            value={settings.language}
-            onChange={settings.setLanguage}
-            theme={theme}
-            scale={scale}
-          />
-        </SectionCard>
-
-        {/* Appearance */}
-        <SectionCard title={t("appearance")} icon="contrast-outline" theme={theme} scale={scale}>
-          <SegmentedRow
-            options={[
-              { value: "system" as ThemeMode, label: t("followSystem") },
-              { value: "light" as ThemeMode, label: t("light") },
-              { value: "dark" as ThemeMode, label: t("dark") },
-            ]}
-            value={settings.themeMode}
-            onChange={settings.setThemeMode}
-            theme={theme}
-            scale={scale}
-          />
-
-          <Text style={[styles.colorThemeLabel, { color: theme.textSecondary, fontSize: 12 * scale }]}>
-            {t("colorTheme")}
-          </Text>
-          <View style={styles.swatchRow}>
-            {COLOR_THEME_OPTIONS.map((opt) => (
-              <Pressable
-                key={opt.value}
-                onPress={() => settings.setColorTheme(opt.value)}
-                style={[
-                  styles.swatch,
-                  { backgroundColor: opt.swatchColor },
-                  settings.colorTheme === opt.value && { borderColor: theme.textPrimary, borderWidth: 3 },
-                ]}
-              >
-                {settings.colorTheme === opt.value && <Ionicons name="checkmark" size={18} color="#FFFFFF" />}
+      <SectionLabel text="Appearance" />
+      <Card style={styles.segmentCard}>
+        <View style={styles.segmentRow}>
+          {MODE_OPTIONS.map((opt) => {
+            const active = mode === opt.key;
+            return (
+              <Pressable key={opt.key} onPress={() => setMode(opt.key)} style={styles.segmentPress} scaleTo={0.96}>
+                <View
+                  style={[
+                    styles.segmentItem,
+                    {
+                      backgroundColor: active ? colors.primaryTint : "transparent",
+                      borderColor: active ? colors.primary : colors.border,
+                      borderRadius: colors.radii.sm,
+                    },
+                  ]}
+                >
+                  <Ionicons name={opt.icon} size={18} color={active ? colors.primary : colors.textSecondary} />
+                  <Text
+                    style={[
+                      styles.segmentLabel,
+                      { color: active ? colors.primary : colors.textSecondary },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </View>
               </Pressable>
-            ))}
-          </View>
-        </SectionCard>
+            );
+          })}
+        </View>
+      </Card>
 
-        {/* Display */}
-        <SectionCard title={t("display")} subtitle={t("fontSize")} icon="text-outline" theme={theme} scale={scale}>
-          <SegmentedRow
-            options={[
-              { value: "small" as FontScale, label: t("small") },
-              { value: "default" as FontScale, label: t("default") },
-              { value: "large" as FontScale, label: t("large") },
-              { value: "extra_large" as FontScale, label: t("extraLarge") },
-            ]}
-            value={settings.fontScale}
-            onChange={settings.setFontScale}
-            theme={theme}
-            scale={scale}
-          />
-        </SectionCard>
+      <SectionLabel text="Theme Color" />
+      <Card>
+        <View style={styles.swatchGrid}>
+          {ACCENT_ORDER.map((key) => (
+            <AccentSwatch key={key} accentKey={key} active={accent === key} onPress={() => setAccent(key)} />
+          ))}
+        </View>
+      </Card>
 
-        {/* Notifications */}
-        <SectionCard title={t("notifications")} icon="notifications-outline" theme={theme} scale={scale}>
-          <ToggleRow label={t("complaintUpdates")} value={settings.notifications.complaintUpdates} onChange={(v) => settings.setNotificationPref("complaintUpdates", v)} theme={theme} scale={scale} />
-          <ToggleRow label={t("announcements")} value={settings.notifications.announcements} onChange={(v) => settings.setNotificationPref("announcements", v)} theme={theme} scale={scale} />
-          <ToggleRow label={t("emergencyAlerts")} value={settings.notifications.emergencyAlerts} onChange={(v) => settings.setNotificationPref("emergencyAlerts", v)} theme={theme} scale={scale} />
-          <ToggleRow label={t("generalNotifications")} value={settings.notifications.general} onChange={(v) => settings.setNotificationPref("general", v)} theme={theme} scale={scale} />
-        </SectionCard>
+      <SectionLabel text="Display" />
+      <Card style={styles.segmentCard}>
+        <View style={styles.displayRow}>
+          {DISPLAY_OPTIONS.map((opt) => {
+            const active = displaySize === opt.key;
+            return (
+              <Pressable key={opt.key} onPress={() => setDisplaySize(opt.key)} scaleTo={0.94}>
+                <View
+                  style={[
+                    styles.displayPill,
+                    {
+                      backgroundColor: active ? colors.primary : colors.surfaceSunken,
+                      borderRadius: colors.radii.pill,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.displayPillText,
+                      { color: active ? colors.onPrimary : colors.textSecondary },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Card>
 
-        {/* Account */}
-        <SectionCard title={t("account")} icon="person-circle-outline" theme={theme} scale={scale}>
-          <View style={[styles.accountInfoBox, { backgroundColor: theme.secondaryTint }]}>
-            <AccountInfoRow icon="person-outline" label="Name" value={resident?.full_name ?? "—"} theme={theme} scale={scale} />
-            <AccountInfoRow icon="id-card-outline" label="Resident ID" value={resident?.resident_code ?? "—"} theme={theme} scale={scale} />
-            <AccountInfoRow icon="call-outline" label="Phone" value={resident?.phone ?? "—"} theme={theme} scale={scale} />
-            {resident?.email && <AccountInfoRow icon="mail-outline" label="Email" value={resident.email} theme={theme} scale={scale} />}
-            <AccountInfoRow
-              icon="home-outline"
-              label="Resident Type"
-              value={resident?.resident_type === "owner" ? "Owner" : "Tenant"}
-              theme={theme}
-              scale={scale}
-            />
-            <AccountInfoRow
-              icon="checkmark-circle-outline"
-              label="Verification"
-              value={resident?.verification_status ?? "—"}
-              theme={theme}
-              scale={scale}
-              valueColor={theme.primary}
-            />
-          </View>
+      <SectionLabel text="General" />
+      <Card padding={0} style={styles.listCard}>
+        <Row icon="language-outline" label="Language" value="English" onPress={() => {}} />
+        <Divider />
+        <Row icon="notifications-outline" label="Notifications" onPress={() => router.push("/notifications")} />
+        <Divider />
+        <Row icon="lock-closed-outline" label="Privacy" onPress={() => {}} />
+        <Divider />
+        <Row icon="information-circle-outline" label="About EHS Next" onPress={() => {}} />
+      </Card>
 
-          {!showChangePassword && (
-            <Pressable onPress={() => setShowChangePassword(true)} style={styles.linkRow}>
-              <Text style={{ color: theme.primary, fontSize: 15 * scale, fontWeight: "600" }}>{t("changePassword")}</Text>
-            </Pressable>
-          )}
-
-          {showChangePassword && (
-            <View style={{ marginTop: spacing.sm }}>
-              <AppTextField label={t("currentPassword")} secureTextEntry value={currentPassword} onChangeText={setCurrentPassword} />
-              <AppTextField label={t("newPassword")} secureTextEntry value={newPassword} onChangeText={setNewPassword} />
-              {pwError && <Text style={{ color: theme.danger, fontSize: 12 * scale, marginBottom: spacing.sm }}>{pwError}</Text>}
-              {pwSuccess && <Text style={{ color: theme.primary, fontSize: 12 * scale, marginBottom: spacing.sm }}>{t("passwordChanged")}</Text>}
-              <View style={{ flexDirection: "row", gap: spacing.sm }}>
-                <AppButton label={t("save")} onPress={handleChangePassword} loading={changePassword.isPending} />
-                <AppButton label={t("cancel")} variant="secondary" onPress={() => setShowChangePassword(false)} />
-              </View>
-            </View>
-          )}
-
-          <View style={{ marginTop: spacing.md }}>
-            <AppButton label={t("logout")} variant="secondary" onPress={handleLogout} />
-          </View>
-        </SectionCard>
-      </ScrollView>
-    </SafeAreaView>
+      <Pressable onPress={handleLogout} style={styles.logoutRow}>
+        <Ionicons name="log-out-outline" size={18} color={colors.danger} />
+        <Text style={[styles.logoutText, { color: colors.danger }]}>Log out</Text>
+      </Pressable>
+    </ScreenContainer>
   );
 }
 
-function SectionCard({
-  title,
-  subtitle,
-  icon,
-  theme,
-  scale,
-  children,
+function SectionLabel({ text }: { text: string }) {
+  const { colors } = useAppTheme();
+  return <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>{text}</Text>;
+}
+
+function AccentSwatch({
+  accentKey,
+  active,
+  onPress,
 }: {
-  title: string;
-  subtitle?: string;
-  icon?: keyof typeof Ionicons.glyphMap;
-  theme: ReturnType<typeof useTheme>;
-  scale: number;
-  children: React.ReactNode;
+  accentKey: AccentKey;
+  active: boolean;
+  onPress: () => void;
 }) {
+  const { colors } = useAppTheme();
+  const swatch = ACCENTS[accentKey];
   return (
-    <View style={[styles.card, { backgroundColor: theme.surfaceElevated }, shadow.card]}>
-      <View style={styles.cardTitleRow}>
-        {icon && <Ionicons name={icon} size={18} color={theme.primary} />}
-        <Text style={[styles.cardTitle, { color: theme.textPrimary, fontSize: 15 * scale }]}>{title}</Text>
+    <Pressable onPress={onPress} scaleTo={0.9} style={styles.swatchWrap}>
+      <View
+        style={[
+          styles.swatchOuter,
+          { borderColor: active ? swatch.base : "transparent" },
+        ]}
+      >
+        <View style={[styles.swatchInner, { backgroundColor: swatch.base }]}>
+          {active ? <Ionicons name="checkmark" size={18} color={swatch.onBase} /> : null}
+        </View>
       </View>
-      {subtitle && <Text style={{ color: theme.textSecondary, fontSize: 12 * scale, marginBottom: spacing.sm }}>{subtitle}</Text>}
-      {children}
-    </View>
+      <Text style={[styles.swatchLabel, { color: colors.textSecondary }]}>{swatch.label}</Text>
+    </Pressable>
   );
 }
 
-function SegmentedRow<T extends string>({
-  options,
-  value,
-  onChange,
-  theme,
-  scale,
-}: {
-  options: { value: T; label: string }[];
-  value: T;
-  onChange: (v: T) => void;
-  theme: ReturnType<typeof useTheme>;
-  scale: number;
-}) {
-  return (
-    <View style={styles.segmentRow}>
-      {options.map((opt) => (
-        <Pressable
-          key={opt.value}
-          onPress={() => onChange(opt.value)}
-          style={[
-            styles.segment,
-            { borderColor: value === opt.value ? theme.primary : theme.border, backgroundColor: value === opt.value ? theme.primary : "transparent" },
-          ]}
-        >
-          <Text style={{ color: value === opt.value ? "#FFFFFF" : theme.textPrimary, fontSize: 13 * scale, fontWeight: "600" }}>
-            {opt.label}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
-function ToggleRow({
-  label,
-  value,
-  onChange,
-  theme,
-  scale,
-}: {
-  label: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-  theme: ReturnType<typeof useTheme>;
-  scale: number;
-}) {
-  return (
-    <View style={styles.toggleRow}>
-      <Text style={{ color: theme.textPrimary, fontSize: 14 * scale }}>{label}</Text>
-      <Switch value={value} onValueChange={onChange} trackColor={{ true: theme.primary }} />
-    </View>
-  );
-}
-
-function AccountInfoRow({
+function Row({
   icon,
   label,
   value,
-  theme,
-  scale,
-  valueColor,
+  onPress,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
-  value: string;
-  theme: ReturnType<typeof useTheme>;
-  scale: number;
-  valueColor?: string;
+  value?: string;
+  onPress: () => void;
 }) {
+  const { colors } = useAppTheme();
   return (
-    <View style={styles.accountInfoRow}>
-      <Ionicons name={icon} size={16} color={theme.secondary} style={{ width: 22 }} />
-      <Text style={{ color: theme.textSecondary, fontSize: 13 * scale, flex: 1 }}>{label}</Text>
-      <Text style={{ color: valueColor ?? theme.textPrimary, fontSize: 13 * scale, fontWeight: "600" }} numberOfLines={1}>
-        {value}
-      </Text>
-    </View>
+    <Pressable onPress={onPress} scaleTo={0.98}>
+      <View style={styles.row}>
+        <View style={styles.rowLeft}>
+          <Ionicons name={icon} size={19} color={colors.textSecondary} />
+          <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{label}</Text>
+        </View>
+        <View style={styles.rowLeft}>
+          {value ? <Text style={[styles.rowValue, { color: colors.textTertiary }]}>{value}</Text> : null}
+          <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+        </View>
+      </View>
+    </Pressable>
   );
 }
 
+function Divider() {
+  const { colors } = useAppTheme();
+  return <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />;
+}
+
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm, gap: spacing.xs },
-  title: { fontWeight: "700" },
-  content: { padding: spacing.lg },
-  card: { borderRadius: radii.lg, padding: spacing.md, marginBottom: spacing.md },
-  cardTitleRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginBottom: spacing.sm },
-  cardTitle: { fontWeight: "700" },
-  segmentRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  colorThemeLabel: { fontWeight: "600", marginTop: spacing.md, marginBottom: spacing.sm },
-  swatchRow: { flexDirection: "row", gap: spacing.sm },
-  swatch: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  segmentCard: { padding: 8 },
+  segmentRow: { flexDirection: "row", gap: 8 },
+  segmentPress: { flex: 1 },
+  segmentItem: {
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 0,
-    borderColor: "transparent",
+    gap: 6,
+    paddingVertical: 12,
+    borderWidth: 1.5,
   },
-  segment: { borderWidth: 1.5, borderRadius: radii.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
-  toggleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: spacing.xs },
-  accountInfoBox: { borderRadius: radii.md, padding: spacing.sm, marginBottom: spacing.md },
-  accountInfoRow: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.xs, gap: spacing.xs },
-  linkRow: { paddingVertical: spacing.sm },
+  segmentLabel: { fontSize: 11, fontWeight: "600" },
+  swatchGrid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
+  swatchWrap: { alignItems: "center", width: 64, gap: 6 },
+  swatchOuter: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  swatchInner: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  swatchLabel: { fontSize: 11, fontWeight: "500" },
+  displayRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, padding: 8 },
+  displayPill: { paddingHorizontal: 16, paddingVertical: 10 },
+  displayPillText: { fontSize: 13, fontWeight: "600" },
+  listCard: { overflow: "hidden" },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  rowLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
+  rowLabel: { fontSize: 15, fontWeight: "500" },
+  rowValue: { fontSize: 13 },
+  logoutRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 28,
+    paddingVertical: 12,
+  },
+  logoutText: { fontSize: 14, fontWeight: "700" },
 });

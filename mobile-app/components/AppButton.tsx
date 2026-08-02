@@ -1,76 +1,74 @@
-import { ActivityIndicator, StyleSheet, Text } from "react-native";
-import { Pressable } from "react-native-gesture-handler";
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { radii, spacing } from "../lib/theme";
-import { useTheme } from "../lib/use-theme";
+import { useAppTheme } from "../lib/theme/theme-context";
+import { Pressable } from "./ui/Pressable";
 
 interface AppButtonProps {
   label: string;
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  icon?: React.ReactNode;
 }
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-export function AppButton({ label, onPress, loading, disabled, variant = "primary" }: AppButtonProps) {
-  const theme = useTheme();
+export function AppButton({ label, onPress, loading, disabled, variant = "primary", icon }: AppButtonProps) {
+  const { colors } = useAppTheme();
   const isDisabled = disabled || loading;
-  const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const bg =
+    variant === "primary"
+      ? colors.primary
+      : variant === "danger"
+      ? colors.danger
+      : "transparent";
+  const borderColor =
+    variant === "secondary" ? colors.primary : variant === "ghost" ? "transparent" : bg;
+  const textColor =
+    variant === "primary" || variant === "danger"
+      ? colors.onPrimary
+      : variant === "secondary"
+      ? colors.primary
+      : colors.textPrimary;
 
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      disabled={isDisabled}
-      onPressIn={() => {
-        scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
-      }}
-      onPressOut={() => {
-        scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-      }}
-      style={[
-        styles.base,
-        animatedStyle,
-        {
-          backgroundColor: variant === "primary" ? theme.primary : "transparent",
-          borderColor: theme.primary,
-          borderWidth: variant === "secondary" ? 1.5 : 0,
-          opacity: isDisabled ? 0.6 : 1,
-        },
-      ]}
-    >
-      {loading ? (
-        <ActivityIndicator color={variant === "primary" ? "#FFFFFF" : theme.primary} />
-      ) : (
-        <Text
-          style={[
-            styles.label,
-            { color: variant === "primary" ? "#FFFFFF" : theme.primary },
-          ]}
-        >
-          {label}
-        </Text>
-      )}
-    </AnimatedPressable>
+    <Pressable onPress={onPress} disabled={isDisabled} scaleTo={0.97}>
+      <View
+        style={[
+          styles.base,
+          {
+            backgroundColor: bg,
+            borderColor,
+            borderWidth: variant === "secondary" ? 1.5 : 0,
+            borderRadius: colors.radii.md,
+            opacity: isDisabled ? 0.55 : 1,
+          },
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator color={textColor} />
+        ) : (
+          <>
+            {icon}
+            <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+          </>
+        )}
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radii.md,
-    paddingVertical: spacing.md,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
+    paddingVertical: 15,
     minHeight: 52,
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });
