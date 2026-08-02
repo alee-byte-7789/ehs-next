@@ -19,9 +19,14 @@ export default function RootLayout() {
               <Stack.Screen name="pending" />
               <Stack.Screen name="home" />
               <Stack.Screen name="settings" />
-              {/* TODO (next batch): notifications, profile, maintenance, emergency,
-                  complaints/index, complaints/new, complaints/[id] — register each
-                  Stack.Screen here as its file is added under app/. */}
+              <Stack.Screen name="notifications" />
+              <Stack.Screen name="profile" />
+              <Stack.Screen name="maintenance" />
+              <Stack.Screen name="emergency" />
+              <Stack.Screen name="prayer-timings" />
+              <Stack.Screen name="complaints/index" />
+              <Stack.Screen name="complaints/new" />
+              <Stack.Screen name="complaints/[id]" />
             </Stack>
           </AuthProvider>
         </QueryClientProvider>

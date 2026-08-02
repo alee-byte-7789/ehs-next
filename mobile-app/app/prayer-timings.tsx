@@ -1,160 +1,83 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet, Text, View } from "react-native";
 
-import { AppButton } from "../components/AppButton";
-import { AppTextField } from "../components/AppTextField";
-import { useAdminAuth } from "../lib/admin-auth-context";
-import { useTranslation } from "../lib/i18n";
-import { useUpdatePrayerTiming } from "../lib/admin-prayer-timing-mutations";
-import { usePrayerTimings } from "../lib/society-queries";
-import { radii, shadow, spacing } from "../lib/theme";
-import { useTheme } from "../lib/use-theme";
-import type { MosqueName, PrayerTimingOut } from "../lib/types";
+import { ScreenContainer } from "../components/ScreenContainer";
+import { Card } from "../components/ui/Card";
+import { ScreenHeader } from "../components/ui/ScreenHeader";
+import { MOCK_PRAYER_TIMINGS, type PrayerTiming } from "../lib/mock-data";
+import { useAppTheme } from "../lib/theme/theme-context";
 
-const MOSQUE_LABELS: Record<MosqueName, string> = {
-  bilal_mosque: "Bilal Mosque",
-  markazi_jamia_mosque: "Markazi Jamia Mosque",
-};
+const ROWS: { key: keyof PrayerTiming; label: string }[] = [
+  { key: "fajr", label: "Fajr" },
+  { key: "zuhr", label: "Zuhr" },
+  { key: "asr", label: "Asr" },
+  { key: "maghrib", label: "Maghrib" },
+  { key: "isha", label: "Isha" },
+];
 
 export default function PrayerTimingsScreen() {
-  const theme = useTheme();
-  const { data: timings, isLoading } = usePrayerTimings();
-  const { isAdminSignedIn, logout } = useAdminAuth();
-  const { t } = useTranslation();
+  const { colors } = useAppTheme();
 
   return (
-    <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backRow}>
-          <Ionicons name="arrow-back" size={18} color={theme.primary} />
-          <Text style={{ color: theme.primary, fontSize: 15 }}>{t("back")}</Text>
-        </Pressable>
-        <View style={styles.titleRow}>
-          <Ionicons name="moon-outline" size={22} color={theme.secondary} />
-          <Text style={[styles.title, { color: theme.textPrimary }]}>{t("prayerTimings")}</Text>
-        </View>
-      </View>
+    <ScreenContainer>
+      <ScreenHeader title="Prayer Timings" subtitle="Today's schedule for society mosques" />
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {isLoading && <Text style={{ color: theme.textSecondary }}>Loading...</Text>}
+      {MOCK_PRAYER_TIMINGS.map((timing) => (
+        <Card key={timing.mosque_name} style={styles.card}>
+          <View style={styles.header}>
+            <View style={[styles.iconWrap, { backgroundColor: colors.primaryTint, borderRadius: colors.radii.md }]}>
+              <Ionicons name="moon-outline" size={18} color={colors.primary} />
+            </View>
+            <Text style={[styles.mosqueName, { color: colors.textPrimary }]}>{timing.label}</Text>
+          </View>
 
-        {timings?.map((timing) => (
-          <MosqueCard key={timing.mosque_name} timing={timing} isAdmin={isAdminSignedIn} />
-        ))}
+          <View style={styles.rows}>
+            {ROWS.map((row) => (
+              <View key={row.key} style={styles.row}>
+                <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>{row.label}</Text>
+                <Text style={[styles.rowValue, { color: colors.textPrimary }]}>{String(timing[row.key])}</Text>
+              </View>
+            ))}
+            {timing.jummah ? (
+              <View style={[styles.row, styles.jummahRow, { borderTopColor: colors.border }]}>
+                <Text style={[styles.rowLabel, { color: colors.primary, fontWeight: "700" }]}>Jummah</Text>
+                <Text style={[styles.rowValue, { color: colors.primary, fontWeight: "700" }]}>{timing.jummah}</Text>
+              </View>
+            ) : null}
+          </View>
 
-        <View style={styles.footer}>
-          {isAdminSignedIn ? (
-            <AppButton label="Log out (admin)" variant="secondary" onPress={logout} />
-          ) : (
-            <Pressable onPress={() => router.push("/admin-login")}>
-              <Text style={{ color: theme.textSecondary, fontSize: 13, textAlign: "center" }}>
-                Housing Office Admin? <Text style={{ color: theme.primary, fontWeight: "600" }}>Log in to edit</Text>
-              </Text>
-            </Pressable>
-          )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          <Text style={[styles.updated, { color: colors.textTertiary }]}>
+            Last updated {formatDate(timing.updatedAt)}
+          </Text>
+        </Card>
+      ))}
+
+      <Text style={[styles.disclaimer, { color: colors.textTertiary }]}>
+        Timings are set by the Housing Office and may shift slightly with the season. For Ramadan and Eid
+        schedules, check the society notice board.
+      </Text>
+    </ScreenContainer>
   );
 }
 
-function MosqueCard({ timing, isAdmin }: { timing: PrayerTimingOut; isAdmin: boolean }) {
-  const theme = useTheme();
-  const { t } = useTranslation();
-  const PRAYER_FIELDS_LOCALIZED: { key: keyof PrayerTimingOut; label: string }[] = [
-    { key: "fajr", label: t("fajr") },
-    { key: "zuhr", label: t("zuhr") },
-    { key: "asr", label: t("asr") },
-    { key: "maghrib", label: t("maghrib") },
-    { key: "isha", label: t("isha") },
-    { key: "jummah", label: t("jummah") },
-  ];
-  const [editing, setEditing] = useState(false);
-  const [values, setValues] = useState<Record<string, string>>({});
-  const updateTiming = useUpdatePrayerTiming();
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setValues({
-      fajr: timing.fajr, zuhr: timing.zuhr, asr: timing.asr,
-      maghrib: timing.maghrib, isha: timing.isha, jummah: timing.jummah ?? "",
-    });
-  }, [timing]);
-
-  const handleSave = async () => {
-    setError(null);
-    try {
-      await updateTiming.mutateAsync({
-        mosqueName: timing.mosque_name,
-        payload: {
-          fajr: values.fajr, zuhr: values.zuhr, asr: values.asr,
-          maghrib: values.maghrib, isha: values.isha, jummah: values.jummah || null,
-        },
-      });
-      setEditing(false);
-    } catch {
-      setError("Could not save. Check your admin session hasn't expired.");
-    }
-  };
-
-  return (
-    <View style={[styles.card, { backgroundColor: theme.surfaceElevated }, shadow.card]}>
-      <View style={styles.cardHeader}>
-        <Text style={[styles.mosqueName, { color: theme.textPrimary }]}>{MOSQUE_LABELS[timing.mosque_name]}</Text>
-        {isAdmin && !editing && (
-          <Pressable onPress={() => setEditing(true)}>
-            <Text style={{ color: theme.primary, fontWeight: "600", fontSize: 13 }}>{t("edit")}</Text>
-          </Pressable>
-        )}
-      </View>
-
-      {!editing &&
-        PRAYER_FIELDS_LOCALIZED.map((f) => {
-          const value = timing[f.key] as string | null;
-          if (!value) return null;
-          return (
-            <View key={f.key} style={styles.row}>
-              <Text style={{ color: theme.textSecondary, fontSize: 14 }}>{f.label}</Text>
-              <Text style={{ color: theme.textPrimary, fontSize: 14, fontWeight: "600" }}>{value}</Text>
-            </View>
-          );
-        })}
-
-      {editing && (
-        <View>
-          {PRAYER_FIELDS_LOCALIZED.map((f) => (
-            <AppTextField
-              key={f.key}
-              label={f.label}
-              value={values[f.key as string] ?? ""}
-              onChangeText={(v) => setValues((prev) => ({ ...prev, [f.key as string]: v }))}
-            />
-          ))}
-          {error && <Text style={{ color: theme.danger, fontSize: 12, marginBottom: spacing.sm }}>{error}</Text>}
-          <View style={styles.editActions}>
-            <AppButton label="Save" onPress={handleSave} loading={updateTiming.isPending} />
-            <AppButton label="Cancel" variant="secondary" onPress={() => setEditing(false)} />
-          </View>
-        </View>
-      )}
-    </View>
-  );
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm, gap: spacing.xs },
-  backRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
-  title: { fontSize: 24, fontWeight: "700" },
-  content: { padding: spacing.lg },
-  card: { borderRadius: radii.lg, padding: spacing.md, marginBottom: spacing.md },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing.sm },
+  card: { marginBottom: 14, gap: 14 },
+  header: { flexDirection: "row", alignItems: "center", gap: 10 },
+  iconWrap: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
   mosqueName: { fontSize: 16, fontWeight: "700" },
-  row: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },
-  editActions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
-  footer: { marginTop: spacing.md },
+  rows: { gap: 0 },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  jummahRow: { borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4, paddingTop: 10 },
+  rowLabel: { fontSize: 13, fontWeight: "500" },
+  rowValue: { fontSize: 13, fontWeight: "600" },
+  updated: { fontSize: 11 },
+  disclaimer: { fontSize: 12, lineHeight: 18, textAlign: "center", marginTop: 8, paddingHorizontal: 8 },
 });

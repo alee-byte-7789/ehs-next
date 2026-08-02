@@ -27,6 +27,7 @@ export interface ComplaintSummary {
   submittedAt: string;
   department?: string;
   title: string;
+  description?: string;
 }
 
 export const MOCK_COMPLAINTS: ComplaintSummary[] = [
@@ -39,6 +40,8 @@ export const MOCK_COMPLAINTS: ComplaintSummary[] = [
     submittedAt: "2026-07-29",
     department: "Maintenance",
     title: "Kitchen sink leaking under the cabinet",
+    description:
+      "Water has been pooling under the kitchen sink cabinet for the last two days. It looks like the joint below the tap is loose. Would appreciate a quick visit before it damages the cabinet base.",
   },
   {
     id: "2",
@@ -49,6 +52,8 @@ export const MOCK_COMPLAINTS: ComplaintSummary[] = [
     submittedAt: "2026-07-26",
     department: "Maintenance",
     title: "Flickering light in the drawing room",
+    description:
+      "The main ceiling light in the drawing room flickers on and off, especially in the evening. Might be a loose connection or a failing switch.",
   },
   {
     id: "3",
@@ -59,6 +64,7 @@ export const MOCK_COMPLAINTS: ComplaintSummary[] = [
     submittedAt: "2026-07-14",
     department: "Security",
     title: "Gate boom barrier slow to respond",
+    description: "The main gate's boom barrier takes 10-15 seconds to lift after the card is scanned, causing a small queue during peak hours.",
   },
   {
     id: "4",
@@ -69,6 +75,7 @@ export const MOCK_COMPLAINTS: ComplaintSummary[] = [
     submittedAt: "2026-06-30",
     department: "Horticulture",
     title: "Overgrown hedge blocking driveway view",
+    description: "The hedge near the driveway entrance has grown tall enough to block the view of oncoming traffic when reversing out.",
   },
 ];
 
@@ -147,3 +154,54 @@ export const EMERGENCY_CONTACTS: EmergencyContact[] = [
   { id: "e3", name: "Security Control Room", phone: "051-9271234", icon: "shield" },
   { id: "e4", name: "Housing Office", phone: "051-9270000", icon: "business" },
 ];
+
+export type MosqueName = "bilal_mosque" | "markazi_jamia_mosque";
+
+export interface PrayerTiming {
+  mosque_name: MosqueName;
+  label: string;
+  fajr: string;
+  zuhr: string;
+  asr: string;
+  maghrib: string;
+  isha: string;
+  jummah: string | null;
+  updatedAt: string;
+}
+
+export const MOCK_PRAYER_TIMINGS: PrayerTiming[] = [
+  {
+    mosque_name: "bilal_mosque",
+    label: "Bilal Mosque",
+    fajr: "4:45 AM",
+    zuhr: "1:30 PM",
+    asr: "5:15 PM",
+    maghrib: "7:05 PM",
+    isha: "8:30 PM",
+    jummah: "1:45 PM",
+    updatedAt: "2026-08-01",
+  },
+  {
+    mosque_name: "markazi_jamia_mosque",
+    label: "Markazi Jamia Mosque",
+    fajr: "4:50 AM",
+    zuhr: "1:35 PM",
+    asr: "5:20 PM",
+    maghrib: "7:05 PM",
+    isha: "8:35 PM",
+    jummah: "1:50 PM",
+    updatedAt: "2026-08-01",
+  },
+];
+
+export const COMPLAINT_CATEGORIES = [
+  "Plumbing",
+  "Electrical",
+  "Structural",
+  "Security",
+  "Horticulture",
+  "Sanitation",
+  "Other",
+] as const;
+
+export type ComplaintCategory = (typeof COMPLAINT_CATEGORIES)[number];

@@ -1,107 +1,130 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useMemo, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
-import { AppButton } from "../../components/AppButton";
-import { StatusBadge } from "../../components/StatusBadge";
-import { useMyComplaints } from "../../lib/complaint-queries";
-import { useTranslation } from "../../lib/i18n";
-import { spacing, radii } from "../../lib/theme";
-import { useTheme } from "../../lib/use-theme";
-import type { ComplaintOut } from "../../lib/types";
+import { ScreenContainer } from "../../components/ScreenContainer";
+import { Card } from "../../components/ui/Card";
+import { Pressable } from "../../components/ui/Pressable";
+import { EmptyState, ScreenHeader } from "../../components/ui/ScreenHeader";
+import { PriorityChip, StatusChip } from "../../components/ui/StatusChip";
+import { MOCK_COMPLAINTS, type ComplaintStatus } from "../../lib/mock-data";
+import { useAppTheme } from "../../lib/theme/theme-context";
 
-const PRIORITY_COLORS: Record<string, string> = {
-  low: "#10B981",
-  normal: "#6B7280",
-  high: "#F59E0B",
-  critical: "#EF4444",
-};
+type FilterKey = "all" | "open" | "resolved";
 
-export default function ComplaintsListScreen() {
-  const theme = useTheme();
-  const { data: complaints, isLoading, isError, refetch, isRefetching } = useMyComplaints();
-  const { t } = useTranslation();
+export default function ComplaintsScreen() {
+  const { colors } = useAppTheme();
+  const [filter, setFilter] = useState<FilterKey>("all");
+
+  const filtered = useMemo(() => {
+    if (filter === "open") {
+      return MOCK_COMPLAINTS.filter((c) => !CLOSED_STATUSES.includes(c.status));
+    }
+    if (filter === "resolved") {
+      return MOCK_COMPLAINTS.filter((c) => CLOSED_STATUSES.includes(c.status));
+    }
+    return MOCK_COMPLAINTS;
+  }, [filter]);
 
   return (
-    <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={{ color: theme.primary, fontSize: 15 }}>← {t("home")}</Text>
-        </Pressable>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>{t("myComplaints")}</Text>
-      </View>
-
-      {isLoading && <Text style={{ color: theme.textSecondary, padding: spacing.lg }}>{t("loading")}</Text>}
-      {isError && (
-        <Text style={{ color: theme.danger, padding: spacing.lg }}>
-          {t("couldNotLoadComplaints")}
-        </Text>
-      )}
-
-      {complaints && complaints.length === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={{ color: theme.textSecondary, textAlign: "center", marginBottom: spacing.md }}>
-            {t("noComplaintsYet")}
-          </Text>
-        </View>
-      )}
-
-      <FlatList
-        data={complaints ?? []}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={theme.primary} />}
-        renderItem={({ item }: { item: ComplaintOut }) => (
+    <ScreenContainer>
+      <ScreenHeader
+        title="My Complaints"
+        subtitle={`${MOCK_COMPLAINTS.length} total`}
+        right={
           <Pressable
-            onPress={() => router.push(`/complaints/${item.id}`)}
-            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => router.push("/complaints/new")}
+            scaleTo={0.92}
+            style={[styles.addButton, { backgroundColor: colors.primary }]}
           >
-            <View style={styles.cardTop}>
-              <Text style={[styles.code, { color: theme.textSecondary }]}>{item.complaint_code}</Text>
-              <View style={{ flexDirection: "row", gap: spacing.xs, alignItems: "center" }}>
-                {item.priority !== "normal" && (
-                  <Text style={{ fontSize: 12, fontWeight: "700", color: PRIORITY_COLORS[item.priority] }}>
-                    {item.priority.toUpperCase()}
-                  </Text>
-                )}
-                <StatusBadge status={item.status} />
-              </View>
-            </View>
-            <Text style={[styles.subcategory, { color: theme.textPrimary }]}>{item.subcategory}</Text>
-            <Text numberOfLines={2} style={[styles.description, { color: theme.textSecondary }]}>
-              {item.description}
-            </Text>
+            <Ionicons name="add" size={20} color={colors.onPrimary} />
           </Pressable>
-        )}
+        }
       />
 
-      <View style={styles.footer}>
-        <AppButton label={t("raiseComplaint")} onPress={() => router.push("/complaints/new")} />
+      <View style={styles.filterRow}>
+        {FILTERS.map((f) => {
+          const active = filter === f.key;
+          return (
+            <Pressable
+              key={f.key}
+              onPress={() => setFilter(f.key)}
+              scaleTo={0.96}
+              style={[
+                styles.filterPill,
+                {
+                  backgroundColor: active ? colors.primaryTint : colors.surfaceElevated,
+                  borderColor: active ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.filterLabel, { color: active ? colors.primary : colors.textSecondary }]}>
+                {f.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
-    </SafeAreaView>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon="document-text-outline"
+          title="No complaints here"
+          body="Nothing matches this filter yet. Try a different tab or register a new complaint."
+        />
+      ) : (
+        filtered.map((c) => (
+          <Pressable key={c.id} onPress={() => router.push(`/complaints/${c.id}`)} style={styles.pressWrap}>
+            <Card style={styles.card}>
+              <View style={styles.topRow}>
+                <Text style={[styles.code, { color: colors.textTertiary }]}>{c.code}</Text>
+                <StatusChip status={c.status} />
+              </View>
+              <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
+                {c.title}
+              </Text>
+              <View style={styles.bottomRow}>
+                <Text style={[styles.meta, { color: colors.textSecondary }]}>
+                  {c.category} · {formatDate(c.submittedAt)}
+                </Text>
+                <PriorityChip priority={c.priority} />
+              </View>
+            </Card>
+          </Pressable>
+        ))
+      )}
+    </ScreenContainer>
   );
 }
 
+const CLOSED_STATUSES: ComplaintStatus[] = ["resolved", "closed"];
+
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "open", label: "Open" },
+  { key: "resolved", label: "Resolved" },
+];
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    gap: spacing.xs,
-  },
-  title: { fontSize: 24, fontWeight: "700" },
-  listContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, gap: spacing.sm },
-  card: {
+  addButton: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  filterRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
+  filterPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
     borderWidth: 1,
-    borderRadius: radii.md,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
   },
-  cardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing.xs },
-  code: { fontSize: 12, fontWeight: "600" },
-  subcategory: { fontSize: 16, fontWeight: "700", marginBottom: 2 },
-  description: { fontSize: 13, lineHeight: 18 },
-  emptyState: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.xl },
-  footer: { padding: spacing.lg, paddingTop: spacing.sm },
+  filterLabel: { fontSize: 13, fontWeight: "600" },
+  pressWrap: { marginBottom: 10 },
+  card: { gap: 8 },
+  topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  code: { fontSize: 11, fontWeight: "600", letterSpacing: 0.3 },
+  title: { fontSize: 15, fontWeight: "600" },
+  bottomRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  meta: { fontSize: 12, flexShrink: 1 },
 });
