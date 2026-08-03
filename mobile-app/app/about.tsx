@@ -1,9 +1,7 @@
-import { router } from "expo-router";
 import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
 import { AppText as Text } from "../components/ui/AppText";
 
 import { Card } from "../components/ui/Card";
-import { Pressable } from "../components/ui/Pressable";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { ScreenHeader } from "../components/ui/ScreenHeader";
 import { useSocietyInfo } from "../lib/society-queries";
@@ -56,10 +54,6 @@ export default function AboutScreen() {
           ) : null}
         </>
       )}
-
-      <Pressable onPress={() => router.back()} style={styles.backRow}>
-        <Text style={{ color: colors.primary, fontSize: 14, fontWeight: "600" }}>Back</Text>
-      </Pressable>
     </ScreenContainer>
   );
 }
@@ -73,5 +67,4 @@ const styles = StyleSheet.create({
   role: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
   personName: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
   bodyText: { fontSize: 13, lineHeight: 19 },
-  backRow: { alignItems: "center", marginTop: 12, marginBottom: 20 },
 });
