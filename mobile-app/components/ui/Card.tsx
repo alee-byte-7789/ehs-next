@@ -4,31 +4,33 @@ import { Platform, StyleSheet, View, ViewProps } from "react-native";
 
 import { useAppTheme } from "../../lib/theme/theme-context";
 
-// Defined locally instead of relying on StyleSheet.absoluteFillObject /
-// StyleSheet.absoluteFill, whose exact export name has moved between RN
-// versions — this works identically everywhere.
 const ABSOLUTE_FILL = { position: "absolute" as const, top: 0, left: 0, right: 0, bottom: 0 };
 
 interface CardProps extends ViewProps {
-  /** "elevated" gets a soft shadow / glass surface (default surfaces); "flat" is border-only (nested inside another card). */
   variant?: "elevated" | "flat";
   padding?: number;
 }
 
 /**
- * "Liquid Glass" card surface (iOS 26 style): a blurred, faintly
- * accent-tinted pane with a bright top-left rim and a soft diagonal sheen,
- * so it reads as glass sitting *above* the background rather than a flat
- * tinted rectangle.
+ * "Liquid Glass" card surface.
  *
- * Previous version was broken in light mode: it layered a 45%-opacity
- * white fill over the blur on top of a background that is *also*
- * near-white (#FBFBFA), so the card had almost no contrast against the
- * page and the "glass" was invisible. Fixed here by (1) giving the glass
- * fill enough opacity + a touch of accent tint to always read against the
- * page, and (2) adding a two-tone rim (bright highlight top/left, soft
- * shadow-line bottom/right) that mimics how real glass catches light at
- * its edges, in both modes.
+ * Two real bugs fixed in this version, both confirmed against an actual
+ * screenshot before touching anything:
+ *
+ * 1. "Squares behind the rounded tiles" — the outer container that holds
+ *    the shadow had NO borderRadius of its own (only the inner clipped
+ *    layer did). On web, react-native-web renders iOS-style shadow props
+ *    as a CSS box-shadow — and a box-shadow on an element with no
+ *    border-radius is a sharp rectangle, regardless of what rounded
+ *    content sits inside it. That's exactly what was bleeding out from
+ *    behind every card. Fixed by giving the outer container the same
+ *    borderRadius as the inner clipped pane.
+ *
+ * 2. Light-mode glass looked "dull" after an earlier pass that toned
+ *    down the tint to fix a different problem (hard rim-border edges).
+ *    That fix was correct to remove the hard borders, but went too far
+ *    on opacity. Restored a more saturated accent wash + fill in light
+ *    mode specifically, without reintroducing the hard-edged borders.
  */
 export function Card({ variant = "elevated", padding, style, children, ...rest }: CardProps) {
   const { colors, glassEffect } = useAppTheme();
@@ -37,19 +39,21 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
 
   const shadowStyle = {
     shadowColor: colors.shadowColor,
-    shadowOpacity: variant === "elevated" ? (colors.isDark ? 0.35 : 0.12) : 0,
+    shadowOpacity: variant === "elevated" ? (colors.isDark ? 0.35 : 0.14) : 0,
     shadowRadius: variant === "elevated" ? 20 : 0,
     shadowOffset: { width: 0, height: 8 },
     elevation: variant === "elevated" ? 4 : 0,
   };
 
   if (variant === "elevated" && glassEffect) {
-    const fillColor = colors.isDark ? "rgba(28,30,34,0.55)" : "rgba(255,255,255,0.72)";
-    const tintColor = colors.isDark ? withAlpha(colors.primary, 0.1) : withAlpha(colors.primary, 0.06);
-    const sheenTop = colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.4)";
+    const fillColor = colors.isDark ? "rgba(28,30,34,0.55)" : "rgba(255,255,255,0.58)";
+    const tintColor = colors.isDark ? withAlpha(colors.primary, 0.12) : withAlpha(colors.primary, 0.14);
+    const sheenTop = colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.45)";
 
     return (
-      <View style={[styles.base, shadowStyle, style]}>
+      // borderRadius here (not just on the inner glassClip) is the fix —
+      // without it, the shadow below renders as a sharp rectangle on web.
+      <View style={[styles.base, { borderRadius: radius }, shadowStyle, style]}>
         <View style={[styles.glassClip, { borderRadius: radius }]}>
           <BlurView
             intensity={colors.isDark ? 45 : 60}
@@ -57,15 +61,10 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
             experimentalBlurMethod={Platform.OS === "android" ? "dimezisBlurView" : undefined}
             style={ABSOLUTE_FILL}
           />
-          {/* Base tint: gives the pane a color of its own so it never disappears against a same-toned background. */}
           <View style={[ABSOLUTE_FILL, { backgroundColor: fillColor }]} />
-          {/* Accent wash: glass subtly "picks up" the app's theme color, like real glass over a colored surface. */}
+          {/* Accent wash — more saturated in light mode than the previous
+              pass, so the glass reads as colorful rather than dull grey. */}
           <View style={[ABSOLUTE_FILL, { backgroundColor: tintColor }]} />
-          {/* Soft sheen — no hard rim border this time; that's what was
-              reading as harsh "boxes and edges" in light mode, since a
-              near-white 1px border on a near-white card on a near-white
-              page has too little contrast to look intentional. A single
-              soft gradient sheen carries the "glass" feeling on its own. */}
           <LinearGradient
             colors={[sheenTop, "rgba(255,255,255,0)"]}
             start={{ x: 0.1, y: 0 }}
@@ -101,7 +100,6 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
   );
 }
 
-/** Adds an alpha channel to a "#RRGGBB" hex color for the accent wash. */
 function withAlpha(hex: string, alpha: number): string {
   const clean = hex.replace("#", "");
   const r = parseInt(clean.substring(0, 2), 16);
