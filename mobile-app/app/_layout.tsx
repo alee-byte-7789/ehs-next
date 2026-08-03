@@ -23,6 +23,7 @@ export default function RootLayout() {
                   <Stack.Screen name="register" />
                   <Stack.Screen name="pending" />
                   <Stack.Screen name="home" />
+                  <Stack.Screen name="about" />
                   <Stack.Screen name="settings" />
                   <Stack.Screen name="notifications" />
                   <Stack.Screen name="profile" />

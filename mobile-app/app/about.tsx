@@ -1,88 +1,77 @@
 import { router } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
+import { AppText as Text } from "../components/ui/AppText";
 
-import { ThemedLogo } from "../components/ThemedLogo";
+import { Card } from "../components/ui/Card";
+import { Pressable } from "../components/ui/Pressable";
+import { ScreenContainer } from "../components/ScreenContainer";
+import { ScreenHeader } from "../components/ui/ScreenHeader";
 import { useSocietyInfo } from "../lib/society-queries";
-import { radii, spacing } from "../lib/theme";
-import { useTheme } from "../lib/use-theme";
+import { useAppTheme } from "../lib/theme/theme-context";
 
 export default function AboutScreen() {
-  const theme = useTheme();
+  const { colors } = useAppTheme();
   const { data: info, isLoading } = useSocietyInfo();
 
   return (
-    <SafeAreaView style={[styles.flex, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={{ color: theme.primary, fontSize: 15 }}>← Back</Text>
-        </Pressable>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>About EHS</Text>
+    <ScreenContainer>
+      <ScreenHeader title="About" subtitle="EHS Next" />
+
+      <View style={styles.logoWrap}>
+        <Image source={require("../assets/icon.png")} style={styles.logo} resizeMode="contain" />
+        <Text style={[styles.appName, { color: colors.textPrimary }]}>EHS Next</Text>
+        <Text style={[styles.version, { color: colors.textTertiary }]}>Version 1.0.0</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <ThemedLogo style={styles.logo} />
-        {isLoading && <Text style={{ color: theme.textSecondary }}>Loading...</Text>}
+      {isLoading ? (
+        <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
+      ) : (
+        <>
+          {info?.about_text ? (
+            <Card style={styles.card}>
+              <Text style={[styles.bodyText, { color: colors.textSecondary }]}>{info.about_text}</Text>
+            </Card>
+          ) : null}
 
-        {info && (
-          <>
-            <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Text style={[styles.body, { color: theme.textPrimary }]}>{info.about_text}</Text>
-            </View>
+          {info?.chairman_name ? (
+            <Card style={styles.card}>
+              <Text style={[styles.role, { color: colors.primary }]}>Chairman</Text>
+              <Text style={[styles.personName, { color: colors.textPrimary }]}>{info.chairman_name}</Text>
+              {info.chairman_message ? (
+                <Text style={[styles.bodyText, { color: colors.textSecondary }]}>{info.chairman_message}</Text>
+              ) : null}
+            </Card>
+          ) : null}
 
-            {info.chairman_name && (
-              <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Chairman</Text>
-                <Text style={[styles.personName, { color: theme.textPrimary }]}>{info.chairman_name}</Text>
-                {info.chairman_message && (
-                  <Text style={[styles.messageBody, { color: theme.textSecondary }]}>
-                    "{info.chairman_message}"
-                  </Text>
-                )}
-              </View>
-            )}
-
-            {info.deputy_chairman_name && (
-              <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Deputy Chairman</Text>
-                <Text style={[styles.personName, { color: theme.textPrimary }]}>{info.deputy_chairman_name}</Text>
-                {info.deputy_chairman_message && (
-                  <Text style={[styles.messageBody, { color: theme.textSecondary }]}>
-                    "{info.deputy_chairman_message}"
-                  </Text>
-                )}
-              </View>
-            )}
-
-            <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+          {info?.secretary_name ? (
+            <Card style={styles.card}>
+              <Text style={[styles.role, { color: colors.primary }]}>
                 {info.secretary_designation ?? "Secretary"}
               </Text>
-              <Text style={[styles.personName, { color: theme.textPrimary }]}>
-                {info.secretary_name ?? "To be announced"}
-              </Text>
-              {info.secretary_message && (
-                <Text style={[styles.messageBody, { color: theme.textSecondary }]}>
-                  "{info.secretary_message}"
-                </Text>
-              )}
-            </View>
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+              <Text style={[styles.personName, { color: colors.textPrimary }]}>{info.secretary_name}</Text>
+              {info.secretary_message ? (
+                <Text style={[styles.bodyText, { color: colors.textSecondary }]}>{info.secretary_message}</Text>
+              ) : null}
+            </Card>
+          ) : null}
+        </>
+      )}
+
+      <Pressable onPress={() => router.back()} style={styles.backRow}>
+        <Text style={{ color: colors.primary, fontSize: 14, fontWeight: "600" }}>Back</Text>
+      </Pressable>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm, gap: spacing.xs },
-  title: { fontSize: 24, fontWeight: "700" },
-  content: { padding: spacing.lg },
-  logo: { width: "100%", height: 90, marginBottom: spacing.lg },
-  card: { borderWidth: 1, borderRadius: radii.md, padding: spacing.md, marginBottom: spacing.md },
-  body: { fontSize: 15, lineHeight: 22 },
-  sectionLabel: { fontSize: 12, fontWeight: "600", textTransform: "uppercase", marginBottom: spacing.xs },
-  personName: { fontSize: 18, fontWeight: "700", marginBottom: spacing.xs },
-  messageBody: { fontSize: 14, lineHeight: 20, fontStyle: "italic", marginTop: spacing.xs },
+  logoWrap: { alignItems: "center", marginBottom: 24, marginTop: 8 },
+  logo: { width: 72, height: 72, marginBottom: 10 },
+  appName: { fontSize: 20, fontWeight: "700" },
+  version: { fontSize: 12, marginTop: 2 },
+  card: { marginBottom: 12, gap: 4 },
+  role: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
+  personName: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
+  bodyText: { fontSize: 13, lineHeight: 19 },
+  backRow: { alignItems: "center", marginTop: 12, marginBottom: 20 },
 });
