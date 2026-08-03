@@ -118,3 +118,41 @@ export interface ComplaintDetailOut extends ComplaintOut {
 export interface EarlyCloseRequest {
   reason: string;
 }
+
+// --- Society Info ---
+
+export interface SocietyInfoOut {
+  about_text: string;
+  chairman_name: string | null;
+  chairman_message: string | null;
+  deputy_chairman_name: string | null;
+  deputy_chairman_message: string | null;
+  secretary_name: string | null;
+  secretary_designation: string | null;
+  secretary_message: string | null;
+  updated_at: string;
+}
+
+// --- Prayer Timings ---
+
+export type MosqueName = "bilal_mosque" | "markazi_jamia_mosque";
+
+export interface PrayerTimingOut {
+  mosque_name: MosqueName;
+  fajr: string;
+  zuhr: string;
+  asr: string;
+  maghrib: string;
+  isha: string;
+  jummah: string | null;
+  updated_at: string;
+}
+
+export interface PrayerTimingUpdateRequest {
+  fajr: string;
+  zuhr: string;
+  asr: string;
+  maghrib: string;
+  isha: string;
+  jummah?: string | null;
+}

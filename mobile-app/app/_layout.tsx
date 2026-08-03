@@ -2,10 +2,16 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { AdminAuthProvider } from "../lib/admin-auth-context";
 import { AuthProvider } from "../lib/auth-context";
 import { LocaleProvider } from "../lib/i18n/locale-context";
 import { queryClient } from "../lib/query-client";
+import { patchTextScaling } from "../lib/theme/font-scaling";
 import { ThemeProvider } from "../lib/theme/theme-context";
+
+// Must run once, before any Text/TextInput renders, so the Settings >
+// Display size control actually scales fonts app-wide.
+patchTextScaling();
 
 export default function RootLayout() {
   return (
@@ -14,22 +20,25 @@ export default function RootLayout() {
         <LocaleProvider>
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
-              <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="login" />
-                <Stack.Screen name="register" />
-                <Stack.Screen name="pending" />
-                <Stack.Screen name="home" />
-                <Stack.Screen name="settings" />
-                <Stack.Screen name="notifications" />
-                <Stack.Screen name="profile" />
-                <Stack.Screen name="maintenance" />
-                <Stack.Screen name="emergency" />
-                <Stack.Screen name="prayer-timings" />
-                <Stack.Screen name="complaints/index" />
-                <Stack.Screen name="complaints/new" />
-                <Stack.Screen name="complaints/[id]" />
-              </Stack>
+              <AdminAuthProvider>
+                <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="login" />
+                  <Stack.Screen name="register" />
+                  <Stack.Screen name="pending" />
+                  <Stack.Screen name="home" />
+                  <Stack.Screen name="settings" />
+                  <Stack.Screen name="notifications" />
+                  <Stack.Screen name="profile" />
+                  <Stack.Screen name="maintenance" />
+                  <Stack.Screen name="emergency" />
+                  <Stack.Screen name="prayer-timings" />
+                  <Stack.Screen name="admin-login" />
+                  <Stack.Screen name="complaints/index" />
+                  <Stack.Screen name="complaints/new" />
+                  <Stack.Screen name="complaints/[id]" />
+                </Stack>
+              </AdminAuthProvider>
             </AuthProvider>
           </QueryClientProvider>
         </LocaleProvider>

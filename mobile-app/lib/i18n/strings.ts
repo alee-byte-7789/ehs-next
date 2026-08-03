@@ -93,6 +93,30 @@ export const STRINGS = {
     profile_verification: "Verification",
     profile_employee: "Employee",
 
+    // Prayer timings
+    prayer_timings_title: "Prayer Timings",
+    prayer_next_up: "Next up",
+    prayer_fajr: "Fajr",
+    prayer_zuhr: "Zuhr",
+    prayer_asr: "Asr",
+    prayer_maghrib: "Maghrib",
+    prayer_isha: "Isha",
+    prayer_jummah: "Jummah",
+    prayer_edit: "Edit",
+    prayer_admin_hint: "Housing Office Admin?",
+    prayer_admin_login_link: "Log in to edit",
+    prayer_admin_logout: "Log out (admin)",
+    prayer_save_error: "Could not save. Check your admin session hasn't expired.",
+
+    // Admin login
+    admin_login_title: "Admin Login",
+    admin_login_subtitle:
+      "For Housing Office admins only — used to edit prayer timings directly from the app instead of the Admin Portal website.",
+    admin_login_email: "Email",
+    admin_login_password: "Password",
+    admin_login_button: "Log in as Admin",
+    admin_login_error: "Invalid admin credentials.",
+
     // Common
     retry: "Retry",
     cancel: "Cancel",
@@ -172,6 +196,28 @@ export const STRINGS = {
     profile_email: "ای میل",
     profile_verification: "تصدیق",
     profile_employee: "ملازم",
+
+    prayer_timings_title: "نماز کے اوقات",
+    prayer_next_up: "اگلی نماز",
+    prayer_fajr: "فجر",
+    prayer_zuhr: "ظہر",
+    prayer_asr: "عصر",
+    prayer_maghrib: "مغرب",
+    prayer_isha: "عشاء",
+    prayer_jummah: "جمعہ",
+    prayer_edit: "ترمیم",
+    prayer_admin_hint: "ہاؤسنگ آفس ایڈمن؟",
+    prayer_admin_login_link: "ترمیم کے لیے لاگ ان کریں",
+    prayer_admin_logout: "لاگ آؤٹ (ایڈمن)",
+    prayer_save_error: "محفوظ نہیں ہو سکا۔ چیک کریں کہ آپ کا ایڈمن سیشن ختم تو نہیں ہوا۔",
+
+    admin_login_title: "ایڈمن لاگ ان",
+    admin_login_subtitle:
+      "صرف ہاؤسنگ آفس ایڈمنز کے لیے — نماز کے اوقات کو ایڈمن پورٹل ویب سائٹ کی بجائے براہ راست ایپ سے ترمیم کرنے کے لیے استعمال ہوتا ہے۔",
+    admin_login_email: "ای میل",
+    admin_login_password: "پاس ورڈ",
+    admin_login_button: "بطور ایڈمن لاگ ان کریں",
+    admin_login_error: "غلط ایڈمن معلومات۔",
 
     retry: "دوبارہ کوشش کریں",
     cancel: "منسوخ کریں",
