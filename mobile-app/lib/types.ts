@@ -156,3 +156,16 @@ export interface PrayerTimingUpdateRequest {
   isha: string;
   jummah?: string | null;
 }
+
+// --- Notifications (real backend, GET /notifications/mine) ---
+
+export interface NotificationOut {
+  id: number;
+  recipient_type: "resident" | "admin";
+  recipient_id: number;
+  title: string;
+  body: string;
+  type: string;
+  is_read: boolean;
+  created_at: string;
+}
