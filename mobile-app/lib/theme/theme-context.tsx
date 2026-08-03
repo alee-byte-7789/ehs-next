@@ -21,7 +21,6 @@ import {
   type AccentKey,
   type DisplaySize,
 } from "./palette";
-import { setGlobalFontScale } from "./font-scaling";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -157,13 +156,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     mode === "system" ? (systemScheme === "dark" ? "dark" : "light") : mode;
 
   const colors = useMemo(() => buildTokens(resolvedMode, accent), [resolvedMode, accent]);
-
-  // Push the active display-size scale into the global Text/TextInput
-  // patch (lib/theme/font-scaling.ts) so every screen's font size reacts,
-  // not just the ones that happen to read `fontScale` directly.
-  useEffect(() => {
-    setGlobalFontScale(DISPLAY_SCALE[displaySize]);
-  }, [displaySize]);
 
   const value = useMemo<ThemeContextValue>(
     () => ({

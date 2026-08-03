@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Switch, Text, View } from "react-native";
+import { StyleSheet, Switch, View } from "react-native";
+import { AppText as Text } from "../components/ui/AppText";
 
 import { ScreenContainer } from "../components/ScreenContainer";
 import { Card } from "../components/ui/Card";

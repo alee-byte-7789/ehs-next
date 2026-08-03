@@ -1,4 +1,5 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { AppText as Text } from "./ui/AppText";
 
 import { useAppTheme } from "../lib/theme/theme-context";
 import { Pressable } from "./ui/Pressable";

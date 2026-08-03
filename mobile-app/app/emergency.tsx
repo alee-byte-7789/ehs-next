@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { Linking, StyleSheet, View } from "react-native";
+import { AppText as Text } from "../components/ui/AppText";
 
 import { ScreenContainer } from "../components/ScreenContainer";
 import { Pressable } from "../components/ui/Pressable";

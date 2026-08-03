@@ -1,5 +1,6 @@
 import { Redirect } from "expo-router";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { AppText as Text } from "../components/ui/AppText";
 
 import { useAuth } from "../lib/auth-context";
 import { useResidentMe } from "../lib/resident-queries";

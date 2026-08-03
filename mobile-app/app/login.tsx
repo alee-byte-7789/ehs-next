@@ -3,7 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { AppText as Text } from "../components/ui/AppText";
 import { z } from "zod";
 
 import { AppButton } from "../components/AppButton";

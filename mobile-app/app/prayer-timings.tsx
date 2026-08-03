@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { AppText as Text } from "../components/ui/AppText";
 
 import { ScreenContainer } from "../components/ScreenContainer";
 import { AppButton } from "../components/AppButton";

@@ -1,9 +1,8 @@
 /**
  * Placeholder data for screens whose backend has NO endpoint at all yet
- * (notifications, maintenance service directory, emergency contacts, prayer
- * timings). Complaints are NOT here anymore — see `lib/complaint-queries.ts`,
- * which calls the real `/complaints/mine` API against your Supabase-backed
- * database, matching backend/app/api/v1/complaints.py exactly.
+ * (notifications, emergency contacts). Complaints and prayer timings are
+ * NOT here anymore — see `lib/complaint-queries.ts` and `lib/society-queries.ts`,
+ * which call the real APIs against your Supabase-backed database.
  *
  * The remaining screens below stay mock until their backend routes exist;
  * shapes are written to make that swap mechanical when they do.
@@ -53,24 +52,6 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
   },
 ];
 
-export interface MaintenanceService {
-  id: string;
-  name: string;
-  description: string;
-  icon: "flash" | "water" | "hammer" | "sparkles" | "leaf" | "shield-checkmark";
-  phone: string;
-  available: boolean;
-}
-
-export const MAINTENANCE_SERVICES: MaintenanceService[] = [
-  { id: "s1", name: "Electrician", description: "Wiring, fixtures & power issues", icon: "flash", phone: "0800-100200", available: true },
-  { id: "s2", name: "House Plumbing", description: "Leaks, drainage & fittings", icon: "water", phone: "0800-100201", available: true },
-  { id: "s3", name: "Masonry", description: "Structural & wall repairs", icon: "hammer", phone: "0800-100202", available: false },
-  { id: "s4", name: "Janitorial", description: "Cleaning & sanitation", icon: "sparkles", phone: "0800-100203", available: true },
-  { id: "s5", name: "Horticulture", description: "Lawns, hedges & trees", icon: "leaf", phone: "0800-100204", available: true },
-  { id: "s6", name: "Security", description: "Gate, patrol & access issues", icon: "shield-checkmark", phone: "0800-100205", available: true },
-];
-
 export interface PrayerTiming {
   id: string;
   name: string;
@@ -93,12 +74,12 @@ export interface EmergencyContact {
   id: string;
   name: string;
   phone: string;
-  icon: "flame" | "medkit" | "shield" | "business";
+  icon: "flame" | "medkit" | "shield" | "business" | "call" | "person";
 }
 
 export const EMERGENCY_CONTACTS: EmergencyContact[] = [
-  { id: "e1", name: "Fire", phone: "16", icon: "flame" },
-  { id: "e2", name: "Ambulance", phone: "1122", icon: "medkit" },
-  { id: "e3", name: "Security Control Room", phone: "051-9271234", icon: "shield" },
-  { id: "e4", name: "Housing Office", phone: "051-9270000", icon: "business" },
+  { id: "e1", name: "Complaint Office", phone: "03334256595", icon: "business" },
+  { id: "e2", name: "Complaint Office (Landline)", phone: "0514256595", icon: "call" },
+  { id: "e3", name: "EHS Security Reception (Main Gate)", phone: "0514256594", icon: "shield" },
+  { id: "e4", name: "CSO", phone: "03215081947", icon: "person" },
 ];

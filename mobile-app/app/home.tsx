@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { AppText as Text } from "../components/ui/AppText";
 
 import { Card } from "../components/ui/Card";
 import { Pressable } from "../components/ui/Pressable";
@@ -96,12 +97,6 @@ export default function HomeScreen() {
           icon="document-text-outline"
           onPress={() => router.push("/complaints")}
           badge={openComplaints.length}
-        />
-        <QuickActionCard
-          label={t("action_maintenance")}
-          description={t("action_maintenance_desc")}
-          icon="construct-outline"
-          onPress={() => router.push("/maintenance")}
         />
         <QuickActionCard
           label={t("action_emergency")}

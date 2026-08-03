@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { AppText as Text } from "./AppText";
 
 import { useAppTheme } from "../../lib/theme/theme-context";
 import type { ComplaintPriority, ComplaintStatus } from "../../lib/types";

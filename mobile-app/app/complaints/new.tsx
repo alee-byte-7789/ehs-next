@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { AppText as Text } from "../../components/ui/AppText";
+import { AppTextInput as TextInput } from "../../components/ui/AppTextInput";
 
 import { AppButton } from "../../components/AppButton";
 import { AppTextField } from "../../components/AppTextField";
@@ -9,6 +11,7 @@ import { Pressable } from "../../components/ui/Pressable";
 import { ScreenHeader } from "../../components/ui/ScreenHeader";
 import { extractApiErrorMessage } from "../../lib/api-client";
 import { useCreateComplaint } from "../../lib/complaint-queries";
+import { SUBCATEGORY_OPTIONS } from "../../lib/complaint-subcategories";
 import { useAppTheme } from "../../lib/theme/theme-context";
 import type { ComplaintCategory } from "../../lib/types";
 
@@ -24,17 +27,29 @@ export default function NewComplaintScreen() {
 
   const [category, setCategory] = useState<ComplaintCategory>("infrastructure");
   const [subcategory, setSubcategory] = useState("");
+  const [customSubcategory, setCustomSubcategory] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = subcategory.trim().length >= 2 && description.trim().length >= 5;
+  const isOther = subcategory === "Other";
+  const finalSubcategory = isOther ? customSubcategory.trim() : subcategory;
+
+  const canSubmit = finalSubcategory.trim().length >= 2 && description.trim().length >= 5;
+
+  const handleSelectCategory = (next: ComplaintCategory) => {
+    setCategory(next);
+    // The subcategory options are per-category, so a previously picked
+    // chip (or "Other" text) from a different category is no longer valid.
+    setSubcategory("");
+    setCustomSubcategory("");
+  };
 
   const handleSubmit = async () => {
     setError(null);
     try {
       const created = await createComplaint.mutateAsync({
         category,
-        subcategory: subcategory.trim(),
+        subcategory: finalSubcategory,
         description: description.trim(),
       });
       router.replace(`/complaints/${created.id}`);
@@ -52,7 +67,12 @@ export default function NewComplaintScreen() {
         {CATEGORIES.map((cat) => {
           const active = category === cat.key;
           return (
-            <Pressable key={cat.key} onPress={() => setCategory(cat.key)} scaleTo={0.97} style={styles.categoryPress}>
+            <Pressable
+              key={cat.key}
+              onPress={() => handleSelectCategory(cat.key)}
+              scaleTo={0.97}
+              style={styles.categoryPress}
+            >
               <View
                 style={[
                   styles.categoryCard,
@@ -75,13 +95,40 @@ export default function NewComplaintScreen() {
         })}
       </View>
 
-      <AppTextField
-        label="What's the issue? (short title)"
-        placeholder="e.g. Kitchen sink leaking"
-        value={subcategory}
-        onChangeText={setSubcategory}
-        maxLength={80}
-      />
+      <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 10 }]}>What's the issue?</Text>
+      <View style={styles.chipWrap}>
+        {SUBCATEGORY_OPTIONS[category].map((option) => {
+          const active = subcategory === option;
+          return (
+            <Pressable key={option} onPress={() => setSubcategory(option)} scaleTo={0.95}>
+              <View
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: active ? colors.primary : colors.surfaceSunken,
+                    borderColor: active ? colors.primary : colors.border,
+                    borderRadius: colors.radii.pill,
+                  },
+                ]}
+              >
+                <Text style={[styles.chipLabel, { color: active ? colors.onPrimary : colors.textPrimary }]}>
+                  {option}
+                </Text>
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {isOther && (
+        <AppTextField
+          label="Describe the issue (short title)"
+          placeholder="e.g. Kitchen sink leaking"
+          value={customSubcategory}
+          onChangeText={setCustomSubcategory}
+          maxLength={80}
+        />
+      )}
 
       <View style={styles.descriptionField}>
         <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 6 }]}>Description</Text>
@@ -123,6 +170,9 @@ const styles = StyleSheet.create({
   categoryCard: { padding: 14, borderWidth: 1.5, gap: 3 },
   categoryLabel: { fontSize: 15, fontWeight: "700" },
   categoryDesc: { fontSize: 12 },
+  chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 20 },
+  chip: { paddingVertical: 9, paddingHorizontal: 14, borderWidth: 1.5 },
+  chipLabel: { fontSize: 13, fontWeight: "600" },
   descriptionField: { marginBottom: 20 },
   descriptionInput: { padding: 14, fontSize: 15, minHeight: 120, textAlignVertical: "top", borderWidth: 1 },
   error: { fontSize: 13, marginBottom: 12, textAlign: "center" },

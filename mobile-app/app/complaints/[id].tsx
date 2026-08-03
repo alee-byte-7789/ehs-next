@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { AppText as Text } from "../../components/ui/AppText";
 
 import { AppButton } from "../../components/AppButton";
 import { ScreenContainer } from "../../components/ScreenContainer";
