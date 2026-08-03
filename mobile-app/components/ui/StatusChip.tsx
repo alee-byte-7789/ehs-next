@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { useAppTheme } from "../../lib/theme/theme-context";
-import type { ComplaintStatus, Priority } from "../../lib/mock-data";
+import type { ComplaintPriority, ComplaintStatus } from "../../lib/types";
 
 const STATUS_LABEL: Record<ComplaintStatus, string> = {
   pending: "Pending",
@@ -26,19 +26,21 @@ export function StatusChip({ status }: { status: ComplaintStatus }) {
   );
 }
 
-const PRIORITY_COLOR: Record<Priority, "danger" | "warning" | "info"> = {
-  high: "danger",
-  medium: "warning",
+const PRIORITY_COLOR: Record<ComplaintPriority, "info" | "warning" | "danger"> = {
   low: "info",
+  normal: "info",
+  high: "warning",
+  critical: "danger",
 };
 
-const PRIORITY_LABEL: Record<Priority, string> = {
-  high: "High priority",
-  medium: "Medium priority",
+const PRIORITY_LABEL: Record<ComplaintPriority, string> = {
   low: "Low priority",
+  normal: "Normal priority",
+  high: "High priority",
+  critical: "Critical",
 };
 
-export function PriorityChip({ priority }: { priority: Priority }) {
+export function PriorityChip({ priority }: { priority: ComplaintPriority }) {
   const { colors } = useAppTheme();
   const key = PRIORITY_COLOR[priority];
   const base = colors[key] as string;

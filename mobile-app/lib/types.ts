@@ -56,3 +56,65 @@ export interface TokenPair {
 export interface ApiErrorBody {
   detail?: string | { msg: string }[];
 }
+
+// --- Complaints (mirrors backend/app/schemas/complaint.py + models/enums.py) ---
+
+export type ComplaintCategory = "general" | "infrastructure" | "internal";
+export type ComplaintPriority = "low" | "normal" | "high" | "critical";
+export type ComplaintStatus =
+  | "pending"
+  | "accepted"
+  | "assigned"
+  | "in_progress"
+  | "resolved"
+  | "closed"
+  | "reopened";
+
+export interface ComplaintCreateRequest {
+  category: ComplaintCategory;
+  subcategory: string;
+  description: string;
+  photo_urls?: string[] | null;
+}
+
+export interface ComplaintOut {
+  id: number;
+  complaint_code: string;
+  resident_id: number;
+  house_id: number;
+  house_code: string;
+  resident_name: string;
+  resident_phone: string;
+  category: ComplaintCategory;
+  subcategory: string;
+  description: string;
+  photo_urls: string[] | null;
+  status: ComplaintStatus;
+  priority: ComplaintPriority;
+  assigned_staff_id: number | null;
+  assigned_admin_id: number | null;
+  close_count: number;
+  closed_by_resident_early: boolean;
+  early_close_reason: string | null;
+  created_at: string;
+  updated_at: string;
+  closed_at: string | null;
+}
+
+export interface ComplaintHistoryOut {
+  id: number;
+  from_status: ComplaintStatus | null;
+  to_status: ComplaintStatus;
+  changed_by_type: "resident" | "admin" | "system";
+  changed_by_id: number | null;
+  note: string | null;
+  timestamp: string;
+}
+
+export interface ComplaintDetailOut extends ComplaintOut {
+  history: ComplaintHistoryOut[];
+}
+
+export interface EarlyCloseRequest {
+  reason: string;
+}

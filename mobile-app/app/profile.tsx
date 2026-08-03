@@ -7,93 +7,79 @@ import { Card } from "../components/ui/Card";
 import { Pressable } from "../components/ui/Pressable";
 import { ScreenHeader } from "../components/ui/ScreenHeader";
 import { useAuth } from "../lib/auth-context";
+import { useMyComplaints } from "../lib/complaint-queries";
 import { useResidentMe } from "../lib/resident-queries";
 import { useAppTheme } from "../lib/theme/theme-context";
 
 export default function ProfileScreen() {
   const { colors } = useAppTheme();
   const { logout } = useAuth();
-  const { data: resident, isLoading } = useResidentMe(true);
+  const { data: resident } = useResidentMe(true);
+  const { data: complaints } = useMyComplaints();
+
+  const allComplaints = complaints ?? [];
+  const resolvedCount = allComplaints.filter((c) => c.status === "resolved" || c.status === "closed").length;
+  const openCount = allComplaints.length - resolvedCount;
 
   const handleLogout = async () => {
     await logout();
     router.replace("/login");
   };
 
-  const initials = (resident?.full_name ?? "?")
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("");
-
   return (
     <ScreenContainer>
-      <ScreenHeader title="Profile" subtitle="Your account details" />
+      <ScreenHeader title="Profile" />
 
-      <Card style={styles.identityCard}>
+      <View style={styles.avatarBlock}>
         <View style={[styles.avatar, { backgroundColor: colors.primaryTint }]}>
-          <Text style={[styles.avatarText, { color: colors.primary }]}>{initials || "?"}</Text>
-        </View>
-        <View style={styles.identityText}>
-          <Text style={[styles.name, { color: colors.textPrimary }]}>
-            {resident?.full_name ?? (isLoading ? "Loading…" : "Resident")}
+          <Text style={[styles.avatarInitial, { color: colors.primary }]}>
+            {(resident?.full_name ?? "R").charAt(0).toUpperCase()}
           </Text>
-          <View style={styles.badgeRow}>
-            <VerificationBadge status={resident?.verification_status} />
-          </View>
         </View>
-      </Card>
+        <Text style={[styles.name, { color: colors.textPrimary }]}>{resident?.full_name ?? "Resident"}</Text>
+        <Text style={[styles.houseId, { color: colors.textSecondary }]}>
+          House {resident?.house_id ?? "—"} · {resident?.resident_type === "tenant" ? "Tenant" : "Owner"}
+        </Text>
+      </View>
 
-      <SectionLabel text="Contact & residence" />
-      <Card style={styles.infoCard}>
-        <InfoRow icon="home-outline" label="House" value={resident ? `House ${resident.house_id}` : "—"} />
-        <Divider />
-        <InfoRow icon="id-card-outline" label="Resident code" value={resident?.resident_code ?? "Unverified"} />
-        <Divider />
-        <InfoRow
-          icon="person-outline"
-          label="Resident type"
-          value={resident ? capitalize(resident.resident_type) : "—"}
-        />
-        <Divider />
+      <View style={styles.statsRow}>
+        <StatTile label="Total" value={allComplaints.length} colors={colors} />
+        <StatTile label="Open" value={openCount} colors={colors} />
+        <StatTile label="Resolved" value={resolvedCount} colors={colors} />
+      </View>
+
+      <Card padding={0} style={styles.listCard}>
         <InfoRow icon="call-outline" label="Phone" value={resident?.phone ?? "—"} />
         <Divider />
         <InfoRow icon="mail-outline" label="Email" value={resident?.email ?? "Not provided"} />
-        {resident?.is_employee ? (
-          <>
-            <Divider />
-            <InfoRow icon="briefcase-outline" label="Employee number" value={resident.employee_number ?? "—"} />
-          </>
-        ) : null}
+        <Divider />
+        <InfoRow
+          icon="checkmark-circle-outline"
+          label="Verification"
+          value={resident?.verification_status ?? "—"}
+        />
+        <Divider />
+        <InfoRow
+          icon="business-outline"
+          label="Employee"
+          value={resident?.is_employee ? resident.employee_number ?? "Yes" : "No"}
+        />
       </Card>
 
-      <SectionLabel text="Account" />
-      <Card style={styles.linksCard}>
-        <LinkRow icon="settings-outline" label="App settings" onPress={() => router.push("/settings")} />
+      <Card padding={0} style={[styles.listCard, styles.actionsCard]}>
+        <ActionRow icon="settings-outline" label="Settings" onPress={() => router.push("/settings")} />
         <Divider />
-        <LinkRow
-          icon="log-out-outline"
-          label="Log out"
-          danger
-          onPress={handleLogout}
-        />
+        <ActionRow icon="log-out-outline" label="Log out" onPress={handleLogout} destructive />
       </Card>
     </ScreenContainer>
   );
 }
 
-function VerificationBadge({ status }: { status?: "pending" | "approved" | "rejected" }) {
-  const { colors } = useAppTheme();
-  const map = {
-    approved: { label: "Verified resident", color: colors.success, tint: colors.successTint },
-    pending: { label: "Verification pending", color: colors.warning, tint: colors.warningTint },
-    rejected: { label: "Verification rejected", color: colors.danger, tint: colors.dangerTint },
-  } as const;
-  const entry = map[status ?? "pending"];
+function StatTile({ label, value, colors }: { label: string; value: number; colors: ReturnType<typeof useAppTheme>["colors"] }) {
   return (
-    <View style={[styles.chip, { backgroundColor: entry.tint }]}>
-      <Text style={[styles.chipText, { color: entry.color }]}>{entry.label}</Text>
+    <View style={[styles.statTile, { backgroundColor: colors.surfaceSunken, borderRadius: colors.radii.md }]}>
+      <Text style={[styles.statValue, { color: colors.textPrimary }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label}</Text>
     </View>
   );
 }
@@ -101,71 +87,63 @@ function VerificationBadge({ status }: { status?: "pending" | "approved" | "reje
 function InfoRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
   const { colors } = useAppTheme();
   return (
-    <View style={styles.infoRow}>
-      <View style={[styles.infoIcon, { backgroundColor: colors.surfaceSunken }]}>
-        <Ionicons name={icon} size={16} color={colors.textSecondary} />
+    <View style={styles.row}>
+      <View style={styles.rowLeft}>
+        <Ionicons name={icon} size={18} color={colors.textSecondary} />
+        <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>{label}</Text>
       </View>
-      <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{label}</Text>
-      <Text style={[styles.infoValue, { color: colors.textPrimary }]} numberOfLines={1}>
+      <Text style={[styles.rowValue, { color: colors.textPrimary }]} numberOfLines={1}>
         {value}
       </Text>
     </View>
   );
 }
 
-function LinkRow({
+function ActionRow({
   icon,
   label,
   onPress,
-  danger,
+  destructive,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   onPress: () => void;
-  danger?: boolean;
+  destructive?: boolean;
 }) {
   const { colors } = useAppTheme();
-  const color = danger ? colors.danger : colors.textPrimary;
+  const color = destructive ? colors.danger : colors.textPrimary;
   return (
-    <Pressable onPress={onPress} style={styles.linkRow} scaleTo={0.98}>
-      <Ionicons name={icon} size={18} color={color} />
-      <Text style={[styles.linkLabel, { color }]}>{label}</Text>
-      {!danger ? <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} /> : null}
+    <Pressable onPress={onPress} scaleTo={0.98}>
+      <View style={styles.row}>
+        <View style={styles.rowLeft}>
+          <Ionicons name={icon} size={18} color={color} />
+          <Text style={[styles.rowLabel, { color, fontWeight: "600" }]}>{label}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+      </View>
     </Pressable>
   );
 }
 
-function SectionLabel({ text }: { text: string }) {
-  const { colors } = useAppTheme();
-  return <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>{text.toUpperCase()}</Text>;
-}
-
 function Divider() {
   const { colors } = useAppTheme();
-  return <View style={[styles.divider, { backgroundColor: colors.border }]} />;
-}
-
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />;
 }
 
 const styles = StyleSheet.create({
-  identityCard: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 20 },
-  avatar: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
-  avatarText: { fontSize: 20, fontWeight: "700" },
-  identityText: { flexShrink: 1, gap: 6 },
-  name: { fontSize: 18, fontWeight: "700" },
-  badgeRow: { flexDirection: "row" },
-  chip: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  chipText: { fontSize: 11, fontWeight: "600" },
-  sectionLabel: { fontSize: 12, fontWeight: "700", letterSpacing: 0.6, marginBottom: 10, marginTop: 4 },
-  infoCard: { gap: 0, marginBottom: 20 },
-  infoRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 },
-  infoIcon: { width: 30, height: 30, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  infoLabel: { fontSize: 13, flex: 1 },
-  infoValue: { fontSize: 13, fontWeight: "600", flexShrink: 1, maxWidth: "50%", textAlign: "right" },
-  divider: { height: StyleSheet.hairlineWidth, marginLeft: 40 },
-  linksCard: { gap: 0 },
-  linkRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12 },
-  linkLabel: { fontSize: 14, fontWeight: "600", flex: 1 },
+  avatarBlock: { alignItems: "center", marginBottom: 20 },
+  avatar: { width: 84, height: 84, borderRadius: 42, alignItems: "center", justifyContent: "center", marginBottom: 12 },
+  avatarInitial: { fontSize: 32, fontWeight: "700" },
+  name: { fontSize: 20, fontWeight: "700" },
+  houseId: { fontSize: 13, marginTop: 3 },
+  statsRow: { flexDirection: "row", gap: 10, marginBottom: 20 },
+  statTile: { flex: 1, alignItems: "center", paddingVertical: 14, gap: 2 },
+  statValue: { fontSize: 20, fontWeight: "700" },
+  statLabel: { fontSize: 12, fontWeight: "500" },
+  listCard: { overflow: "hidden", marginBottom: 16 },
+  actionsCard: { marginBottom: 8 },
+  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14 },
+  rowLeft: { flexDirection: "row", alignItems: "center", gap: 12, flexShrink: 1 },
+  rowLabel: { fontSize: 14 },
+  rowValue: { fontSize: 14, fontWeight: "600", maxWidth: 160 },
 });

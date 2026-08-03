@@ -12,6 +12,7 @@ import { ScreenContainer } from "../components/ScreenContainer";
 import { Pressable } from "../components/ui/Pressable";
 import { extractApiErrorMessage } from "../lib/api-client";
 import { useAuth } from "../lib/auth-context";
+import { useLocale } from "../lib/i18n/locale-context";
 import { useAppTheme } from "../lib/theme/theme-context";
 
 const schema = z.object({
@@ -24,6 +25,7 @@ type FormValues = z.infer<typeof schema>;
 export default function LoginScreen() {
   const { login } = useAuth();
   const { colors } = useAppTheme();
+  const { t } = useLocale();
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -69,17 +71,15 @@ export default function LoginScreen() {
         </Pressable>
       </View>
 
-      <Text style={[styles.title, { color: colors.textPrimary }]}>Welcome back</Text>
-      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Log in to EHS Next with your phone or email.
-      </Text>
+      <Text style={[styles.title, { color: colors.textPrimary }]}>{t("login_welcome_back")}</Text>
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t("login_subtitle")}</Text>
 
       <Controller
         control={control}
         name="identifier"
         render={({ field }) => (
           <AppTextField
-            label="Phone or email"
+            label={t("login_identifier_label")}
             autoCapitalize="none"
             keyboardType="email-address"
             placeholder="e.g. 03xx-xxxxxxx or you@email.com"
@@ -95,7 +95,7 @@ export default function LoginScreen() {
         name="password"
         render={({ field }) => (
           <AppTextField
-            label="Password"
+            label={t("login_password_label")}
             secureTextEntry
             placeholder="••••••••"
             value={field.value}
@@ -107,10 +107,10 @@ export default function LoginScreen() {
 
       {serverError ? <Text style={[styles.serverError, { color: colors.danger }]}>{serverError}</Text> : null}
 
-      <AppButton label="Log in" onPress={handleSubmit(onSubmit)} loading={submitting} />
+      <AppButton label={t("login_button")} onPress={handleSubmit(onSubmit)} loading={submitting} />
 
       <Link href="/register" style={[styles.link, { color: colors.primary }]}>
-        New here? Register your house
+        {t("login_register_link")}
       </Link>
     </ScreenContainer>
   );

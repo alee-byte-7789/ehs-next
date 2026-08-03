@@ -1,15 +1,56 @@
+import { BlurView } from "expo-blur";
 import { StyleSheet, View, ViewProps } from "react-native";
 
 import { useAppTheme } from "../../lib/theme/theme-context";
 
 interface CardProps extends ViewProps {
-  /** "elevated" gets a soft shadow (default surfaces); "flat" is border-only (nested inside another card). */
+  /** "elevated" gets a soft shadow / glass surface (default surfaces); "flat" is border-only (nested inside another card). */
   variant?: "elevated" | "flat";
   padding?: number;
 }
 
 export function Card({ variant = "elevated", padding, style, children, ...rest }: CardProps) {
-  const { colors } = useAppTheme();
+  const { colors, glassEffect } = useAppTheme();
+  const radius = colors.radii.lg;
+  const pad = padding ?? colors.spacing.md;
+
+  const shadowStyle = !colors.isDark
+    ? {
+        shadowColor: colors.shadowColor,
+        shadowOpacity: variant === "elevated" ? 0.08 : 0,
+        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: variant === "elevated" ? 3 : 0,
+      }
+    : null;
+
+  if (variant === "elevated" && glassEffect) {
+    return (
+      <View style={[styles.base, shadowStyle, style]}>
+        <View style={[styles.glassClip, { borderRadius: radius }]}>
+          <BlurView
+            intensity={colors.isDark ? 40 : 60}
+            tint={colors.isDark ? "dark" : "light"}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <View
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                borderWidth: StyleSheet.hairlineWidth,
+                borderColor: colors.border,
+                borderRadius: radius,
+                backgroundColor: colors.isDark ? "rgba(30,32,36,0.35)" : "rgba(255,255,255,0.45)",
+              },
+            ]}
+          />
+          <View style={{ padding: pad }} {...rest}>
+            {children}
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -17,20 +58,12 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
         styles.base,
         {
           backgroundColor: colors.surfaceElevated,
-          borderRadius: colors.radii.lg,
-          padding: padding ?? colors.spacing.md,
+          borderRadius: radius,
+          padding: pad,
           borderWidth: variant === "flat" ? 1 : StyleSheet.hairlineWidth,
           borderColor: colors.border,
         },
-        variant === "elevated" && !colors.isDark
-          ? {
-              shadowColor: colors.shadowColor,
-              shadowOpacity: 0.06,
-              shadowRadius: 12,
-              shadowOffset: { width: 0, height: 4 },
-              elevation: 2,
-            }
-          : null,
+        shadowStyle,
         style,
       ]}
       {...rest}
@@ -66,5 +99,9 @@ export function IconCircle({ backgroundColor, size = 44, children }: IconCircleP
 const styles = StyleSheet.create({
   base: {
     width: "100%",
+  },
+  glassClip: {
+    width: "100%",
+    overflow: "hidden",
   },
 });

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { Card } from "../components/ui/Card";
 import { Pressable } from "../components/ui/Pressable";
@@ -8,26 +8,34 @@ import { QuickActionCard } from "../components/ui/QuickActionCard";
 import { StatusChip } from "../components/ui/StatusChip";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { useAuth } from "../lib/auth-context";
-import { MOCK_COMPLAINTS, MOCK_NOTIFICATIONS } from "../lib/mock-data";
+import { MOCK_NOTIFICATIONS } from "../lib/mock-data";
+import { useMyComplaints } from "../lib/complaint-queries";
+import { useLocale } from "../lib/i18n/locale-context";
 import { useResidentMe } from "../lib/resident-queries";
 import { useAppTheme } from "../lib/theme/theme-context";
 
 export default function HomeScreen() {
   const { logout } = useAuth();
   const { colors } = useAppTheme();
+  const { t } = useLocale();
   const { data: resident } = useResidentMe(true);
+  const { data: complaints, isLoading: complaintsLoading } = useMyComplaints();
 
   const firstName = resident?.full_name?.split(" ")[0] ?? "there";
   const unreadCount = MOCK_NOTIFICATIONS.filter((n) => !n.read).length;
-  const openComplaints = MOCK_COMPLAINTS.filter((c) => c.status !== "resolved" && c.status !== "closed");
-  const recentComplaints = MOCK_COMPLAINTS.slice(0, 3);
+  const allComplaints = complaints ?? [];
+  const openComplaints = allComplaints.filter((c) => c.status !== "resolved" && c.status !== "closed");
+  const resolvedComplaints = allComplaints.filter((c) => c.status === "resolved");
+  const recentComplaints = [...allComplaints]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 3);
 
   const handleLogout = async () => {
     await logout();
     router.replace("/login");
   };
 
-  const greeting = getGreeting();
+  const greeting = getGreeting(t);
 
   return (
     <ScreenContainer>
@@ -59,70 +67,70 @@ export default function HomeScreen() {
       {/* Complaint summary strip */}
       <View style={styles.summaryRow}>
         <SummaryTile
-          label="Open"
+          label={t("summary_open")}
           value={openComplaints.length}
           color={colors.warning}
           tint={colors.warningTint}
         />
         <SummaryTile
-          label="Resolved"
-          value={MOCK_COMPLAINTS.filter((c) => c.status === "resolved").length}
+          label={t("summary_resolved")}
+          value={resolvedComplaints.length}
           color={colors.success}
           tint={colors.successTint}
         />
-        <SummaryTile label="Total" value={MOCK_COMPLAINTS.length} color={colors.primary} tint={colors.primaryTint} />
+        <SummaryTile label={t("summary_total")} value={allComplaints.length} color={colors.primary} tint={colors.primaryTint} />
       </View>
 
       {/* Quick actions */}
-      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Quick actions</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t("quick_actions")}</Text>
       <View style={styles.grid}>
         <QuickActionCard
-          label="Register Complaint"
-          description="Report an issue"
+          label={t("action_register_complaint")}
+          description={t("action_register_complaint_desc")}
           icon="add-circle-outline"
           onPress={() => router.push("/complaints/new")}
         />
         <QuickActionCard
-          label="My Complaints"
-          description="Track & manage"
+          label={t("action_my_complaints")}
+          description={t("action_my_complaints_desc")}
           icon="document-text-outline"
           onPress={() => router.push("/complaints")}
           badge={openComplaints.length}
         />
         <QuickActionCard
-          label="Maintenance"
-          description="Call a service"
+          label={t("action_maintenance")}
+          description={t("action_maintenance_desc")}
           icon="construct-outline"
           onPress={() => router.push("/maintenance")}
         />
         <QuickActionCard
-          label="Emergency"
-          description="One-tap dial"
+          label={t("action_emergency")}
+          description={t("action_emergency_desc")}
           icon="alert-circle-outline"
           onPress={() => router.push("/emergency")}
         />
         <QuickActionCard
-          label="Prayer Timings"
-          description="Today's schedule"
+          label={t("action_prayer_timings")}
+          description={t("action_prayer_timings_desc")}
           icon="time-outline"
           onPress={() => router.push("/prayer-timings")}
         />
         <QuickActionCard
-          label="Notifications"
-          description="Updates & alerts"
+          label={t("action_notifications")}
+          description={t("action_notifications_desc")}
           icon="notifications-outline"
           onPress={() => router.push("/notifications")}
           badge={unreadCount}
         />
         <QuickActionCard
-          label="Profile"
-          description="Your details"
+          label={t("action_profile")}
+          description={t("action_profile_desc")}
           icon="person-outline"
           onPress={() => router.push("/profile")}
         />
         <QuickActionCard
-          label="Settings"
-          description="Theme & app"
+          label={t("action_settings")}
+          description={t("action_settings_desc")}
           icon="settings-outline"
           onPress={() => router.push("/settings")}
         />
@@ -130,32 +138,42 @@ export default function HomeScreen() {
 
       {/* Recent activity */}
       <View style={styles.sectionHeaderRow}>
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Recent activity</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t("recent_activity")}</Text>
         <Pressable onPress={() => router.push("/complaints")}>
-          <Text style={[styles.seeAll, { color: colors.primary }]}>See all</Text>
+          <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
         </Pressable>
       </View>
 
-      {recentComplaints.map((c) => (
-        <Pressable key={c.id} onPress={() => router.push(`/complaints/${c.id}`)} style={styles.complaintPress}>
-          <Card style={styles.complaintCard}>
-            <View style={styles.complaintTop}>
-              <Text style={[styles.complaintCode, { color: colors.textTertiary }]}>{c.code}</Text>
-              <StatusChip status={c.status} />
-            </View>
-            <Text style={[styles.complaintTitle, { color: colors.textPrimary }]} numberOfLines={1}>
-              {c.title}
-            </Text>
-            <Text style={[styles.complaintMeta, { color: colors.textSecondary }]}>
-              {c.category} · {formatDate(c.submittedAt)}
-            </Text>
-          </Card>
-        </Pressable>
-      ))}
+      {complaintsLoading ? (
+        <View style={{ paddingVertical: 20, alignItems: "center" }}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      ) : recentComplaints.length === 0 ? (
+        <Text style={{ color: colors.textSecondary, fontSize: 13, marginBottom: 12 }}>
+          {t("no_complaints_home")}
+        </Text>
+      ) : (
+        recentComplaints.map((c) => (
+          <Pressable key={c.id} onPress={() => router.push(`/complaints/${c.id}`)} style={styles.complaintPress}>
+            <Card style={styles.complaintCard}>
+              <View style={styles.complaintTop}>
+                <Text style={[styles.complaintCode, { color: colors.textTertiary }]}>{c.complaint_code}</Text>
+                <StatusChip status={c.status} />
+              </View>
+              <Text style={[styles.complaintTitle, { color: colors.textPrimary }]} numberOfLines={1}>
+                {c.subcategory}
+              </Text>
+              <Text style={[styles.complaintMeta, { color: colors.textSecondary }]}>
+                {c.category} · {formatDate(c.created_at)}
+              </Text>
+            </Card>
+          </Pressable>
+        ))
+      )}
 
       <Pressable onPress={handleLogout} style={styles.logoutRow}>
         <Ionicons name="log-out-outline" size={18} color={colors.textSecondary} />
-        <Text style={[styles.logoutText, { color: colors.textSecondary }]}>Log out</Text>
+        <Text style={[styles.logoutText, { color: colors.textSecondary }]}>{t("log_out")}</Text>
       </Pressable>
     </ScreenContainer>
   );
@@ -171,11 +189,11 @@ function SummaryTile({ label, value, color, tint }: { label: string; value: numb
   );
 }
 
-function getGreeting() {
+function getGreeting(t: (key: "good_morning" | "good_afternoon" | "good_evening") => string) {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return t("good_morning");
+  if (hour < 17) return t("good_afternoon");
+  return t("good_evening");
 }
 
 function formatDate(iso: string) {

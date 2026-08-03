@@ -27,6 +27,7 @@ export type ThemeMode = "light" | "dark" | "system";
 const MODE_KEY = "ehs_theme_mode";
 const ACCENT_KEY = "ehs_theme_accent";
 const DISPLAY_KEY = "ehs_theme_display_size";
+const GLASS_KEY = "ehs_theme_glass_effect";
 
 /** The fully resolved token set a screen actually consumes. */
 export function buildTokens(resolvedMode: "light" | "dark", accent: AccentKey) {
@@ -80,10 +81,12 @@ interface ThemeContextValue {
   accent: AccentKey;
   displaySize: DisplaySize;
   fontScale: number;
+  glassEffect: boolean;
   colors: ThemeTokens;
   setMode: (mode: ThemeMode) => void;
   setAccent: (accent: AccentKey) => void;
   setDisplaySize: (size: DisplaySize) => void;
+  setGlassEffect: (enabled: boolean) => void;
   ready: boolean;
 }
 
@@ -94,15 +97,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>("system");
   const [accent, setAccentState] = useState<AccentKey>("emerald");
   const [displaySize, setDisplaySizeState] = useState<DisplaySize>("default");
+  const [glassEffect, setGlassEffectState] = useState<boolean>(true);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const [storedMode, storedAccent, storedDisplay] = await Promise.all([
+        const [storedMode, storedAccent, storedDisplay, storedGlass] = await Promise.all([
           AsyncStorage.getItem(MODE_KEY),
           AsyncStorage.getItem(ACCENT_KEY),
           AsyncStorage.getItem(DISPLAY_KEY),
+          AsyncStorage.getItem(GLASS_KEY),
         ]);
         if (storedMode === "light" || storedMode === "dark" || storedMode === "system") {
           setModeState(storedMode);
@@ -117,6 +122,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           storedDisplay === "xlarge"
         ) {
           setDisplaySizeState(storedDisplay);
+        }
+        if (storedGlass === "true" || storedGlass === "false") {
+          setGlassEffectState(storedGlass === "true");
         }
       } finally {
         setReady(true);
@@ -139,6 +147,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(DISPLAY_KEY, next).catch(() => undefined);
   }, []);
 
+  const setGlassEffect = useCallback((next: boolean) => {
+    setGlassEffectState(next);
+    AsyncStorage.setItem(GLASS_KEY, String(next)).catch(() => undefined);
+  }, []);
+
   const resolvedMode: "light" | "dark" =
     mode === "system" ? (systemScheme === "dark" ? "dark" : "light") : mode;
 
@@ -151,13 +164,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       accent,
       displaySize,
       fontScale: DISPLAY_SCALE[displaySize],
+      glassEffect,
       colors,
       setMode,
       setAccent,
       setDisplaySize,
+      setGlassEffect,
       ready,
     }),
-    [mode, resolvedMode, accent, displaySize, colors, setMode, setAccent, setDisplaySize, ready]
+    [mode, resolvedMode, accent, displaySize, glassEffect, colors, setMode, setAccent, setDisplaySize, setGlassEffect, ready]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

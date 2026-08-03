@@ -1,160 +1,129 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { AppButton } from "../../components/AppButton";
 import { AppTextField } from "../../components/AppTextField";
 import { ScreenContainer } from "../../components/ScreenContainer";
 import { Pressable } from "../../components/ui/Pressable";
 import { ScreenHeader } from "../../components/ui/ScreenHeader";
-import { COMPLAINT_CATEGORIES, type ComplaintCategory, type Priority } from "../../lib/mock-data";
+import { extractApiErrorMessage } from "../../lib/api-client";
+import { useCreateComplaint } from "../../lib/complaint-queries";
 import { useAppTheme } from "../../lib/theme/theme-context";
+import type { ComplaintCategory } from "../../lib/types";
 
-const PRIORITIES: { key: Priority; label: string }[] = [
-  { key: "low", label: "Low" },
-  { key: "medium", label: "Medium" },
-  { key: "high", label: "High" },
+const CATEGORIES: { key: ComplaintCategory; label: string; description: string }[] = [
+  { key: "infrastructure", label: "Infrastructure", description: "Plumbing, electrical, structural issues" },
+  { key: "general", label: "General", description: "Anything else about the house or society" },
+  { key: "internal", label: "Internal", description: "Staff conduct or internal process issues" },
 ];
 
 export default function NewComplaintScreen() {
   const { colors } = useAppTheme();
-  const [category, setCategory] = useState<ComplaintCategory | null>(null);
-  const [priority, setPriority] = useState<Priority>("medium");
-  const [title, setTitle] = useState("");
+  const createComplaint = useCreateComplaint();
+
+  const [category, setCategory] = useState<ComplaintCategory>("infrastructure");
+  const [subcategory, setSubcategory] = useState("");
   const [description, setDescription] = useState("");
-  const [titleError, setTitleError] = useState<string | undefined>();
-  const [categoryError, setCategoryError] = useState<string | undefined>();
-  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const canSubmit = subcategory.trim().length >= 2 && description.trim().length >= 5;
 
   const handleSubmit = async () => {
-    const trimmedTitle = title.trim();
-    let hasError = false;
-
-    if (!category) {
-      setCategoryError("Pick a category for your complaint");
-      hasError = true;
-    } else {
-      setCategoryError(undefined);
+    setError(null);
+    try {
+      const created = await createComplaint.mutateAsync({
+        category,
+        subcategory: subcategory.trim(),
+        description: description.trim(),
+      });
+      router.replace(`/complaints/${created.id}`);
+    } catch (err) {
+      setError(extractApiErrorMessage(err, "Couldn't submit your complaint. Please try again."));
     }
-
-    if (trimmedTitle.length < 6) {
-      setTitleError("Give it a short, clear title (at least 6 characters)");
-      hasError = true;
-    } else {
-      setTitleError(undefined);
-    }
-
-    if (hasError) return;
-
-    setSubmitting(true);
-    // NOTE: complaints aren't wired to a real backend endpoint yet — this
-    // mirrors the eventual POST /complaints call once the API is ready.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setSubmitting(false);
-
-    Alert.alert("Complaint submitted", "We've logged your complaint and will keep you updated on its status.", [
-      { text: "OK", onPress: () => router.replace("/complaints") },
-    ]);
   };
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Register Complaint" subtitle="Tell us what's going on" />
+      <ScreenHeader title="Register Complaint" subtitle="Tell us what's wrong — we'll route it to the right team" />
 
       <Text style={[styles.label, { color: colors.textSecondary }]}>Category</Text>
-      <View style={styles.categoryGrid}>
-        {COMPLAINT_CATEGORIES.map((c) => {
-          const active = category === c;
+      <View style={styles.categoryRow}>
+        {CATEGORIES.map((cat) => {
+          const active = category === cat.key;
           return (
-            <Pressable
-              key={c}
-              onPress={() => {
-                setCategory(c);
-                setCategoryError(undefined);
-              }}
-              scaleTo={0.95}
-              style={[
-                styles.categoryChip,
-                {
-                  backgroundColor: active ? colors.primaryTint : colors.surfaceElevated,
-                  borderColor: active ? colors.primary : colors.border,
-                },
-              ]}
-            >
-              <Text style={[styles.categoryLabel, { color: active ? colors.primary : colors.textSecondary }]}>
-                {c}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      {categoryError ? <Text style={[styles.errorText, { color: colors.danger }]}>{categoryError}</Text> : null}
-
-      <AppTextField
-        label="Title"
-        placeholder="e.g. Kitchen sink leaking under the cabinet"
-        value={title}
-        onChangeText={setTitle}
-        error={titleError}
-      />
-
-      <AppTextField
-        label="Description (optional)"
-        placeholder="Add any details that will help the department resolve this faster"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-        numberOfLines={4}
-        style={styles.textArea}
-      />
-
-      <Text style={[styles.label, { color: colors.textSecondary }]}>Priority</Text>
-      <View style={styles.priorityRow}>
-        {PRIORITIES.map((p) => {
-          const active = priority === p.key;
-          return (
-            <Pressable
-              key={p.key}
-              onPress={() => setPriority(p.key)}
-              scaleTo={0.96}
-              style={[
-                styles.priorityPill,
-                {
-                  backgroundColor: active ? colors.primaryTint : colors.surfaceElevated,
-                  borderColor: active ? colors.primary : colors.border,
-                },
-              ]}
-            >
-              <Text style={[styles.priorityLabel, { color: active ? colors.primary : colors.textSecondary }]}>
-                {p.label}
-              </Text>
+            <Pressable key={cat.key} onPress={() => setCategory(cat.key)} scaleTo={0.97} style={styles.categoryPress}>
+              <View
+                style={[
+                  styles.categoryCard,
+                  {
+                    backgroundColor: active ? colors.primaryTint : colors.surfaceSunken,
+                    borderColor: active ? colors.primary : colors.border,
+                    borderRadius: colors.radii.md,
+                  },
+                ]}
+              >
+                <Text style={[styles.categoryLabel, { color: active ? colors.primary : colors.textPrimary }]}>
+                  {cat.label}
+                </Text>
+                <Text style={[styles.categoryDesc, { color: active ? colors.primary : colors.textSecondary }]} numberOfLines={2}>
+                  {cat.description}
+                </Text>
+              </View>
             </Pressable>
           );
         })}
       </View>
 
-      <View style={styles.submitWrap}>
-        <AppButton
-          label="Submit Complaint"
-          onPress={handleSubmit}
-          loading={submitting}
-          icon={<Ionicons name="send" size={16} color={colors.onPrimary} />}
+      <AppTextField
+        label="What's the issue? (short title)"
+        placeholder="e.g. Kitchen sink leaking"
+        value={subcategory}
+        onChangeText={setSubcategory}
+        maxLength={80}
+      />
+
+      <View style={styles.descriptionField}>
+        <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 6 }]}>Description</Text>
+        <TextInput
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Describe the issue in detail — location, when it started, anything the team should know."
+          placeholderTextColor={colors.textTertiary}
+          multiline
+          maxLength={2000}
+          style={[
+            styles.descriptionInput,
+            {
+              color: colors.textPrimary,
+              backgroundColor: colors.surfaceSunken,
+              borderRadius: colors.radii.md,
+              borderColor: colors.border,
+            },
+          ]}
         />
       </View>
+
+      {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
+
+      <AppButton
+        label="Submit Complaint"
+        onPress={handleSubmit}
+        loading={createComplaint.isPending}
+        disabled={!canSubmit}
+      />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  label: { fontSize: 13, fontWeight: "600", marginBottom: 8 },
-  categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 6 },
-  categoryChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999, borderWidth: 1 },
-  categoryLabel: { fontSize: 13, fontWeight: "600" },
-  errorText: { fontSize: 12, marginBottom: 14, marginTop: 2 },
-  textArea: { minHeight: 96, textAlignVertical: "top", paddingTop: 14 },
-  priorityRow: { flexDirection: "row", gap: 8, marginBottom: 24 },
-  priorityPill: { flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
-  priorityLabel: { fontSize: 13, fontWeight: "600" },
-  submitWrap: { marginBottom: 12 },
+  label: { fontSize: 13, fontWeight: "600" },
+  categoryRow: { gap: 10, marginTop: 8, marginBottom: 20 },
+  categoryPress: { width: "100%" },
+  categoryCard: { padding: 14, borderWidth: 1.5, gap: 3 },
+  categoryLabel: { fontSize: 15, fontWeight: "700" },
+  categoryDesc: { fontSize: 12 },
+  descriptionField: { marginBottom: 20 },
+  descriptionInput: { padding: 14, fontSize: 15, minHeight: 120, textAlignVertical: "top", borderWidth: 1 },
+  error: { fontSize: 13, marginBottom: 12, textAlign: "center" },
 });
