@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { apiClient } from "./api-client";
+import { queryClient } from "./query-client";
 import { tokenStorage } from "./token-storage";
 import type { LoginRequest, RegisterRequest, RegisterResponse, TokenPair } from "./types";
 
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           apiClient.post("/auth/logout", { refresh_token: refreshToken }).catch(() => undefined);
         }
         await tokenStorage.clear();
+        queryClient.clear();
         setStatus("signed-out");
       },
     }),
