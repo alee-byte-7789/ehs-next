@@ -12,10 +12,11 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { useAuth } from "../lib/auth-context";
+import { registerAdminForWebPush } from "../lib/fcm-web-push";
 import { useAdminMe } from "../lib/registration-queries";
 import { useAdminTheme } from "../lib/theme-context";
 import { NotificationBell } from "./NotificationBell";
@@ -40,6 +41,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { isDark, mode, setMode } = useAdminTheme();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    registerAdminForWebPush();
+  }, []);
 
   const visibleNav = NAV_ITEMS.filter((item) => !item.superAdminOnly || admin?.role === "super_admin");
 
