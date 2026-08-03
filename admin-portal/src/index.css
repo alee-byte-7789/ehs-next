@@ -1,17 +1,25 @@
 @import "tailwindcss";
 
 /*
- * Design tokens — must match PROJECT_ROADMAP.md Section 5 and
- * mobile-app/lib/theme.ts exactly, so "one design system, two apps" holds.
+ * Design tokens — ported directly from mobile-app/lib/theme/palette.ts
+ * so "one design system, two apps" actually holds. Same 8 accents, same
+ * neutral scale shape, same semantic/status colors.
+ *
+ * Two axes, same as the mobile app:
+ *   [data-theme]  = light / dark   (neutrals: background, surface, text, border)
+ *   [data-accent] = emerald / blue / purple / red / cyan / yellow / orange / rose
+ *
+ * `--color-primary-tint` depends on BOTH axes (a light accent tint in
+ * light mode, a dark accent tint in dark mode) — handled by each accent
+ * block setting `-light`/`-dark` variants, then the theme block picking
+ * the right one.
  */
-@theme {
-  --color-primary: #10B981;
-  --color-primary-dark: #059669;
-  --color-surface: #F5F6F7;
-  --color-border: #E5E7EB;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6B7280;
-  --color-danger: #EF4444;
+
+:root {
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
 
   --color-status-pending: #F59E0B;
   --color-status-accepted: #3B82F6;
@@ -20,8 +28,139 @@
   --color-status-resolved: #10B981;
   --color-status-reopened: #EF4444;
   --color-status-closed: #6B7280;
+
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
 }
 
+/* --- Neutral scale (theme mode) --- */
+:root[data-theme="light"] {
+  --color-background: #FBFBFA;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-sunken: #F2F3F5;
+  --color-border: #E7E8EC;
+  --color-border-strong: #D3D5DB;
+  --color-text-primary: #14161A;
+  --color-text-secondary: #6B7076;
+  --color-text-tertiary: #9AA0A8;
+  --glass-fill: rgba(255, 255, 255, 0.62);
+  --glass-sheen: rgba(255, 255, 255, 0.55);
+  --glass-rim-highlight: rgba(255, 255, 255, 0.9);
+  --glass-rim-shadow: rgba(20, 22, 26, 0.1);
+  --glass-blur: 20px;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --color-background: #0B0C0E;
+  --color-surface: #17181B;
+  --color-surface-elevated: #1E2024;
+  --color-surface-sunken: #101113;
+  --color-border: #2A2C30;
+  --color-border-strong: #3A3D42;
+  --color-text-primary: #F5F6F7;
+  --color-text-secondary: #A0A5AC;
+  --color-text-tertiary: #6D7178;
+  --glass-fill: rgba(28, 30, 34, 0.55);
+  --glass-sheen: rgba(255, 255, 255, 0.1);
+  --glass-rim-highlight: rgba(255, 255, 255, 0.16);
+  --glass-rim-shadow: rgba(0, 0, 0, 0.5);
+  --glass-blur: 14px;
+  color-scheme: dark;
+}
+
+/* --- Accent hue (same 8 as mobile-app/lib/theme/palette.ts) --- */
+:root[data-accent="emerald"] {
+  --color-primary: #10B981; --color-primary-strong: #059669;
+  --color-primary-tint-light: #D1FAE5; --color-primary-tint-dark: #0B3B2E;
+  --color-on-primary: #FFFFFF;
+}
+:root[data-accent="blue"] {
+  --color-primary: #3B82F6; --color-primary-strong: #2563EB;
+  --color-primary-tint-light: #DBEAFE; --color-primary-tint-dark: #0F2C57;
+  --color-on-primary: #FFFFFF;
+}
+:root[data-accent="purple"] {
+  --color-primary: #8B5CF6; --color-primary-strong: #7C3AED;
+  --color-primary-tint-light: #EDE4FF; --color-primary-tint-dark: #2E1F52;
+  --color-on-primary: #FFFFFF;
+}
+:root[data-accent="red"] {
+  --color-primary: #EF4444; --color-primary-strong: #DC2626;
+  --color-primary-tint-light: #FEE2E2; --color-primary-tint-dark: #4A1414;
+  --color-on-primary: #FFFFFF;
+}
+:root[data-accent="cyan"] {
+  --color-primary: #06B6D4; --color-primary-strong: #0891B2;
+  --color-primary-tint-light: #CFFAFE; --color-primary-tint-dark: #0A3A42;
+  --color-on-primary: #04222A;
+}
+:root[data-accent="yellow"] {
+  --color-primary: #F5B700; --color-primary-strong: #D69E00;
+  --color-primary-tint-light: #FFF3C4; --color-primary-tint-dark: #4A3A05;
+  --color-on-primary: #241C00;
+}
+:root[data-accent="orange"] {
+  --color-primary: #F97316; --color-primary-strong: #EA580C;
+  --color-primary-tint-light: #FFE3CC; --color-primary-tint-dark: #4A2508;
+  --color-on-primary: #2A1400;
+}
+:root[data-accent="rose"] {
+  --color-primary: #F43F8B; --color-primary-strong: #DB2777;
+  --color-primary-tint-light: #FCE4EF; --color-primary-tint-dark: #441026;
+  --color-on-primary: #FFFFFF;
+}
+
+/* Picks the right tint variant for the active mode — depends on both axes. */
+:root[data-theme="light"] { --color-primary-tint: var(--color-primary-tint-light); }
+:root[data-theme="dark"] { --color-primary-tint: var(--color-primary-tint-dark); }
+
 body {
-  @apply bg-white text-[color:var(--color-text-primary)] antialiased;
+  @apply antialiased;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/*
+ * "Liquid Glass" surface — the web equivalent of mobile-app's Card.tsx
+ * glass variant (blur + accent wash + diagonal sheen + two-tone rim).
+ * Applied via the `.glass-card` class, toggled by data-glass="on/off"
+ * on <html> so it can be disabled without a JS-side conditional in every
+ * component that uses it.
+ */
+.glass-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: var(--glass-fill);
+  overflow: hidden;
+}
+[data-glass="on"] .glass-card {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  pointer-events: none;
+}
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, var(--glass-sheen) 0%, transparent 45%);
+  pointer-events: none;
+}
+.glass-card {
+  border-top: 1px solid var(--glass-rim-highlight);
+  border-left: 1px solid var(--glass-rim-highlight);
+  border-bottom: 1px solid var(--glass-rim-shadow);
+  border-right: 1px solid var(--glass-rim-shadow);
+  box-shadow: 0 8px 20px rgba(20, 22, 26, 0.08);
+}
+[data-theme="dark"] .glass-card {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }

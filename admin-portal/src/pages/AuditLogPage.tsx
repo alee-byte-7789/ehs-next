@@ -7,7 +7,7 @@ export function AuditLogPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--color-surface)]">
-      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-white px-6 py-4">
+      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] px-6 py-4">
         <h1 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Audit Logs</h1>
         <Link to="/" className="text-sm font-medium text-[color:var(--color-primary)]">
           ← Back to Dashboard
@@ -23,7 +23,7 @@ export function AuditLogPage() {
         )}
 
         {logs && (
-          <div className="overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-white">
+          <div className="overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)]">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-xs uppercase text-[color:var(--color-text-secondary)]">
                 <tr>

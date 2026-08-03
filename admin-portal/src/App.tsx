@@ -7,6 +7,7 @@ import { ComplaintDetailPage } from "./pages/ComplaintDetailPage";
 import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { StaffPage } from "./pages/StaffPage";
 
 export default function App() {
@@ -58,6 +59,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <AuditLogPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />

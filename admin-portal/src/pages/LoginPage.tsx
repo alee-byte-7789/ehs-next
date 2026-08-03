@@ -47,7 +47,7 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-[color:var(--color-surface)] px-4">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-sm rounded-2xl border border-[color:var(--color-border)] bg-white p-8 shadow-sm"
+        className="w-full max-w-sm rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] p-8 shadow-sm"
       >
         <img src="/logo-full.png" alt="EHS Next" className="mb-4 h-16 w-auto" />
         <h1 className="mb-1 text-2xl font-semibold text-[color:var(--color-text-primary)]">EHS Next</h1>

@@ -58,7 +58,7 @@ export function AdminManagementPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--color-surface)]">
-      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-white px-6 py-4">
+      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] px-6 py-4">
         <h1 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Manage Admins</h1>
         <Link to="/" className="text-sm font-medium text-[color:var(--color-primary)]">
           ← Back to Dashboard
@@ -75,7 +75,7 @@ export function AdminManagementPage() {
 
         {isSuperAdmin && (
           <>
-            <div className="mb-8 rounded-xl border border-[color:var(--color-border)] bg-white p-6">
+            <div className="mb-8 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] p-6">
               <h2 className="mb-4 text-base font-semibold text-[color:var(--color-text-primary)]">
                 Create a new admin
               </h2>
@@ -165,7 +165,7 @@ export function AdminManagementPage() {
               </Button>
             </div>
 
-            <div className="rounded-xl border border-[color:var(--color-border)] bg-white">
+            <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)]">
               <h2 className="border-b border-[color:var(--color-border)] px-6 py-4 text-base font-semibold text-[color:var(--color-text-primary)]">
                 Existing admins
               </h2>

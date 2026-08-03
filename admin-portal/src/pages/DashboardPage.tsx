@@ -1,8 +1,9 @@
-import { History, LogOut, MessageSquareWarning, ShieldCheck, Users } from "lucide-react";
+import { History, LogOut, MessageSquareWarning, Settings, ShieldCheck, Users } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "../components/Button";
+import { GlassCard } from "../components/GlassCard";
 import { NotificationBell } from "../components/NotificationBell";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAuth } from "../lib/auth-context";
@@ -51,7 +52,7 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--color-surface)]">
-      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-white px-6 py-4">
+      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] px-6 py-4">
         <div>
           <h1 className="text-lg font-semibold text-[color:var(--color-text-primary)]">EHS Next Admin</h1>
           {admin && (
@@ -62,6 +63,9 @@ export function DashboardPage() {
         </div>
         <div className="flex items-center gap-3">
           <NotificationBell />
+          <Link to="/settings" className="flex items-center gap-1.5 text-sm font-medium text-[color:var(--color-primary)]">
+            <Settings size={16} /> Settings
+          </Link>
           <Link to="/complaints" className="flex items-center gap-1.5 text-sm font-medium text-[color:var(--color-primary)]">
             <MessageSquareWarning size={16} /> Complaints
           </Link>
@@ -122,7 +126,7 @@ export function DashboardPage() {
         )}
 
         {pending && pending.length > 0 && (
-          <div className="overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-white">
+          <div className="overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)]">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-xs uppercase text-[color:var(--color-text-secondary)]">
                 <tr>
@@ -182,11 +186,11 @@ export function DashboardPage() {
 
 function WidgetCard({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <div className="rounded-xl border border-[color:var(--color-border)] bg-white p-4">
+    <GlassCard>
       <p className="text-2xl font-bold" style={{ color: color ?? "var(--color-text-primary)" }}>
         {value}
       </p>
       <p className="text-xs text-[color:var(--color-text-secondary)]">{label}</p>
-    </div>
+    </GlassCard>
   );
 }

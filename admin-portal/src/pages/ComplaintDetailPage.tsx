@@ -104,7 +104,7 @@ export function ComplaintDetailPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--color-surface)]">
-      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-white px-6 py-4">
+      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] px-6 py-4">
         <h1 className="text-lg font-semibold text-[color:var(--color-text-primary)]">{complaint.complaint_code}</h1>
         <Link to="/complaints" className="text-sm font-medium text-[color:var(--color-primary)]">
           ← Back to Complaints
@@ -112,7 +112,7 @@ export function ComplaintDetailPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-8">
-        <div className="mb-6 rounded-xl border border-[color:var(--color-border)] bg-white p-6">
+        <div className="mb-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] p-6">
           <div className="mb-2 flex items-center gap-3">
             <StatusBadge status={complaint.status} />
             <span className="text-xs capitalize text-[color:var(--color-text-secondary)]">{complaint.category}</span>
@@ -259,14 +259,14 @@ export function ComplaintDetailPage() {
         </div>
 
         {feedback && (
-          <div className="mb-6 rounded-xl border border-[color:var(--color-border)] bg-white p-6">
+          <div className="mb-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] p-6">
             <h3 className="mb-2 text-base font-semibold text-[color:var(--color-text-primary)]">Resident Feedback</h3>
             <p className="text-sm text-[color:var(--color-text-primary)]">{"★".repeat(feedback.rating)}{"☆".repeat(5 - feedback.rating)}</p>
             {feedback.comment && <p className="mt-1 text-sm text-[color:var(--color-text-secondary)]">{feedback.comment}</p>}
           </div>
         )}
 
-        <div className="mb-6 rounded-xl border border-[color:var(--color-border)] bg-white p-6">
+        <div className="mb-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] p-6">
           <h3 className="mb-4 text-base font-semibold text-[color:var(--color-text-primary)]">
             Internal Notes <span className="text-xs font-normal text-[color:var(--color-text-secondary)]">(admin-only, never visible to resident)</span>
           </h3>
@@ -292,7 +292,7 @@ export function ComplaintDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-[color:var(--color-border)] bg-white p-6">
+        <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] p-6">
           <h3 className="mb-4 text-base font-semibold text-[color:var(--color-text-primary)]">Timeline</h3>
           <div className="space-y-4">
             {complaint.history.map((entry) => (

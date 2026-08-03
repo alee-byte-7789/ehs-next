@@ -53,7 +53,7 @@ export function StaffPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--color-surface)]">
-      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-white px-6 py-4">
+      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] px-6 py-4">
         <h1 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Maintenance Staff</h1>
         <Link to="/" className="text-sm font-medium text-[color:var(--color-primary)]">
           ← Back to Dashboard
@@ -61,7 +61,7 @@ export function StaffPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-8">
-        <div className="mb-8 rounded-xl border border-[color:var(--color-border)] bg-white p-6">
+        <div className="mb-8 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] p-6">
           <h2 className="mb-4 text-base font-semibold text-[color:var(--color-text-primary)]">Add staff member</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <Controller
@@ -103,7 +103,7 @@ export function StaffPage() {
           </Button>
         </div>
 
-        <div className="rounded-xl border border-[color:var(--color-border)] bg-white">
+        <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)]">
           <h2 className="border-b border-[color:var(--color-border)] px-6 py-4 text-base font-semibold text-[color:var(--color-text-primary)]">
             Current staff
           </h2>
