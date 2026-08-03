@@ -1,8 +1,10 @@
 import { Redirect } from "expo-router";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AppText as Text } from "../components/ui/AppText";
 
 import { useAuth } from "../lib/auth-context";
+import { hasOpenedAppBefore } from "../lib/onboarding-storage";
 import { useResidentMe } from "../lib/resident-queries";
 import { spacing } from "../lib/theme";
 import { useTheme } from "../lib/use-theme";
@@ -13,7 +15,20 @@ export default function SplashGate() {
 
   const residentQuery = useResidentMe(status === "signed-in");
 
-  if (status === "checking" || (status === "signed-in" && residentQuery.isPending)) {
+  const [checkedFirstOpen, setCheckedFirstOpen] = useState(false);
+  const [isFirstOpenEver, setIsFirstOpenEver] = useState(false);
+
+  useEffect(() => {
+    hasOpenedAppBefore().then((seenBefore) => {
+      setIsFirstOpenEver(!seenBefore);
+      setCheckedFirstOpen(true);
+    });
+  }, []);
+
+  const isLoading =
+    !checkedFirstOpen || status === "checking" || (status === "signed-in" && residentQuery.isPending);
+
+  if (isLoading) {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color={theme.primary} />
@@ -23,6 +38,11 @@ export default function SplashGate() {
   }
 
   if (status === "signed-out") {
+    // Very first time this device has ever opened the app, before any
+    // registration/login has happened — show the appearance picker first.
+    if (isFirstOpenEver) {
+      return <Redirect href="/appearance-onboarding?next=/login" />;
+    }
     return <Redirect href="/login" />;
   }
 

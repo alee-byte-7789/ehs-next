@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 import { AppText as Text } from "./AppText";
 
@@ -9,13 +9,18 @@ import { Pressable } from "./Pressable";
 interface QuickActionCardProps {
   label: string;
   description: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: keyof typeof Ionicons.glyphMap | keyof typeof MaterialCommunityIcons.glyphMap;
+  /** Ionicons doesn't have a real mosque icon — MaterialCommunityIcons
+   * does ("mosque-outline"), so this lets a card opt into that icon set
+   * instead. Defaults to Ionicons so every existing card is unaffected. */
+  iconFamily?: "ionicons" | "material-community";
   onPress: () => void;
   badge?: number;
 }
 
-export function QuickActionCard({ label, description, icon, onPress, badge }: QuickActionCardProps) {
+export function QuickActionCard({ label, description, icon, iconFamily = "ionicons", onPress, badge }: QuickActionCardProps) {
   const { colors } = useAppTheme();
+  const IconComponent = iconFamily === "material-community" ? MaterialCommunityIcons : Ionicons;
 
   return (
     <Pressable onPress={onPress} style={styles.pressWrap} scaleTo={0.96}>
@@ -26,7 +31,7 @@ export function QuickActionCard({ label, description, icon, onPress, badge }: Qu
             { backgroundColor: colors.primaryTint, borderRadius: colors.radii.md },
           ]}
         >
-          <Ionicons name={icon} size={22} color={colors.primary} />
+          <IconComponent name={icon as never} size={22} color={colors.primary} />
           {badge ? (
             <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.surfaceElevated }]}>
               <Text style={styles.badgeText}>{badge > 9 ? "9+" : badge}</Text>

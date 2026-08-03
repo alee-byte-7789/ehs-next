@@ -119,7 +119,8 @@ export default function HomeScreen() {
         <QuickActionCard
           label={t("action_prayer_timings")}
           description={t("action_prayer_timings_desc")}
-          icon="time-outline"
+          icon="mosque-outline"
+          iconFamily="material-community"
           onPress={() => router.push("/prayer-timings")}
         />
         <QuickActionCard

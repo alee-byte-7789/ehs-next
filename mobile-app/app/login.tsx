@@ -52,7 +52,7 @@ export default function LoginScreen() {
       setSubmitting(false);
     }
     if (loggedIn) {
-      router.replace("/");
+      router.replace("/appearance-onboarding?next=/");
     }
   };
 
