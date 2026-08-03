@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import {
   Animated,
+  Easing,
   GestureResponderEvent,
   Pressable as RNPressable,
   StyleProp,
@@ -44,12 +45,13 @@ export function Pressable({
       Animated.spring(scale, {
         toValue: toScale,
         useNativeDriver: true,
-        speed: 40,
-        bounciness: 6,
+        speed: 22,
+        bounciness: 8,
       }),
       Animated.timing(opacity, {
         toValue: toOpacity,
-        duration: 90,
+        duration: 140,
+        easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
     ]).start();

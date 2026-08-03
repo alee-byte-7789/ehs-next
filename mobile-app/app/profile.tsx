@@ -39,7 +39,7 @@ export default function ProfileScreen() {
         </View>
         <Text style={[styles.name, { color: colors.textPrimary }]}>{resident?.full_name ?? "Resident"}</Text>
         <Text style={[styles.houseId, { color: colors.textSecondary }]}>
-          House {resident?.house_id ?? "—"} · {resident?.resident_type === "tenant" ? "Tenant" : "Owner"}
+          House {resident?.house_code ?? "—"} · {resident?.resident_type === "tenant" ? "Tenant" : "Owner"}
         </Text>
       </View>
 

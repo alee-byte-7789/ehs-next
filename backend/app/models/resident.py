@@ -84,3 +84,11 @@ class Resident(Base):
 
     def __repr__(self) -> str:
         return f"<Resident {self.resident_code or f'unverified:{self.id}'}>"
+
+    @property
+    def house_code(self) -> str:
+        """The human-readable house identifier (e.g. 'EHS-B-26') — this
+        was never exposed on ResidentOut before, only the raw internal
+        house_id, which is why the app was showing a meaningless integer
+        instead of the resident's actual house number."""
+        return self.house.house_code

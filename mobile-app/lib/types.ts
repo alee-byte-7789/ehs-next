@@ -11,6 +11,7 @@ export interface ResidentOut {
   id: number;
   resident_code: string | null;
   house_id: number;
+  house_code: string;
   full_name: string;
   phone: string;
   email: string | null;

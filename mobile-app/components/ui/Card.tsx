@@ -44,17 +44,15 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
   };
 
   if (variant === "elevated" && glassEffect) {
-    const fillColor = colors.isDark ? "rgba(28,30,34,0.55)" : "rgba(255,255,255,0.62)";
-    const tintColor = colors.isDark ? withAlpha(colors.primary, 0.1) : withAlpha(colors.primary, 0.07);
-    const rimHighlight = colors.isDark ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.9)";
-    const rimShadow = colors.isDark ? "rgba(0,0,0,0.5)" : "rgba(20,22,26,0.1)";
-    const sheenTop = colors.isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.55)";
+    const fillColor = colors.isDark ? "rgba(28,30,34,0.55)" : "rgba(255,255,255,0.72)";
+    const tintColor = colors.isDark ? withAlpha(colors.primary, 0.1) : withAlpha(colors.primary, 0.06);
+    const sheenTop = colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.4)";
 
     return (
       <View style={[styles.base, shadowStyle, style]}>
         <View style={[styles.glassClip, { borderRadius: radius }]}>
           <BlurView
-            intensity={colors.isDark ? 45 : 70}
+            intensity={colors.isDark ? 45 : 60}
             tint={colors.isDark ? "dark" : "light"}
             experimentalBlurMethod={Platform.OS === "android" ? "dimezisBlurView" : undefined}
             style={ABSOLUTE_FILL}
@@ -63,39 +61,16 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
           <View style={[ABSOLUTE_FILL, { backgroundColor: fillColor }]} />
           {/* Accent wash: glass subtly "picks up" the app's theme color, like real glass over a colored surface. */}
           <View style={[ABSOLUTE_FILL, { backgroundColor: tintColor }]} />
-          {/* Specular sheen: soft diagonal highlight across the top third, the signature liquid-glass glint. */}
+          {/* Soft sheen — no hard rim border this time; that's what was
+              reading as harsh "boxes and edges" in light mode, since a
+              near-white 1px border on a near-white card on a near-white
+              page has too little contrast to look intentional. A single
+              soft gradient sheen carries the "glass" feeling on its own. */}
           <LinearGradient
             colors={[sheenTop, "rgba(255,255,255,0)"]}
             start={{ x: 0.1, y: 0 }}
-            end={{ x: 0.7, y: 0.6 }}
+            end={{ x: 0.8, y: 0.9 }}
             style={ABSOLUTE_FILL}
-          />
-          {/* Glass rim: bright catch-light on the top/left edge, soft shadow line on the bottom/right edge. */}
-          <View
-            pointerEvents="none"
-            style={[
-              ABSOLUTE_FILL,
-              {
-                borderRadius: radius,
-                borderTopWidth: 1,
-                borderLeftWidth: 1,
-                borderTopColor: rimHighlight,
-                borderLeftColor: rimHighlight,
-              },
-            ]}
-          />
-          <View
-            pointerEvents="none"
-            style={[
-              ABSOLUTE_FILL,
-              {
-                borderRadius: radius,
-                borderBottomWidth: 1,
-                borderRightWidth: 1,
-                borderBottomColor: rimShadow,
-                borderRightColor: rimShadow,
-              },
-            ]}
           />
           <View style={{ padding: pad }} {...rest}>
             {children}

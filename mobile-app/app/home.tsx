@@ -78,7 +78,7 @@ export default function HomeScreen() {
         <View style={styles.houseRow}>
           <Ionicons name="home" size={13} color={colors.textTertiary} />
           <Text style={[styles.houseText, { color: colors.textTertiary }]}>
-            House {resident?.house_id ?? "—"} · {resident?.resident_code ?? "Unverified"}
+            House {resident?.house_code ?? "—"}
           </Text>
         </View>
 

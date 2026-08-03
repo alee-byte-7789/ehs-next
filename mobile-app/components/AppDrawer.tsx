@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Animated, Dimensions, Pressable as RNPressable, StyleSheet, View } from "react-native";
+import { Animated, Dimensions, Easing, Pressable as RNPressable, StyleSheet, View } from "react-native";
 import { AppText as Text } from "./ui/AppText";
 
 import { useAuth } from "../lib/auth-context";
@@ -35,14 +35,16 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(translateX, {
+      Animated.spring(translateX, {
         toValue: visible ? 0 : -DRAWER_WIDTH,
-        duration: 240,
         useNativeDriver: true,
+        speed: 16,
+        bounciness: 4,
       }),
       Animated.timing(backdropOpacity, {
         toValue: visible ? 1 : 0,
-        duration: 240,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
     ]).start();
@@ -84,7 +86,7 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
           },
         ]}
       >
-        <View style={styles.profileHeader}>
+        <RNPressable onPress={() => go("/profile")} style={styles.profileHeader}>
           <View style={[styles.avatar, { backgroundColor: colors.primaryTint }]}>
             <Text style={[styles.avatarText, { color: colors.primary }]}>
               {resident?.full_name?.[0]?.toUpperCase() ?? "R"}
@@ -96,7 +98,7 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
           <Text style={[styles.profileMeta, { color: colors.textTertiary }]} numberOfLines={1}>
             {resident?.resident_code ?? "Unverified"}
           </Text>
-        </View>
+        </RNPressable>
 
         <View style={styles.itemsWrap}>
           <DrawerItem icon="person-outline" label="Profile" onPress={() => go("/profile")} />
@@ -109,8 +111,6 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
             onPress={() => setLocale(locale === "en" ? "ur" : "en")}
           />
           <DrawerItem icon={themeIcon as never} label="Theme" value={themeLabel} onPress={cycleTheme} />
-
-          <DrawerItem icon="information-circle-outline" label="About" onPress={() => go("/about")} />
         </View>
 
         <View style={styles.footer}>

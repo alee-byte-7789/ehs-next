@@ -12,6 +12,7 @@ class ResidentOut(BaseModel):
     id: int
     resident_code: str | None
     house_id: int
+    house_code: str
     full_name: str
     phone: str
     email: str | None
