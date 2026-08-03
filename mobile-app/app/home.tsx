@@ -42,7 +42,22 @@ export default function HomeScreen() {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 3);
 
-  const greeting = getGreeting(t);
+  // Computed client-side, after mount — NOT as a plain synchronous
+  // render-time value. This app is statically pre-rendered at build
+  // time (Metro/Expo Router's "static rendering"), which runs on my
+  // build server, not the user's device. A plain `getGreeting(t)` call
+  // during render gets evaluated once at build time and can get baked
+  // into the static HTML, showing whatever hour happened to be current
+  // on the build machine rather than the user's actual local time. This
+  // is the same class of bug as an earlier theme/color-scheme detection
+  // issue in this codebase — the fix is the same: defer to useEffect so
+  // it's guaranteed to run fresh in the real browser, not at build time.
+  const [greeting, setGreeting] = useState(() => getGreeting(t));
+  useEffect(() => {
+    setGreeting(getGreeting(t));
+    const interval = setInterval(() => setGreeting(getGreeting(t)), 60_000);
+    return () => clearInterval(interval);
+  }, [t]);
 
   return (
     <View style={{ flex: 1 }}>
