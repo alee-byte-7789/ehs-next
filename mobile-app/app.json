@@ -30,7 +30,16 @@
       "backgroundColor": "#FFFFFF",
       "display": "standalone"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-foreground.png",
+          "color": "#10B981"
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

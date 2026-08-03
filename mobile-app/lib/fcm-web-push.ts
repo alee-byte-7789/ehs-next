@@ -11,8 +11,8 @@ const firebaseConfig = {
   appId: "1:471386416446:web:6b0f833a9f82b1f119f86f",
 };
 
-// This is a PUBLIC key (the "P" in VAPID) — safe to ship in client code
-// by design, same as the Firebase config above. Not a secret.
+// Public VAPID key (the "P" in VAPID) — safe to ship in client code by
+// design, same as the Firebase config above. Not a secret.
 const VAPID_KEY =
   "BOYAhoubHjLOoL8yl41iU_Z9zGRy3XEFrR_HLJRP1rfN3elEVFAkc86wmrUmlNzsH0DhN7duwgl0farZkYUseZM";
 

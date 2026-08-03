@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AppText as Text } from "../components/ui/AppText";
 
@@ -9,8 +10,10 @@ import { QuickActionCard } from "../components/ui/QuickActionCard";
 import { StatusChip } from "../components/ui/StatusChip";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { useAuth } from "../lib/auth-context";
-import { MOCK_NOTIFICATIONS } from "../lib/mock-data";
 import { useMyComplaints } from "../lib/complaint-queries";
+import { useUnreadNotificationCount } from "../lib/notification-queries";
+import { registerForWebPush } from "../lib/fcm-web-push";
+import { registerForPushNotifications } from "../lib/push-notifications";
 import { useLocale } from "../lib/i18n/locale-context";
 import { useResidentMe } from "../lib/resident-queries";
 import { useAppTheme } from "../lib/theme/theme-context";
@@ -23,7 +26,16 @@ export default function HomeScreen() {
   const { data: complaints, isLoading: complaintsLoading } = useMyComplaints();
 
   const firstName = resident?.full_name?.split(" ")[0] ?? "there";
-  const unreadCount = MOCK_NOTIFICATIONS.filter((n) => !n.read).length;
+  const { data: unread } = useUnreadNotificationCount();
+  const unreadCount = unread?.count ?? 0;
+
+  useEffect(() => {
+    // Fire-and-forget — both functions handle their own platform checks
+    // and errors. registerForPushNotifications (Expo) no-ops on web;
+    // registerForWebPush (Firebase) no-ops on native.
+    registerForPushNotifications();
+    registerForWebPush();
+  }, []);
   const allComplaints = complaints ?? [];
   const openComplaints = allComplaints.filter((c) => c.status !== "resolved" && c.status !== "closed");
   const resolvedComplaints = allComplaints.filter((c) => c.status === "resolved");

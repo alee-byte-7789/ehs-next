@@ -16,13 +16,14 @@ Notifications.setNotificationHandler({
 });
 
 /**
- * Registers this device for push notifications and sends the resulting
- * Expo push token to our backend. Only meaningful on the native app built
- * via EAS — browsers (the PWA) can't get an Expo push token this way, and
- * simulators/emulators can't receive real pushes either.
+ * Registers this device for push notifications via Expo's own push
+ * service and sends the resulting token to our backend. Only meaningful
+ * on the native app built via EAS — browsers (the PWA) can't get an Expo
+ * push token this way; see fcm-web-push.ts for that path instead.
  *
- * Safe to call unconditionally on app start: it silently no-ops on web
- * and on non-physical devices rather than throwing.
+ * Safe to call unconditionally on app start: no-ops on web and on
+ * non-physical devices (simulators can't receive real pushes) rather
+ * than throwing.
  */
 export async function registerForPushNotifications(): Promise<void> {
   if (Platform.OS === "web") return;

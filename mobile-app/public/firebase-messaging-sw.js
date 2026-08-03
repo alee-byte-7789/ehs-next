@@ -5,8 +5,7 @@
 // Expo's bundling pipeline. That's why the Firebase config is duplicated
 // here rather than imported from lib/ — service workers can't reach into
 // the app bundle. Version pinned to match the `firebase` npm package
-// version used elsewhere in this app (12.17.0), per Firebase's guidance
-// to keep the compat scripts in sync with the SDK version.
+// version used elsewhere in this app (12.17.0).
 
 importScripts("https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/12.17.0/firebase-messaging-compat.js");
@@ -22,8 +21,8 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Fires when a push arrives while the PWA tab is NOT focused/open —
-// this is what actually shows up in the phone/desktop notification tray.
+// Fires when a push arrives while the PWA tab is NOT focused/open — this
+// is what actually shows up in the phone/desktop notification tray.
 messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title ?? "EHS Next";
   const body = payload.notification?.body ?? "";
