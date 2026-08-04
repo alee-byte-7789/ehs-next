@@ -1,34 +1,58 @@
 import { ScrollViewStyleReset } from "expo-router/html";
+import { type PropsWithChildren } from "react";
 
 /**
- * Expo Router's static web export uses this file to build the root HTML
- * document wrapping every page. This is the only mechanism for injecting
- * PWA-related <head> tags (manifest link, theme-color, iOS home-screen
- * meta tags) since Expo's default export doesn't include them — verified
- * directly: a plain `expo export --platform web` produced zero manifest
- * or PWA meta tags at all before this file existed.
+ * Custom HTML shell for the web (static) export.
+ *
+ * WHY THIS FILE EXISTS
+ * --------------------
+ * The `expo.web` block in app.json (name / shortName / themeColor /
+ * display: "standalone") is only honoured by Expo's OLD webpack builder.
+ * This project uses Metro with `output: "static"`, which silently ignores
+ * those fields and emits NO PWA manifest and NO Apple meta tags at all.
+ *
+ * That was fatal on iPhone: iOS only delivers Web Push to a genuinely
+ * home-screen-INSTALLED PWA, and without `<link rel="manifest">` plus
+ * display:standalone, "Add to Home Screen" produces a plain bookmark that
+ * still runs in Safari — so push could never arrive, no matter how correct
+ * the Firebase code was. The Admin Portal worked on phones only because
+ * vite-plugin-pwa generates a real manifest for it.
+ *
+ * `+html.tsx` is Expo Router's supported way to customise this shell, so
+ * these tags survive every export rather than being patched in after build.
  */
-export default function Root({ children }: { children: React.ReactNode }) {
+export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
       <head>
-        <title>EHS Next</title>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+        {/* viewport-fit=cover so the app fills the screen under iOS notches
+            once it's running standalone from the home screen. */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+        />
 
-        {/* Android / Chrome PWA installability */}
+        {/* The manifest is what makes this an installable PWA — and on iOS,
+            what makes Web Push possible at all. */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#10B981" />
 
-        {/* iOS Safari "Add to Home Screen" — Safari ignores manifest.json
-            for standalone/full-screen behavior and uses these meta tags
-            instead. */}
+        {/* iOS ignores the manifest for several of these and needs its own
+            tags; without them an installed icon can still launch in Safari. */}
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="EHS Next" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
+        <meta
+          name="description"
+          content="Register and track complaints for Employees Housing Society."
+        />
+
+        {/* Expo Router: keeps the root scroll behaviour consistent on web. */}
         <ScrollViewStyleReset />
       </head>
       <body>{children}</body>
