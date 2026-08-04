@@ -94,10 +94,17 @@ def send_fcm_push(fcm_token: str | None, title: str, body: str, link: str = "/")
         message = messaging.Message(
             notification=messaging.Notification(title=title, body=body),
             token=fcm_token,
+            # `data.link` is what our own service-worker `notificationclick`
+            # handler reads to navigate. Deliberately NOT using
+            # WebpushFCMOptions(link=...) here: Firebase validates that
+            # field as a fully-qualified HTTPS URL and raises
+            # "WebpushFCMOptions.link must be a HTTPS URL." on a relative
+            # path — which silently broke EVERY FCM send. It's also
+            # redundant, since fcm_options.link only drives Firebase's
+            # default click behaviour, which our own handler overrides.
             data={"link": link},
             webpush=messaging.WebpushConfig(
                 notification=messaging.WebpushNotification(icon="/icons/icon-192.png"),
-                fcm_options=messaging.WebpushFCMOptions(link=link),
             ),
         )
         logger.info("[i] Sending message to Firebase...")
