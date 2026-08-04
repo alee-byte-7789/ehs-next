@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { z } from "zod";
 
 import { Button } from "../components/Button";
+import { Select } from "../components/Select";
 import { extractApiErrorMessage } from "../lib/api-client";
 import { useAdminsList, useCreateAdmin } from "../lib/admin-management-queries";
 import { useAdminMe } from "../lib/registration-queries";
@@ -142,16 +143,7 @@ export function AdminManagementPage() {
                     control={control}
                     name="role"
                     render={({ field }) => (
-                      <select
-                        {...field}
-                        className="w-full rounded-lg border border-[color:var(--color-border)] px-3 py-2 text-sm outline-none focus:border-[color:var(--color-primary)]"
-                      >
-                        {ROLE_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
+                      <Select value={field.value} onChange={field.onChange} options={ROLE_OPTIONS} />
                     )}
                   />
                 </div>

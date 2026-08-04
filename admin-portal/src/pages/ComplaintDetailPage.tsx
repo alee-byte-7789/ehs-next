@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { Button } from "../components/Button";
+import { Select } from "../components/Select";
 import { StatusBadge } from "../components/StatusBadge";
 import { extractApiErrorMessage } from "../lib/api-client";
 import {
@@ -167,18 +168,15 @@ export function ComplaintDetailPage() {
 
             {(complaint.status === "accepted" || complaint.status === "reopened") && (
               <>
-                <select
+                <Select
                   value={selectedStaffId}
-                  onChange={(e) => setSelectedStaffId(e.target.value)}
-                  className="rounded-lg border border-[color:var(--color-border)] px-3 py-2 text-sm"
-                >
-                  <option value="">Select staff...</option>
-                  {staff?.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.full_name} ({s.category})
-                    </option>
-                  ))}
-                </select>
+                  onChange={setSelectedStaffId}
+                  options={[
+                    { value: "", label: "Select staff..." },
+                    ...(staff?.map((s) => ({ value: String(s.id), label: `${s.full_name} (${s.category})` })) ?? []),
+                  ]}
+                  className="w-56"
+                />
                 <Button
                   loading={assign.isPending}
                   disabled={!selectedStaffId}
@@ -191,18 +189,15 @@ export function ComplaintDetailPage() {
 
             {(complaint.status === "assigned" || complaint.status === "in_progress") && (
               <>
-                <select
+                <Select
                   value={selectedStaffId}
-                  onChange={(e) => setSelectedStaffId(e.target.value)}
-                  className="rounded-lg border border-[color:var(--color-border)] px-3 py-2 text-sm"
-                >
-                  <option value="">Reassign to...</option>
-                  {staff?.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.full_name} ({s.category})
-                    </option>
-                  ))}
-                </select>
+                  onChange={setSelectedStaffId}
+                  options={[
+                    { value: "", label: "Reassign to..." },
+                    ...(staff?.map((s) => ({ value: String(s.id), label: `${s.full_name} (${s.category})` })) ?? []),
+                  ]}
+                  className="w-56"
+                />
                 <Button
                   variant="secondary"
                   loading={reassign.isPending}

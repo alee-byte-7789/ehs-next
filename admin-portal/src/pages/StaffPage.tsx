@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { z } from "zod";
 
 import { Button } from "../components/Button";
+import { Select } from "../components/Select";
 import { extractApiErrorMessage } from "../lib/api-client";
 import { useCreateStaff, useStaffList } from "../lib/staff-queries";
 import type { StaffCategory } from "../lib/types";
@@ -82,13 +83,7 @@ export function StaffPage() {
               control={control}
               name="category"
               render={({ field }) => (
-                <select {...field} className="rounded-lg border border-[color:var(--color-border)] px-3 py-2 text-sm">
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <Select value={field.value} onChange={field.onChange} options={CATEGORY_OPTIONS} />
               )}
             />
           </div>

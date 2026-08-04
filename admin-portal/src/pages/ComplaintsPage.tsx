@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "../components/Button";
+import { Select } from "../components/Select";
 import { StatusBadge } from "../components/StatusBadge";
 import {
   useBulkSetPriority,
@@ -79,17 +80,12 @@ export function ComplaintsPage() {
             placeholder="Search complaint ID, resident, house, phone..."
             className="w-72 rounded-lg border border-[color:var(--color-border)] px-3 py-2 text-sm"
           />
-          <select
+          <Select
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value as ComplaintPriority | "all")}
-            className="rounded-lg border border-[color:var(--color-border)] px-3 py-2 text-sm"
-          >
-            {PRIORITY_FILTERS.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
-              </option>
-            ))}
-          </select>
+            onChange={setPriorityFilter}
+            options={PRIORITY_FILTERS}
+            className="w-44"
+          />
         </div>
 
         <div className="mb-4 flex flex-wrap gap-2">
