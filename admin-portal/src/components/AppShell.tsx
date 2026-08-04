@@ -17,6 +17,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import { useAuth } from "../lib/auth-context";
 import { registerAdminForWebPush } from "../lib/fcm-web-push";
+import { useAdminNotificationAlerts } from "../lib/notification-queries";
 import { useAdminMe } from "../lib/registration-queries";
 import { useAdminTheme } from "../lib/theme-context";
 import { NotificationBell } from "./NotificationBell";
@@ -45,6 +46,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     registerAdminForWebPush();
   }, []);
+
+  useAdminNotificationAlerts();
 
   const visibleNav = NAV_ITEMS.filter((item) => !item.superAdminOnly || admin?.role === "super_admin");
 
