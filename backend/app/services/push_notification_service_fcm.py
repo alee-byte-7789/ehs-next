@@ -104,6 +104,14 @@ def send_fcm_push(fcm_token: str | None, title: str, body: str, link: str = "/")
         response = messaging.send(message, app=app)
         logger.info("[OK] Firebase response: %s", response)
         return {"stage": "sent", "success": True, "firebase_response": response}
+    except messaging.UnregisteredError as exc:
+        # The token is real but no longer valid — the user cleared their
+        # browser data, uninstalled the PWA, revoked permission, or the
+        # token simply rotated. Flagged distinctly from other errors so
+        # the caller can DELETE it rather than retrying a dead token on
+        # every future notification forever.
+        logger.info("[X] FCM token is no longer registered — will be cleared: %s", exc)
+        return {"stage": "send", "success": False, "error": f"Token unregistered: {exc}", "token_invalid": True}
     except Exception as exc:
         logger.warning("[X] FCM push failed at send stage: %s: %s", type(exc).__name__, exc)
         return {"stage": "send", "success": False, "error": f"{type(exc).__name__}: {exc}"}

@@ -20,11 +20,20 @@ logger = logging.getLogger(__name__)
 _EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
 
 
-def send_push(push_token: str | None, title: str, body: str, link: str = "/home") -> None:
+def send_push(push_token: str | None, title: str, body: str, link: str = "/home") -> dict:
+    """
+    Returns a structured result mirroring send_fcm_push, including a
+    `token_invalid` flag so callers can clear dead tokens.
+
+    Note Expo reports an unusable token INSIDE a 200 response body
+    (data.status == "error", details.error == "DeviceNotRegistered")
+    rather than as an HTTP error status — so this previously went
+    completely unnoticed and dead tokens were retried forever.
+    """
     if not push_token:
-        return
+        return {"stage": "token_check", "success": False, "error": "No Expo push token provided."}
     if not push_token.startswith("ExponentPushToken"):
-        return
+        return {"stage": "token_check", "success": False, "error": "Not an Expo push token."}
 
     try:
         response = httpx.post(
@@ -34,6 +43,20 @@ def send_push(push_token: str | None, title: str, body: str, link: str = "/home"
             timeout=5.0,
         )
         if response.status_code != 200:
-            logger.warning("Expo push failed (%s): %s", response.status_code, response.text)
+            logger.warning("[X] Expo push failed (%s): %s", response.status_code, response.text)
+            return {"stage": "send", "success": False, "error": f"HTTP {response.status_code}: {response.text}"}
+
+        payload = response.json().get("data", {})
+        if payload.get("status") == "error":
+            error_code = (payload.get("details") or {}).get("error")
+            if error_code == "DeviceNotRegistered":
+                logger.info("[X] Expo token no longer registered — will be cleared.")
+                return {"stage": "send", "success": False, "error": "DeviceNotRegistered", "token_invalid": True}
+            logger.warning("[X] Expo push rejected: %s", payload)
+            return {"stage": "send", "success": False, "error": str(payload)}
+
+        logger.info("[OK] Expo push accepted.")
+        return {"stage": "sent", "success": True, "expo_response": payload}
     except httpx.HTTPError as exc:
-        logger.warning("Expo push request failed: %s", exc)
+        logger.warning("[X] Expo push request failed: %s", exc)
+        return {"stage": "send", "success": False, "error": str(exc)}

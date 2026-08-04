@@ -71,6 +71,7 @@ def create_complaint(db: Session, resident: Resident, req: ComplaintCreateReques
         title=f"New complaint: {complaint.complaint_code}",
         body=f"{req.subcategory}: {req.description[:120]}",
         type_="complaint_new",
+        link=f"/complaints/{complaint.id}",
     )
 
     leadership_subject, leadership_html = email_templates.new_complaint_email(
@@ -163,6 +164,7 @@ def assign(db: Session, complaint_id: int, staff_id: int, admin_id: int) -> Comp
         title=f"Complaint {complaint.complaint_code} assigned",
         body=f"Assigned to {staff.full_name} ({staff.category.value}).",
         type_="complaint_assigned",
+        link=f"/complaints/{complaint.id}",
         email_content=(subject, html),
     )
     db.commit()  # notify_resident's notification insert is flushed, not committed — _transition() already committed before this ran
@@ -268,6 +270,7 @@ def reassign_staff(db: Session, complaint_id: int, new_staff_id: int, admin_id: 
         title=f"Complaint {complaint.complaint_code} reassigned",
         body=f"Now assigned to {staff.full_name}.",
         type_="complaint_reassigned",
+        link=f"/complaints/{complaint.id}",
     )
     db.commit()
     db.refresh(complaint)
@@ -298,6 +301,7 @@ def assign_department(db: Session, complaint_id: int, target_admin_id: int, acti
         title=f"Complaint {complaint.complaint_code} assigned to your department",
         body=complaint.subcategory,
         type_="complaint_department_assigned",
+        link=f"/complaints/{complaint.id}",
     )
     audit_log_repository.log(
         db, acting_admin_id, "assign_department", "complaint", complaint_id,
@@ -345,6 +349,7 @@ def set_priority(
             title=f"Priority changed: {complaint.complaint_code}",
             body=f"{old_priority.value.title()} -> {priority.value.title()}",
             type_="complaint_priority",
+            link=f"/complaints/{complaint.id}",
         )
     elif priority in (ComplaintPriority.HIGH, ComplaintPriority.CRITICAL):
         # No one specifically assigned yet — broadcast so a High/Critical
@@ -355,6 +360,7 @@ def set_priority(
             title=f"{priority.value.upper()} priority: {complaint.complaint_code}",
             body=complaint.subcategory,
             type_="complaint_priority",
+            link=f"/complaints/{complaint.id}",
         )
 
     audit_log_repository.log(
@@ -386,6 +392,7 @@ def request_more_info(db: Session, complaint_id: int, admin_id: int, message: st
         title=f"More information needed: {complaint.complaint_code}",
         body=message,
         type_="complaint_info_requested",
+        link=f"/complaints/{complaint.id}",
     )
     db.commit()
     db.refresh(complaint)
@@ -530,6 +537,7 @@ def _notify_for_transition(
             title=f"Complaint {complaint.complaint_code} updated",
             body=f"Your complaint is now '{status_label}'.",
             type_="complaint_status",
+            link=f"/complaints/{complaint.id}",
             email_content=(subject, html),
         )
     elif to_status == ComplaintStatus.REOPENED:
@@ -538,6 +546,7 @@ def _notify_for_transition(
             title=f"Complaint {complaint.complaint_code} reopened",
             body="A resident was not satisfied with the resolution and reopened this complaint.",
             type_="complaint_reopened",
+            link=f"/complaints/{complaint.id}",
         )
         subject, html = email_templates.complaint_reopened_email(
             complaint_code=complaint.complaint_code,

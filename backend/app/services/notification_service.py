@@ -34,6 +34,29 @@ def _wants_email(resident: Resident) -> bool:
     )
 
 
+def _dispatch_push(db: Session, holder, title: str, body: str, link: str) -> None:
+    """
+    Sends to both push channels for a Resident or Admin row, and CLEARS
+    any token the provider reports as permanently dead.
+
+    Without this, a token that became invalid (user cleared browser data,
+    uninstalled the PWA, revoked notification permission, or the token
+    simply rotated) stayed in the database forever and got retried on
+    every single future notification — wasted calls that could never
+    succeed, and no way to tell a dead token from a broken pipeline.
+    """
+    expo_result = push_notification_service.send_push(holder.push_token, title, body, link=link)
+    if expo_result.get("token_invalid"):
+        holder.push_token = None
+
+    fcm_result = push_notification_service_fcm.send_fcm_push(holder.fcm_token, title, body, link=link)
+    if fcm_result.get("token_invalid"):
+        holder.fcm_token = None
+
+    if expo_result.get("token_invalid") or fcm_result.get("token_invalid"):
+        db.flush()
+
+
 def notify_resident(
     db: Session,
     resident_id: int,
@@ -61,8 +84,7 @@ def notify_resident(
         return notification
 
     if _wants_push(resident):
-        push_notification_service.send_push(resident.push_token, title, body, link=link)
-        push_notification_service_fcm.send_fcm_push(resident.fcm_token, title, body, link=link)
+        _dispatch_push(db, resident, title, body, link)
 
     if email_content and _wants_email(resident) and resident.email:
         subject, html = email_content
@@ -81,8 +103,7 @@ def notify_admins(
         notifications.append(
             notification_repository.create(db, NotificationRecipientType.ADMIN, admin.id, title, body, type_)
         )
-        push_notification_service.send_push(admin.push_token, title, body, link=link)
-        push_notification_service_fcm.send_fcm_push(admin.fcm_token, title, body, link=link)
+        _dispatch_push(db, admin, title, body, link)
     return notifications
 
 
@@ -94,8 +115,7 @@ def notify_admin_by_id(
     notification = notification_repository.create(db, NotificationRecipientType.ADMIN, admin_id, title, body, type_)
     admin = admin_repository.get_by_id(db, admin_id)
     if admin:
-        push_notification_service.send_push(admin.push_token, title, body, link=link)
-        push_notification_service_fcm.send_fcm_push(admin.fcm_token, title, body, link=link)
+        _dispatch_push(db, admin, title, body, link)
     return notification
 
 
