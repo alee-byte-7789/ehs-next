@@ -18,6 +18,7 @@ from app.models.society_info import SocietyInfo
 from app.models.prayer_timing import PrayerTiming
 from app.models.complaint_internal_note import ComplaintInternalNote
 from app.models.audit_log import AuditLog
+from app.models.push_token import PushToken
 
 __all__ = [
     "House",
@@ -35,4 +36,5 @@ __all__ = [
     "PrayerTiming",
     "ComplaintInternalNote",
     "AuditLog",
+    "PushToken",
 ]

@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.deps import get_current_admin, get_current_resident, get_db
 from app.models.admin import Admin
+from app.models.enums import NotificationRecipientType, PushTokenKind
 from app.models.resident import Resident
+from app.repositories import push_token_repository
 from app.schemas.admin import AdminOut
 from app.schemas.push_token import PushTokenRequest
 from app.schemas.resident import ResidentOut
@@ -24,13 +26,20 @@ def admin_me(admin: Admin = Depends(get_current_admin)) -> AdminOut:
     return admin
 
 
+# These four endpoints now register into the `push_tokens` table (one row
+# per device) instead of overwriting a single column on the user row. The
+# frontends call them on every app open, so `upsert` refreshes an existing
+# device rather than creating duplicates.
+
 @router.post("/residents/me/push-token")
 def register_resident_push_token(
     req: PushTokenRequest,
     db: Session = Depends(get_db),
     resident: Resident = Depends(get_current_resident),
 ) -> dict[str, str]:
-    resident.push_token = req.push_token
+    push_token_repository.upsert(
+        db, NotificationRecipientType.RESIDENT, resident.id, req.push_token, PushTokenKind.EXPO
+    )
     db.commit()
     return {"message": "Push token registered."}
 
@@ -41,7 +50,9 @@ def register_admin_push_token(
     db: Session = Depends(get_db),
     admin: Admin = Depends(get_current_admin),
 ) -> dict[str, str]:
-    admin.push_token = req.push_token
+    push_token_repository.upsert(
+        db, NotificationRecipientType.ADMIN, admin.id, req.push_token, PushTokenKind.EXPO
+    )
     db.commit()
     return {"message": "Push token registered."}
 
@@ -52,7 +63,9 @@ def register_resident_fcm_token(
     db: Session = Depends(get_db),
     resident: Resident = Depends(get_current_resident),
 ) -> dict[str, str]:
-    resident.fcm_token = req.push_token
+    push_token_repository.upsert(
+        db, NotificationRecipientType.RESIDENT, resident.id, req.push_token, PushTokenKind.FCM
+    )
     db.commit()
     return {"message": "FCM token registered."}
 
@@ -63,6 +76,8 @@ def register_admin_fcm_token(
     db: Session = Depends(get_db),
     admin: Admin = Depends(get_current_admin),
 ) -> dict[str, str]:
-    admin.fcm_token = req.push_token
+    push_token_repository.upsert(
+        db, NotificationRecipientType.ADMIN, admin.id, req.push_token, PushTokenKind.FCM
+    )
     db.commit()
     return {"message": "FCM token registered."}

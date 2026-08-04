@@ -106,3 +106,11 @@ class NotificationPreference(str, Enum):
     PUSH_ONLY = "push_only"
     EMAIL_ONLY = "email_only"
     NONE = "none"
+
+
+class PushTokenKind(str, Enum):
+    """Which push provider a token belongs to. `FCM` is Firebase web push
+    (the PWA); `EXPO` is Expo's push service (the native APK). They are
+    completely separate systems with different token formats."""
+    FCM = "fcm"
+    EXPO = "expo"

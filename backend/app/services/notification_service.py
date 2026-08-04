@@ -14,10 +14,15 @@ channels.
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.models.enums import AdminRole, NotificationPreference, NotificationRecipientType
+from app.models.enums import AdminRole, NotificationPreference, NotificationRecipientType, PushTokenKind
 from app.models.notification import Notification
 from app.models.resident import Resident
-from app.repositories import admin_repository, notification_repository, resident_repository
+from app.repositories import (
+    admin_repository,
+    notification_repository,
+    push_token_repository,
+    resident_repository,
+)
 from app.services import email_service, push_notification_service, push_notification_service_fcm
 from app.services.errors import NotFoundError
 
@@ -34,27 +39,45 @@ def _wants_email(resident: Resident) -> bool:
     )
 
 
-def _dispatch_push(db: Session, holder, title: str, body: str, link: str) -> None:
+def _dispatch_push(
+    db: Session,
+    owner_type: NotificationRecipientType,
+    owner_id: int,
+    title: str,
+    body: str,
+    link: str,
+) -> None:
     """
-    Sends to both push channels for a Resident or Admin row, and CLEARS
-    any token the provider reports as permanently dead.
+    Sends to EVERY device this owner has registered, and deletes any token
+    the provider reports as permanently dead.
 
-    Without this, a token that became invalid (user cleared browser data,
-    uninstalled the PWA, revoked notification permission, or the token
-    simply rotated) stayed in the database forever and got retried on
-    every single future notification — wasted calls that could never
-    succeed, and no way to tell a dead token from a broken pipeline.
+    Previously this read a single `fcm_token` / `push_token` column off the
+    Resident/Admin row, which meant one device per account: whichever
+    device opened the app most recently silently overwrote the previous
+    one. An admin with a desk PC and a phone could only ever be reached on
+    one of them. Tokens now live in their own table, one row per device.
+
+    A dead token (browser data cleared, PWA uninstalled, permission
+    revoked, or normal rotation) is deleted rather than retried forever —
+    and only that one device's row is removed, so it never takes the
+    owner's other working devices down with it.
     """
-    expo_result = push_notification_service.send_push(holder.push_token, title, body, link=link)
-    if expo_result.get("token_invalid"):
-        holder.push_token = None
+    tokens = push_token_repository.list_for_owner(db, owner_type, owner_id)
+    if not tokens:
+        return
 
-    fcm_result = push_notification_service_fcm.send_fcm_push(holder.fcm_token, title, body, link=link)
-    if fcm_result.get("token_invalid"):
-        holder.fcm_token = None
+    dead: list[str] = []
+    for entry in tokens:
+        if entry.kind == PushTokenKind.EXPO:
+            result = push_notification_service.send_push(entry.token, title, body, link=link)
+        else:
+            result = push_notification_service_fcm.send_fcm_push(entry.token, title, body, link=link)
 
-    if expo_result.get("token_invalid") or fcm_result.get("token_invalid"):
-        db.flush()
+        if result.get("token_invalid"):
+            dead.append(entry.token)
+
+    for token in dead:
+        push_token_repository.delete_by_token(db, token)
 
 
 def notify_resident(
@@ -84,7 +107,7 @@ def notify_resident(
         return notification
 
     if _wants_push(resident):
-        _dispatch_push(db, resident, title, body, link)
+        _dispatch_push(db, NotificationRecipientType.RESIDENT, resident.id, title, body, link)
 
     if email_content and _wants_email(resident) and resident.email:
         subject, html = email_content
@@ -103,7 +126,7 @@ def notify_admins(
         notifications.append(
             notification_repository.create(db, NotificationRecipientType.ADMIN, admin.id, title, body, type_)
         )
-        _dispatch_push(db, admin, title, body, link)
+        _dispatch_push(db, NotificationRecipientType.ADMIN, admin.id, title, body, link)
     return notifications
 
 
@@ -115,7 +138,7 @@ def notify_admin_by_id(
     notification = notification_repository.create(db, NotificationRecipientType.ADMIN, admin_id, title, body, type_)
     admin = admin_repository.get_by_id(db, admin_id)
     if admin:
-        _dispatch_push(db, admin, title, body, link)
+        _dispatch_push(db, NotificationRecipientType.ADMIN, admin.id, title, body, link)
     return notification
 
 
