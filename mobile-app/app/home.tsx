@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AppText as Text } from "../components/ui/AppText";
 
 import { AppDrawer } from "../components/AppDrawer";
+import { NotificationPermissionBanner } from "../components/NotificationPermissionBanner";
 import { Card } from "../components/ui/Card";
 import { Pressable } from "../components/ui/Pressable";
 import { QuickActionCard } from "../components/ui/QuickActionCard";
@@ -96,6 +97,8 @@ export default function HomeScreen() {
             House {resident?.house_code ?? "—"}
           </Text>
         </View>
+
+        <NotificationPermissionBanner />
 
         <View style={styles.summaryRow}>
           <SummaryTile label={t("summary_open")} value={openComplaints.length} color={colors.warning} tint={colors.warningTint} />

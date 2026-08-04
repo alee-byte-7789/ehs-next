@@ -16,23 +16,39 @@ const firebaseConfig = {
 const VAPID_KEY =
   "BOYAhoubHjLOoL8yl41iU_Z9zGRy3XEFrR_HLJRP1rfN3elEVFAkc86wmrUmlNzsH0DhN7duwgl0farZkYUseZM";
 
+export type WebPushResult = "unsupported" | "granted" | "denied" | "default" | "error";
+
+/**
+ * Checks the CURRENT permission state without prompting — a browser
+ * that was denied once will silently never ask again, and until now
+ * this app had no way to detect or surface that. This is what lets the
+ * UI show a real "notifications are blocked, here's how to fix it"
+ * message instead of things just silently never arriving.
+ */
+export function getWebPushPermissionState(): WebPushResult {
+  if (Platform.OS !== "web") return "unsupported";
+  if (typeof window === "undefined" || typeof Notification === "undefined") return "unsupported";
+  return Notification.permission as WebPushResult;
+}
+
 /**
  * Registers this browser for Firebase web push and sends the resulting
  * FCM token to our backend. Web-only — the native app uses a completely
  * separate system (Expo's own push service, see push-notifications.ts).
  *
- * Safe to call unconditionally: no-ops on native, and swallows its own
- * errors so a denied permission or unsupported browser never breaks app
- * startup.
+ * Returns the actual outcome instead of swallowing it silently, so
+ * callers can show the user something real (e.g. "notifications are
+ * blocked — here's how to fix it") rather than nothing happening with
+ * no explanation.
  */
-export async function registerForWebPush(): Promise<void> {
-  if (Platform.OS !== "web") return;
-  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
-  if (typeof Notification === "undefined") return;
+export async function registerForWebPush(): Promise<WebPushResult> {
+  if (Platform.OS !== "web") return "unsupported";
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return "unsupported";
+  if (typeof Notification === "undefined") return "unsupported";
 
   try {
     const permission = await Notification.requestPermission();
-    if (permission !== "granted") return;
+    if (permission !== "granted") return permission as WebPushResult;
 
     const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
 
@@ -42,12 +58,6 @@ export async function registerForWebPush(): Promise<void> {
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
 
-    // Real gap fixed here: Firebase's onBackgroundMessage (in the
-    // service worker) only fires when the tab is NOT focused. Without
-    // this onMessage() listener, a push arriving while someone actually
-    // has the app open would silently do nothing. Routed through the
-    // same showNotification() call the service worker uses, so both
-    // paths behave identically (including the click handler below).
     onMessage(messaging, (payload) => {
       const title = payload.notification?.title ?? "EHS Next";
       const body = payload.notification?.body ?? "";
@@ -67,8 +77,10 @@ export async function registerForWebPush(): Promise<void> {
 
     if (token) {
       await apiClient.post("/residents/me/fcm-token", { push_token: token });
+      return "granted";
     }
+    return "error";
   } catch {
-    // Never let push registration failure break app startup.
+    return "error";
   }
 }
