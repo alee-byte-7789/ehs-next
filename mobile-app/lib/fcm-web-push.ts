@@ -37,10 +37,28 @@ export async function registerForWebPush(): Promise<void> {
     const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
 
     const { initializeApp } = await import("firebase/app");
-    const { getMessaging, getToken } = await import("firebase/messaging");
+    const { getMessaging, getToken, onMessage } = await import("firebase/messaging");
 
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
+
+    // Real gap fixed here: Firebase's onBackgroundMessage (in the
+    // service worker) only fires when the tab is NOT focused. Without
+    // this onMessage() listener, a push arriving while someone actually
+    // has the app open would silently do nothing. Routed through the
+    // same showNotification() call the service worker uses, so both
+    // paths behave identically (including the click handler below).
+    onMessage(messaging, (payload) => {
+      const title = payload.notification?.title ?? "EHS Next";
+      const body = payload.notification?.body ?? "";
+      const link = payload.data?.link ?? "/";
+      registration.showNotification(title, {
+        body,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        data: { link },
+      });
+    });
 
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,

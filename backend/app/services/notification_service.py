@@ -41,12 +41,19 @@ def notify_resident(
     body: str,
     type_: str,
     email_content: tuple[str, str] | None = None,
+    link: str = "/notifications",
 ) -> Notification:
     """
     `email_content`, if given, is (subject, html_body) built from a
     specific template in email_templates.py — the in-app title/body pair
     is too short to make a good email, so callers that want a real email
     pass the rendered template explicitly.
+
+    `link` is where tapping the push notification navigates to. Defaults
+    to the notifications inbox rather than a specific complaint, since
+    threading a complaint ID through every call site would touch a lot
+    more code — this is a real improvement over no navigation at all,
+    not full deep-linking.
     """
     notification = notification_repository.create(db, NotificationRecipientType.RESIDENT, resident_id, title, body, type_)
     resident = resident_repository.get_by_id(db, resident_id)
@@ -54,8 +61,8 @@ def notify_resident(
         return notification
 
     if _wants_push(resident):
-        push_notification_service.send_push(resident.push_token, title, body)
-        push_notification_service_fcm.send_fcm_push(resident.fcm_token, title, body)
+        push_notification_service.send_push(resident.push_token, title, body, link=link)
+        push_notification_service_fcm.send_fcm_push(resident.fcm_token, title, body, link=link)
 
     if email_content and _wants_email(resident) and resident.email:
         subject, html = email_content
@@ -65,7 +72,7 @@ def notify_resident(
 
 
 def notify_admins(
-    db: Session, roles: tuple[AdminRole, ...], title: str, body: str, type_: str
+    db: Session, roles: tuple[AdminRole, ...], title: str, body: str, type_: str, link: str = "/complaints"
 ) -> list[Notification]:
     """Broadcasts the same notification to every admin with one of the given roles."""
     admins = admin_repository.list_by_roles(db, roles)
@@ -74,19 +81,21 @@ def notify_admins(
         notifications.append(
             notification_repository.create(db, NotificationRecipientType.ADMIN, admin.id, title, body, type_)
         )
-        push_notification_service.send_push(admin.push_token, title, body)
-        push_notification_service_fcm.send_fcm_push(admin.fcm_token, title, body)
+        push_notification_service.send_push(admin.push_token, title, body, link=link)
+        push_notification_service_fcm.send_fcm_push(admin.fcm_token, title, body, link=link)
     return notifications
 
 
-def notify_admin_by_id(db: Session, admin_id: int, title: str, body: str, type_: str) -> Notification:
+def notify_admin_by_id(
+    db: Session, admin_id: int, title: str, body: str, type_: str, link: str = "/complaints"
+) -> Notification:
     """Targets one specific admin — used when a complaint has an
     `assigned_admin_id` (the department-routing feature)."""
     notification = notification_repository.create(db, NotificationRecipientType.ADMIN, admin_id, title, body, type_)
     admin = admin_repository.get_by_id(db, admin_id)
     if admin:
-        push_notification_service.send_push(admin.push_token, title, body)
-        push_notification_service_fcm.send_fcm_push(admin.fcm_token, title, body)
+        push_notification_service.send_push(admin.push_token, title, body, link=link)
+        push_notification_service_fcm.send_fcm_push(admin.fcm_token, title, body, link=link)
     return notification
 
 

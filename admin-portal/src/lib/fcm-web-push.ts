@@ -33,6 +33,19 @@ export async function registerAdminForWebPush(): Promise<void> {
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
 
+    const { onMessage } = await import("firebase/messaging");
+    onMessage(messaging, (payload) => {
+      const title = payload.notification?.title ?? "EHS Next Admin";
+      const body = payload.notification?.body ?? "";
+      const link = payload.data?.link ?? "/";
+      registration.showNotification(title, {
+        body,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        data: { link },
+      });
+    });
+
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: registration,

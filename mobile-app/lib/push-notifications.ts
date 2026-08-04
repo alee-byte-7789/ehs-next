@@ -1,6 +1,7 @@
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import { router } from "expo-router";
 import { Platform } from "react-native";
 
 import { apiClient } from "./api-client";
@@ -13,6 +14,17 @@ Notifications.setNotificationHandler({
     shouldShowBanner: true,
     shouldShowList: true,
   }),
+});
+
+// Real gap fixed here: there was no tap handler at all before this —
+// tapping a notification opened the app but navigated nowhere specific.
+// Registered once at module load (not inside registerForPushNotifications,
+// so it's active even before permission is granted on this specific launch).
+Notifications.addNotificationResponseReceivedListener((response) => {
+  const link = response.notification.request.content.data?.link as string | undefined;
+  if (link) {
+    router.push(link as never);
+  }
 });
 
 /**

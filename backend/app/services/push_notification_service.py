@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 _EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
 
 
-def send_push(push_token: str | None, title: str, body: str) -> None:
+def send_push(push_token: str | None, title: str, body: str, link: str = "/home") -> None:
     if not push_token:
         return
     if not push_token.startswith("ExponentPushToken"):
@@ -29,7 +29,7 @@ def send_push(push_token: str | None, title: str, body: str) -> None:
     try:
         response = httpx.post(
             _EXPO_PUSH_URL,
-            json={"to": push_token, "title": title, "body": body, "sound": "default"},
+            json={"to": push_token, "title": title, "body": body, "sound": "default", "data": {"link": link}},
             headers={"Content-Type": "application/json"},
             timeout=5.0,
         )
