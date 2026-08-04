@@ -50,7 +50,14 @@ export async function registerForWebPush(): Promise<WebPushResult> {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return permission as WebPushResult;
 
-    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    // Dedicated scope (Firebase's own default) rather than "/", so this
+    // worker can never collide with an app-level service worker. See the
+    // admin portal's copy of this file for the full explanation — that
+    // collision is what made Firebase report success while nothing
+    // actually displayed.
+    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+      scope: "/firebase-cloud-messaging-push-scope",
+    });
 
     const { initializeApp } = await import("firebase/app");
     const { getMessaging, getToken, onMessage } = await import("firebase/messaging");

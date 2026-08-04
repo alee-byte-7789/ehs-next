@@ -25,7 +25,23 @@ export async function registerAdminForWebPush(): Promise<void> {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return;
 
-    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    // Dedicated scope — NOT the default "/".
+    //
+    // vite-plugin-pwa registers its own Workbox service worker at /sw.js
+    // with scope "/". Registering a DIFFERENT script at an existing scope
+    // replaces that registration, so these two were clobbering each
+    // other. If Workbox's sw.js won, push messages arrived at a worker
+    // with no Firebase handler — Firebase would report success while
+    // nothing ever displayed.
+    //
+    // "/firebase-cloud-messaging-push-scope" is the same scope Firebase's
+    // own SDK uses by default, for exactly this reason. Both workers now
+    // coexist: sw.js keeps handling offline caching, this one handles
+    // push. Push delivery is bound to the registration passed to
+    // getToken() below, not to page scope, so a narrow scope is fine.
+    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+      scope: "/firebase-cloud-messaging-push-scope",
+    });
 
     const { initializeApp } = await import("firebase/app");
     const { getMessaging, getToken } = await import("firebase/messaging");

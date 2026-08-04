@@ -30,6 +30,10 @@ export default defineConfig({
         // Offline shell: cache the built app assets so the portal still
         // loads (even if API calls fail) when there's no connection.
         globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+        // Never precache the Firebase messaging worker — serving a stale
+        // cached copy of a service worker script silently reverts push
+        // fixes and is very hard to diagnose.
+        globIgnores: ['**/firebase-messaging-sw.js'],
         navigateFallback: '/index.html',
         // Never cache API calls — admin data must always be fresh.
         runtimeCaching: [
