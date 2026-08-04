@@ -40,14 +40,18 @@ def _get_firebase_app() -> firebase_admin.App | None:
     settings = get_settings()
 
     if not settings.firebase_service_account_json:
-        logger.info("FIREBASE_SERVICE_ACCOUNT_JSON not set — FCM push disabled.")
+        logger.warning("[X] FIREBASE_SERVICE_ACCOUNT_JSON not set — FCM push disabled.")
         return None
 
     try:
         cred_dict = json.loads(settings.firebase_service_account_json)
         cred = credentials.Certificate(cred_dict)
         _firebase_app = firebase_admin.initialize_app(cred)
+        logger.info("[OK] Firebase Admin SDK initialized (project: %s)", cred_dict.get("project_id"))
         return _firebase_app
+    except json.JSONDecodeError as exc:
+        logger.warning("[X] FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON: %s", exc)
+        return None
     except ValueError:
         # firebase_admin raises ValueError if an app is already
         # initialized under the default name — happens if this module
@@ -64,13 +68,27 @@ def _get_firebase_app() -> firebase_admin.App | None:
         return None
 
 
-def send_fcm_push(fcm_token: str | None, title: str, body: str, link: str = "/") -> None:
+def send_fcm_push(fcm_token: str | None, title: str, body: str, link: str = "/") -> dict:
+    """
+    Returns a result dict describing exactly what happened at each stage
+    — used directly by the /test-notification endpoint so the actual
+    Firebase response (or exact failure reason) reaches the frontend,
+    not just a silent success/failure.
+    """
     if not fcm_token:
-        return
+        logger.warning("[X] No FCM token provided — cannot send.")
+        return {"stage": "token_check", "success": False, "error": "No FCM token provided."}
 
+    logger.info("[i] Attempting to initialize Firebase Admin SDK...")
     app = _get_firebase_app()
     if app is None:
-        return
+        logger.warning("[X] Firebase Admin SDK not initialized — check FIREBASE_SERVICE_ACCOUNT_JSON.")
+        return {
+            "stage": "firebase_init",
+            "success": False,
+            "error": "Firebase Admin SDK not initialized — FIREBASE_SERVICE_ACCOUNT_JSON is missing or invalid.",
+        }
+    logger.info("[OK] Firebase initialized.")
 
     try:
         message = messaging.Message(
@@ -82,6 +100,10 @@ def send_fcm_push(fcm_token: str | None, title: str, body: str, link: str = "/")
                 fcm_options=messaging.WebpushFCMOptions(link=link),
             ),
         )
-        messaging.send(message, app=app)
+        logger.info("[i] Sending message to Firebase...")
+        response = messaging.send(message, app=app)
+        logger.info("[OK] Firebase response: %s", response)
+        return {"stage": "sent", "success": True, "firebase_response": response}
     except Exception as exc:
-        logger.warning("FCM push failed: %s", exc)
+        logger.warning("[X] FCM push failed at send stage: %s: %s", type(exc).__name__, exc)
+        return {"stage": "send", "success": False, "error": f"{type(exc).__name__}: {exc}"}
