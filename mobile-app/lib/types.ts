@@ -147,6 +147,11 @@ export interface PrayerTimingOut {
   isha: string;
   jummah: string | null;
   updated_at: string;
+  /** True when maghrib was derived from today's sunset rather than a
+   *  fixed time entered by an admin. */
+  maghrib_is_auto: boolean;
+  /** Today's computed sunset at the society, always present. */
+  sunset_today: string | null;
 }
 
 export interface PrayerTimingUpdateRequest {

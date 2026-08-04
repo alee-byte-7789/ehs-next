@@ -67,6 +67,15 @@ class Settings(BaseSettings):
     # underlying action that triggered a notification).
     firebase_service_account_json: str | None = None
 
+    # --- Society location (used to compute daily sunset for Maghrib) ---
+    # AWC Housing Society, near Wah Cantt / Taxila, Punjab, Pakistan.
+    # Longitude is positive EAST. Pakistan is UTC+5 year-round (no DST),
+    # so a fixed offset is correct and avoids a tzdata dependency.
+    # Overridable via env vars if the society location is ever refined.
+    society_latitude: float = 33.85424
+    society_longitude: float = 72.72615
+    society_utc_offset_hours: float = 5.0
+
     # --- Zoho Mail (email notifications) ---
     # All optional — if zoho_smtp_user/zoho_smtp_password are unset, email
     # sending silently no-ops (same defensive pattern as FCM/Expo push

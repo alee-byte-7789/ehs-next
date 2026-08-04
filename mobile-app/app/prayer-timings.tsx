@@ -250,6 +250,14 @@ function MosqueCard({
                   <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: isNext ? "700" : "500" }}>
                     {t(`prayer_${key}` as StringKey)}
                   </Text>
+                  {key === "maghrib" && timing.maghrib_is_auto ? (
+                    // Maghrib IS sunset, and sunset shifts ~1 min/day, so the
+                    // value shown is computed daily rather than typed in by an
+                    // admin. Labelled so it's clear it updates on its own.
+                    <Text style={{ color: colors.textTertiary, fontSize: 11, marginLeft: 6 }}>
+                      (sunset)
+                    </Text>
+                  ) : null}
                 </View>
                 <Text
                   style={{
