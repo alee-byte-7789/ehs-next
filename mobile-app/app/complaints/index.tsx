@@ -62,7 +62,7 @@ export default function ComplaintsListScreen() {
           <Pressable
             onPress={() => router.push("/complaints/new")}
             scaleTo={0.9}
-            style={[styles.addBtn, { backgroundColor: colors.primary, borderRadius: colors.radii.md }]}
+            style={[styles.addBtn, { backgroundColor: colors.primary, borderRadius: colors.radii.button }]}
           >
             <Ionicons name="add" size={20} color={colors.onPrimary} />
           </Pressable>
@@ -122,7 +122,7 @@ export default function ComplaintsListScreen() {
             title="Couldn't load complaints"
             body={extractApiErrorMessage(error, "Check your connection and try again.")}
           />
-          <Pressable onPress={() => refetch()} style={[styles.retryBtn, { backgroundColor: colors.primary, borderRadius: colors.radii.md }]}>
+          <Pressable onPress={() => refetch()} style={[styles.retryBtn, { backgroundColor: colors.primary, borderRadius: colors.radii.button }]}>
             <Text style={{ color: colors.onPrimary, fontWeight: "700", fontSize: 13 }}>
               {isRefetching ? "Retrying…" : "Retry"}
             </Text>

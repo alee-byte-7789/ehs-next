@@ -5,6 +5,7 @@ import { AppText as Text } from "../components/ui/AppText";
 
 import { ScreenContainer } from "../components/ScreenContainer";
 import { Card } from "../components/ui/Card";
+import { GlassSegmentedControl } from "../components/ui/GlassSegmentedControl";
 import { Pressable } from "../components/ui/Pressable";
 import { markAppearanceOnboardingSeen } from "../lib/onboarding-storage";
 import { ACCENTS, ACCENT_ORDER, type AccentKey, type DisplaySize } from "../lib/theme/palette";
@@ -50,32 +51,11 @@ export default function AppearanceOnboardingScreen() {
       </View>
 
       <SectionLabel text="Appearance" />
-      <Card style={styles.segmentCard}>
-        <View style={styles.segmentRow}>
-          {MODE_OPTIONS.map((opt) => {
-            const active = mode === opt.key;
-            return (
-              <Pressable key={opt.key} onPress={() => setMode(opt.key)} style={styles.segmentPress} scaleTo={0.96}>
-                <View
-                  style={[
-                    styles.segmentItem,
-                    {
-                      backgroundColor: active ? colors.primaryTint : "transparent",
-                      borderColor: active ? colors.primary : colors.border,
-                      borderRadius: colors.radii.sm,
-                    },
-                  ]}
-                >
-                  <Ionicons name={opt.icon} size={18} color={active ? colors.primary : colors.textSecondary} />
-                  <Text style={[styles.segmentLabel, { color: active ? colors.primary : colors.textSecondary }]}>
-                    {opt.label}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
-      </Card>
+      <GlassSegmentedControl
+        options={MODE_OPTIONS.map((opt) => ({ key: opt.key, label: opt.label, icon: opt.icon }))}
+        value={mode}
+        onChange={setMode}
+      />
 
       <SectionLabel text="Theme Color" />
       <Card>
@@ -113,7 +93,7 @@ export default function AppearanceOnboardingScreen() {
       </Card>
 
       <Pressable onPress={handleContinue} style={styles.continueWrap} scaleTo={0.97}>
-        <View style={[styles.continueBtn, { backgroundColor: colors.primary, borderRadius: colors.radii.md }]}>
+        <View style={[styles.continueBtn, { backgroundColor: colors.primary, borderRadius: colors.radii.button }]}>
           <Text style={[styles.continueText, { color: colors.onPrimary }]}>Continue</Text>
         </View>
       </Pressable>
@@ -147,10 +127,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, lineHeight: 20 },
   sectionLabel: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 20, marginBottom: 10 },
   segmentCard: { padding: 8, marginBottom: 4 },
-  segmentRow: { flexDirection: "row", gap: 8 },
-  segmentPress: { flex: 1 },
-  segmentItem: { alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 12, borderWidth: 1.5 },
-  segmentLabel: { fontSize: 11, fontWeight: "600" },
   listCard: { marginBottom: 4 },
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 14 },
   switchLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },

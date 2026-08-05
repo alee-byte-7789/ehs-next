@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   toggleOption: {
     flex: 1,
     borderWidth: 1.5,
-    borderRadius: radii.md,
+    borderRadius: radii.button,
     paddingVertical: spacing.sm + 4,
     alignItems: "center",
   },

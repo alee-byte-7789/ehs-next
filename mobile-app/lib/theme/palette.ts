@@ -178,7 +178,18 @@ export const STATUS_COLORS = {
 // previous 8/14/20/28 ramp. `pill` stays 999 because it's what makes
 // genuinely circular things (chips, the FAB) circular rather than
 // rounded-rectangular.
-export const RADII = { sm: 4, md: 4, lg: 4, xl: 4, pill: 999 };
+export const RADII = {
+  // Surfaces — cards, banners, tiles, inputs. Deliberately square-ish.
+  sm: 4,
+  md: 4,
+  lg: 4,
+  xl: 4,
+  // Buttons are fully rounded pills, NOT squares with softened corners.
+  // A separate token from `pill` so button shape can be tuned without
+  // also changing chips and circular elements.
+  button: 999,
+  pill: 999,
+};
 
 export const SPACING = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 };
 

@@ -79,7 +79,7 @@ export default function NewComplaintScreen() {
                   {
                     backgroundColor: active ? colors.primaryTint : colors.surfaceSunken,
                     borderColor: active ? colors.primary : colors.border,
-                    borderRadius: colors.radii.md,
+                    borderRadius: colors.radii.button,
                   },
                 ]}
               >

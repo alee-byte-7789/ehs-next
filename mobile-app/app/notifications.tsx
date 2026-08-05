@@ -83,7 +83,7 @@ export default function NotificationsScreen() {
           />
           <Pressable
             onPress={() => refetch()}
-            style={[styles.retryBtn, { backgroundColor: colors.primary, borderRadius: colors.radii.md }]}
+            style={[styles.retryBtn, { backgroundColor: colors.primary, borderRadius: colors.radii.button }]}
           >
             <Text style={{ color: colors.onPrimary, fontWeight: "700", fontSize: 13 }}>
               {isRefetching ? "Retrying…" : "Retry"}

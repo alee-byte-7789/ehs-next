@@ -116,11 +116,15 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
         <View style={styles.footer}>
           <RNPressable
             onPress={handleLogout}
-            style={[styles.logoutBtn, { backgroundColor: colors.dangerTint, borderRadius: colors.radii.md }]}
+            style={[styles.logoutBtn, { backgroundColor: colors.dangerTint, borderRadius: colors.radii.button }]}
           >
             <Ionicons name="log-out-outline" size={18} color={colors.danger} />
             <Text style={[styles.logoutText, { color: colors.danger }]}>{t("log_out")}</Text>
           </RNPressable>
+
+          <Text style={[styles.copyright, { color: colors.textTertiary }]}>
+            Copyright reserved by{"\n"}Null Point Errors Co. Ltd.{"\n"}Estd 2026
+          </Text>
         </View>
       </Animated.View>
     </View>
@@ -174,4 +178,5 @@ const styles = StyleSheet.create({
   footer: { marginTop: "auto", padding: 16 },
   logoutBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14 },
   logoutText: { fontSize: 15, fontWeight: "700" },
+  copyright: { fontSize: 10, lineHeight: 14, textAlign: "center", marginTop: 14 },
 });

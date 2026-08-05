@@ -41,7 +41,7 @@ export function AppButton({ label, onPress, loading, disabled, variant = "primar
             backgroundColor: bg,
             borderColor,
             borderWidth: variant === "secondary" ? 1.5 : 0,
-            borderRadius: colors.radii.md,
+            borderRadius: colors.radii.button,
             opacity: isDisabled ? 0.55 : 1,
           },
         ]}
