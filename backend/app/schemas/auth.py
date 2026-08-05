@@ -1,23 +1,18 @@
 """
 Auth-related Pydantic schemas.
 
-`RegisterRequest` encodes the registration flow's two independent facts
-about a resident:
-
-    Are you an AWC Employee?           (affects: employee_number required)
-      YES -> collect employee_number
-      NO  -> employee_number omitted
+Every resident supplies a CNIC. Beyond that there is one branching
+question:
 
     Are you a tenant?                  (affects: resident_type + owner fields)
       YES -> collect owner_house_number, owner_name,
              owner_cnic, owner_mobile_number   (resident_type = TENANT)
       NO  -> no extra fields                    (resident_type = OWNER)
 
-These two questions are independent — an AWC employee can also be a
-tenant (e.g. an employee who rents rather than owns their house). Earlier
-drafts of this schema incorrectly treated "employee" as implying "owner";
-that was a real modeling mistake, not a deliberate business rule, and has
-been removed.
+The former "Are you an AWC Employee?" question (and its employee_number
+field) was removed: employee status did not affect anything in the
+complaint flow, and CNIC is what the housing office actually verifies a
+resident against.
 
 `resident_type` is derived server-side from `is_tenant` alone, rather than
 accepted directly from the client, so a client can't submit
@@ -36,8 +31,9 @@ class RegisterRequest(BaseModel):
     email: str | None = None
     password: str = Field(min_length=8, max_length=128)
 
-    is_awc_employee: bool
-    employee_number: str | None = None
+    # Pakistani CNIC. Accepted with or without dashes and normalised to 13
+    # digits, so "12345-1234567-1" and "1234512345671" are the same person.
+    cnic: str = Field(min_length=13, max_length=15, description='e.g. "12345-1234567-1"')
 
     is_tenant: bool = False
     owner_house_number: str | None = None
@@ -50,14 +46,22 @@ class RegisterRequest(BaseModel):
     def normalize_house_number(cls, v: str) -> str:
         return v.strip().upper()
 
+    @field_validator("cnic")
+    @classmethod
+    def normalize_cnic(cls, v: str) -> str:
+        """Strips dashes/spaces and requires exactly 13 digits.
+
+        Normalising at the edge (rather than storing whatever was typed)
+        is what makes the duplicate check in auth_service meaningful — the
+        same CNIC written two different ways must collide.
+        """
+        digits = "".join(ch for ch in v if ch.isdigit())
+        if len(digits) != 13:
+            raise ValueError("CNIC must be 13 digits, e.g. 12345-1234567-1.")
+        return digits
+
     @model_validator(mode="after")
     def validate_branches(self) -> "RegisterRequest":
-        if self.is_awc_employee and not self.employee_number:
-            raise ValueError("employee_number is required when is_awc_employee is true.")
-
-        if not self.is_awc_employee and self.employee_number:
-            raise ValueError("employee_number must be omitted unless is_awc_employee is true.")
-
         if self.is_tenant:
             required = {
                 "owner_house_number": self.owner_house_number,

@@ -16,13 +16,27 @@ import { useTheme } from "../lib/use-theme";
 
 /**
  * Mirrors backend/app/schemas/auth.py's RegisterRequest validator exactly:
- * - is_awc_employee=true requires employee_number
+ * - cnic is required for everyone, 13 digits, dashes optional
  * - is_tenant=true requires all four owner_* fields
- * These two questions are independent — an AWC employee can also be a
- * tenant (e.g. an employee who rents rather than owns). Both questions are
- * always asked; the fields shown depend on each answer independently, not
- * on each other.
+ *
+ * The old "Are you an AWC Employee?" question and its employee_number field
+ * were removed — employee status did not affect anything downstream, and
+ * CNIC is what the housing office actually verifies against.
  */
+/**
+ * Formats a CNIC as 12345-1234567-1 while typing.
+ *
+ * Only ever removes non-digits and re-inserts dashes, so it can't corrupt
+ * what the user typed, and it caps at 13 digits. The backend normalises
+ * back to bare digits, so the stored value is unaffected by this.
+ */
+function formatCnic(input: string): string {
+  const digits = input.replace(/\D/g, "").slice(0, 13);
+  if (digits.length <= 5) return digits;
+  if (digits.length <= 12) return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12)}`;
+}
+
 const schema = z
   .object({
     full_name: z.string().min(2, "Enter your full name"),
@@ -30,8 +44,9 @@ const schema = z
     mobile_number: z.string().min(7, "Enter a valid mobile number"),
     email: z.string().email("Enter a valid email").optional().or(z.literal("")),
     password: z.string().min(8, "At least 8 characters"),
-    is_awc_employee: z.boolean(),
-    employee_number: z.string().optional(),
+    cnic: z
+      .string()
+      .refine((v) => v.replace(/\D/g, "").length === 13, "CNIC must be 13 digits"),
     is_tenant: z.boolean(),
     owner_house_number: z.string().optional(),
     owner_name: z.string().optional(),
@@ -39,9 +54,6 @@ const schema = z
     owner_mobile_number: z.string().optional(),
   })
   .superRefine((values, ctx) => {
-    if (values.is_awc_employee && !values.employee_number?.trim()) {
-      ctx.addIssue({ code: "custom", path: ["employee_number"], message: "Employee number is required" });
-    }
     if (values.is_tenant) {
       (["owner_house_number", "owner_name", "owner_cnic", "owner_mobile_number"] as const).forEach((field) => {
         if (!values[field]?.trim()) {
@@ -76,8 +88,7 @@ export default function RegisterScreen() {
       mobile_number: "",
       email: "",
       password: "",
-      is_awc_employee: false,
-      employee_number: "",
+      cnic: "",
       is_tenant: false,
       owner_house_number: "",
       owner_name: "",
@@ -86,19 +97,17 @@ export default function RegisterScreen() {
     },
   });
 
-  const isEmployee = watch("is_awc_employee");
   const isTenant = watch("is_tenant");
   const values = watch();
 
   const goNext = async () => {
     const step2Fields: (keyof FormValues)[] = [
-      ...(isEmployee ? (["employee_number"] as const) : []),
       ...(isTenant
         ? (["owner_house_number", "owner_name", "owner_cnic", "owner_mobile_number"] as const)
         : []),
     ];
     const fieldsForStep: (keyof FormValues)[][] = [
-      ["full_name", "house_number", "mobile_number", "email", "password"],
+      ["full_name", "cnic", "house_number", "mobile_number", "email", "password"],
       step2Fields,
     ];
     const valid = await trigger(fieldsForStep[step]);
@@ -116,8 +125,7 @@ export default function RegisterScreen() {
         mobile_number: data.mobile_number,
         email: data.email || undefined,
         password: data.password,
-        is_awc_employee: data.is_awc_employee,
-        employee_number: data.is_awc_employee ? data.employee_number : undefined,
+        cnic: data.cnic,
         is_tenant: data.is_tenant,
         owner_house_number: data.is_tenant ? data.owner_house_number : undefined,
         owner_name: data.is_tenant ? data.owner_name : undefined,
@@ -154,6 +162,22 @@ export default function RegisterScreen() {
             name="full_name"
             render={({ field }) => (
               <AppTextField label="Full name" value={field.value} onChangeText={field.onChange} error={errors.full_name?.message} />
+            )}
+          />
+          <Controller
+            control={control}
+            name="cnic"
+            render={({ field }) => (
+              <AppTextField
+                label="CNIC (e.g. 12345-1234567-1)"
+                keyboardType="number-pad"
+                value={field.value}
+                // Dashes are inserted as you type so the field reads like a
+                // real CNIC. The backend strips them again, so either form
+                // is accepted — this is purely for legibility.
+                onChangeText={(text) => field.onChange(formatCnic(text))}
+                error={errors.cnic?.message}
+              />
             )}
           />
           <Controller
@@ -195,22 +219,6 @@ export default function RegisterScreen() {
 
       {step === 1 && (
         <>
-          <QuestionToggle
-            question="Are you an AWC Employee?"
-            control={control}
-            name="is_awc_employee"
-          />
-
-          {isEmployee && (
-            <Controller
-              control={control}
-              name="employee_number"
-              render={({ field }) => (
-                <AppTextField label="Employee number" value={field.value} onChangeText={field.onChange} error={errors.employee_number?.message} />
-              )}
-            />
-          )}
-
           <QuestionToggle
             question="Are you a tenant?"
             control={control}
@@ -257,8 +265,7 @@ export default function RegisterScreen() {
           <ReviewRow label="Name" value={values.full_name} theme={theme} />
           <ReviewRow label="House" value={values.house_number} theme={theme} />
           <ReviewRow label="Mobile" value={values.mobile_number} theme={theme} />
-          <ReviewRow label="AWC employee" value={values.is_awc_employee ? "Yes" : "No"} theme={theme} />
-          {values.is_awc_employee && <ReviewRow label="Employee #" value={values.employee_number} theme={theme} />}
+          <ReviewRow label="CNIC" value={formatCnic(values.cnic)} theme={theme} />
           <ReviewRow label="Tenant" value={values.is_tenant ? "Yes" : "No"} theme={theme} />
           {values.is_tenant && <ReviewRow label="Owner" value={values.owner_name} theme={theme} />}
         </View>
@@ -282,7 +289,7 @@ function QuestionToggle({
 }: {
   question: string;
   control: any;
-  name: "is_awc_employee" | "is_tenant";
+  name: "is_tenant";
 }) {
   const theme = useTheme();
   return (

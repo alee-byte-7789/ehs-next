@@ -89,7 +89,7 @@ export const STRINGS = {
     profile_phone: "Phone",
     profile_email: "Email",
     profile_verification: "Verification",
-    profile_employee: "Employee",
+    profile_cnic: "CNIC",
 
     // Prayer timings
     prayer_timings_title: "Prayer Timings",
@@ -191,7 +191,7 @@ export const STRINGS = {
     profile_phone: "فون",
     profile_email: "ای میل",
     profile_verification: "تصدیق",
-    profile_employee: "ملازم",
+    profile_cnic: "شناختی کارڈ",
 
     prayer_timings_title: "نماز کے اوقات",
     prayer_next_up: "اگلی نماز",

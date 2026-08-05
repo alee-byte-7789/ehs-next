@@ -1,7 +1,7 @@
 """Resident model — a person living in a house, either its owner or a tenant."""
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -12,10 +12,14 @@ class Resident(Base):
     """
     A registered resident. Fields branch according to the registration flow:
 
-    - Every resident: full_name, phone, optional email, password.
-    - AWC employee branch: is_employee=True -> employee_number required.
+    - Every resident: full_name, cnic, phone, optional email, password.
     - Tenant branch: resident_type=TENANT -> owner_name / owner_cnic /
       owner_phone required (the tenant must identify the house owner).
+
+    The AWC-employee branch (is_employee / employee_number) was removed:
+    employee status turned out not to affect anything in the complaint
+    flow, and CNIC is the identifier the housing office actually verifies
+    a resident against.
 
     `resident_code` (e.g. "EHS-B-026-O" for the owner, "EHS-B-026-T1",
     "EHS-B-026-T2"... for tenants) is generated server-side and ONLY after
@@ -36,9 +40,13 @@ class Resident(Base):
 
     resident_type: Mapped[ResidentType] = mapped_column(Enum(ResidentType), nullable=False)
 
-    # AWC employee branch
-    is_employee: Mapped[bool] = mapped_column(Boolean, default=False)
-    employee_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    # National ID. Stored NORMALISED as 13 digits with no dashes, so that
+    # "12345-1234567-1" and "1234512345671" can never both exist as separate
+    # residents. The UI formats it for display.
+    #
+    # Nullable at the database level only because residents registered before
+    # this field existed have none; the registration API requires it.
+    cnic: Mapped[str | None] = mapped_column(String(13), nullable=True, index=True)
 
     # Expo push token — set when the resident opens the native Android app
     # (built via EAS) and grants notification permission. Only works in the

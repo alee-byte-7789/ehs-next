@@ -9,6 +9,12 @@ import { useDashboardCounts } from "../lib/complaint-queries";
 import { useAdminMe } from "../lib/registration-queries";
 import { useApproveRegistration, usePendingRegistrations, useRejectRegistration } from "../lib/registration-queries";
 
+/** Renders a stored 13-digit CNIC as 12345-1234567-1 for readability. */
+function formatCnic(cnic: string): string {
+  const d = cnic.replace(/\D/g, "");
+  return d.length === 13 ? `${d.slice(0, 5)}-${d.slice(5, 12)}-${d.slice(12)}` : cnic;
+}
+
 export function DashboardPage() {
   const { data: admin } = useAdminMe(true);
   const { data: pending, isLoading, isError } = usePendingRegistrations();
@@ -103,7 +109,7 @@ export function DashboardPage() {
                       <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{resident.phone}</td>
                       <td className="px-4 py-3 capitalize text-[color:var(--color-text-secondary)]">
                         {resident.resident_type}
-                        {resident.is_employee && " · Employee"}
+                        {resident.cnic && ` · CNIC ${formatCnic(resident.cnic)}`}
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={resident.verification_status} />
@@ -148,7 +154,7 @@ export function DashboardPage() {
                   </div>
                   <p className="mb-3 text-xs capitalize text-[color:var(--color-text-secondary)]">
                     {resident.resident_type}
-                    {resident.is_employee && " · Employee"}
+                    {resident.cnic && ` · CNIC ${formatCnic(resident.cnic)}`}
                   </p>
                   <div className="flex gap-2">
                     <Button

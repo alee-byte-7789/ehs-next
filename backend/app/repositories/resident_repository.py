@@ -25,6 +25,17 @@ def phone_or_email_taken(db: Session, phone: str, email: str | None) -> bool:
     return db.query(query.exists()).scalar()
 
 
+def cnic_taken(db: Session, cnic: str) -> bool:
+    """One CNIC identifies one person, so it must not appear twice.
+
+    Enforced here in application code rather than as a DB unique constraint,
+    matching how phone/email uniqueness already works in this project —
+    residents predating the CNIC field have NULL, which a NOT NULL unique
+    constraint could not accommodate.
+    """
+    return db.query(db.query(Resident).filter(Resident.cnic == cnic).exists()).scalar()
+
+
 def list_pending(db: Session) -> list[Resident]:
     return (
         db.query(Resident)

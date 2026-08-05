@@ -38,6 +38,9 @@ def register_resident(db: Session, req: RegisterRequest) -> Resident:
     if resident_repository.phone_or_email_taken(db, req.mobile_number, req.email):
         raise ConflictError("A resident with this phone or email is already registered.")
 
+    if resident_repository.cnic_taken(db, req.cnic):
+        raise ConflictError("A resident with this CNIC is already registered.")
+
     house_code, block = build_house_code(req.house_number)
     house = house_repository.get_or_create(db, house_code=house_code, block=block)
 
@@ -50,8 +53,7 @@ def register_resident(db: Session, req: RegisterRequest) -> Resident:
         email=req.email,
         password_hash=hash_password(req.password),
         resident_type=resident_type,
-        is_employee=req.is_awc_employee,
-        employee_number=req.employee_number,
+        cnic=req.cnic,
         owner_house_number=req.owner_house_number,
         owner_name=req.owner_name,
         owner_cnic=req.owner_cnic,

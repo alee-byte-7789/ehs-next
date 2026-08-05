@@ -12,6 +12,12 @@ import { useMyComplaints } from "../lib/complaint-queries";
 import { useResidentMe } from "../lib/resident-queries";
 import { useAppTheme } from "../lib/theme/theme-context";
 
+/** Renders a stored 13-digit CNIC as 12345-1234567-1 for readability. */
+function formatCnic(cnic: string): string {
+  const d = cnic.replace(/\D/g, "");
+  return d.length === 13 ? `${d.slice(0, 5)}-${d.slice(5, 12)}-${d.slice(12)}` : cnic;
+}
+
 export default function ProfileScreen() {
   const { colors } = useAppTheme();
   const { logout } = useAuth();
@@ -61,9 +67,9 @@ export default function ProfileScreen() {
         />
         <Divider />
         <InfoRow
-          icon="business-outline"
-          label="Employee"
-          value={resident?.is_employee ? resident.employee_number ?? "Yes" : "No"}
+          icon="card-outline"
+          label="CNIC"
+          value={resident?.cnic ? formatCnic(resident.cnic) : "—"}
         />
       </Card>
 

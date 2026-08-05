@@ -17,8 +17,7 @@ class ResidentOut(BaseModel):
     phone: str
     email: str | None
     resident_type: ResidentType
-    is_employee: bool
-    employee_number: str | None
+    cnic: str | None
     verification_status: VerificationStatus
     notification_preference: NotificationPreference
     created_at: datetime

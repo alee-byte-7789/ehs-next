@@ -15,8 +15,7 @@ export interface ResidentOut {
   phone: string;
   email: string | null;
   resident_type: ResidentType;
-  is_employee: boolean;
-  employee_number: string | null;
+  cnic: string | null;
   verification_status: VerificationStatus;
   created_at: string;
 }
