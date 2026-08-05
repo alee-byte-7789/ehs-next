@@ -77,7 +77,7 @@ export default function NotificationsScreen() {
       ) : isError ? (
         <View style={styles.centerState}>
           <EmptyState
-            icon="cloud-offline-outline"
+            icon="cloud-offline"
             title="Couldn't load notifications"
             body={extractApiErrorMessage(error, "Check your connection and try again.")}
           />
@@ -92,7 +92,7 @@ export default function NotificationsScreen() {
         </View>
       ) : items.length === 0 ? (
         <EmptyState
-          icon="notifications-off-outline"
+          icon="notifications-off"
           title="No notifications yet"
           body="Updates about your complaints and society notices will show up here."
         />

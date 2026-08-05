@@ -28,7 +28,10 @@ export function QuickActionCard({ label, description, icon, iconFamily = "ionico
         <View
           style={[
             styles.iconWrap,
-            { backgroundColor: colors.primaryTint, borderRadius: colors.radii.md },
+            // Circular, not a rounded square. The 4px surface radius makes
+            // small square accents read as hard chips; a circle keeps the
+            // "glass icon accent" look the design is built around.
+            { backgroundColor: colors.primaryTint, borderRadius: 999 },
           ]}
         >
           <IconComponent name={icon as never} size={22} color={colors.primary} />

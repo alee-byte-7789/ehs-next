@@ -56,27 +56,27 @@ export default function ProfileScreen() {
       </View>
 
       <Card padding={0} style={styles.listCard}>
-        <InfoRow icon="call-outline" label="Phone" value={resident?.phone ?? "—"} />
+        <InfoRow icon="call" label="Phone" value={resident?.phone ?? "—"} />
         <Divider />
-        <InfoRow icon="mail-outline" label="Email" value={resident?.email ?? "Not provided"} />
+        <InfoRow icon="mail" label="Email" value={resident?.email ?? "Not provided"} />
         <Divider />
         <InfoRow
-          icon="checkmark-circle-outline"
+          icon="checkmark-circle"
           label="Verification"
           value={resident?.verification_status ?? "—"}
         />
         <Divider />
         <InfoRow
-          icon="card-outline"
+          icon="card"
           label="CNIC"
           value={resident?.cnic ? formatCnic(resident.cnic) : "—"}
         />
       </Card>
 
       <Card padding={0} style={[styles.listCard, styles.actionsCard]}>
-        <ActionRow icon="settings-outline" label="Settings" onPress={() => router.push("/settings")} />
+        <ActionRow icon="settings" label="Settings" onPress={() => router.push("/settings")} />
         <Divider />
-        <ActionRow icon="log-out-outline" label="Log out" onPress={handleLogout} destructive />
+        <ActionRow icon="log-out" label="Log out" onPress={handleLogout} destructive />
       </Card>
     </ScreenContainer>
   );

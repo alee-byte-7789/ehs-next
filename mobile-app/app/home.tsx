@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 import { AppText as Text } from "../components/ui/AppText";
 
 import { AppDrawer } from "../components/AppDrawer";
@@ -26,6 +26,11 @@ export default function HomeScreen() {
   const { data: resident } = useResidentMe(true);
   const { data: complaints, isLoading: complaintsLoading } = useMyComplaints();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Above this width ScreenContainer renders the permanent sidebar, so the
+  // hamburger (and the drawer it opens) would be duplicate navigation.
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === "web" && width >= 1024;
 
   const firstName = resident?.full_name?.split(" ")[0] ?? "there";
   const { data: unread } = useUnreadNotificationCount();
@@ -64,14 +69,18 @@ export default function HomeScreen() {
     <View style={{ flex: 1 }}>
       <ScreenContainer>
         <View style={styles.topBar}>
-          <Pressable
-            onPress={() => setDrawerOpen(true)}
-            scaleTo={0.9}
-            style={[styles.iconBtn, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
-            accessibilityLabel="Open menu"
-          >
-            <Ionicons name="menu" size={22} color={colors.textPrimary} />
-          </Pressable>
+          {isDesktop ? (
+            <View style={styles.iconBtnSpacer} />
+          ) : (
+            <Pressable
+              onPress={() => setDrawerOpen(true)}
+              scaleTo={0.9}
+              style={[styles.iconBtn, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+              accessibilityLabel="Open menu"
+            >
+              <Ionicons name="menu" size={22} color={colors.textPrimary} />
+            </Pressable>
+          )}
 
           <View style={styles.headerCenter}>
             <Text style={[styles.greeting, { color: colors.textSecondary }]}>{greeting} 👋</Text>
@@ -84,7 +93,7 @@ export default function HomeScreen() {
             style={[styles.iconBtn, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
             accessibilityLabel="Notifications"
           >
-            <Ionicons name="notifications-outline" size={20} color={colors.textPrimary} />
+            <Ionicons name="notifications" size={20} color={colors.textPrimary} />
             {unreadCount > 0 ? (
               <View style={[styles.bellBadge, { backgroundColor: colors.danger, borderColor: colors.background }]} />
             ) : null}
@@ -111,20 +120,20 @@ export default function HomeScreen() {
           <QuickActionCard
             label={t("action_my_complaints")}
             description={t("action_my_complaints_desc")}
-            icon="document-text-outline"
+            icon="document-text"
             onPress={() => router.push("/complaints")}
             badge={openComplaints.length}
           />
           <QuickActionCard
             label={t("action_emergency")}
             description={t("action_emergency_desc")}
-            icon="alert-circle-outline"
+            icon="alert-circle"
             onPress={() => router.push("/emergency")}
           />
           <QuickActionCard
             label={t("action_prayer_timings")}
             description={t("action_prayer_timings_desc")}
-            icon="mosque-outline"
+            icon="mosque"
             iconFamily="material-community"
             onPress={() => router.push("/prayer-timings")}
           />
@@ -166,7 +175,7 @@ export default function HomeScreen() {
       </ScreenContainer>
 
       <RegisterComplaintFab onPress={() => router.push("/complaints/new")} />
-      <AppDrawer visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      {!isDesktop && <AppDrawer visible={drawerOpen} onClose={() => setDrawerOpen(false)} />}
     </View>
   );
 }
@@ -205,6 +214,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  iconBtnSpacer: { width: 44, height: 44 },
   bellBadge: { position: "absolute", top: 9, right: 10, width: 9, height: 9, borderRadius: 5, borderWidth: 1.5 },
   houseRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 20 },
   houseText: { fontSize: 12, fontWeight: "500" },

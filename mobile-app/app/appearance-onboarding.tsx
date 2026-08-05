@@ -12,9 +12,9 @@ import { ACCENTS, ACCENT_ORDER, type AccentKey, type DisplaySize } from "../lib/
 import { useAppTheme, type ThemeMode } from "../lib/theme/theme-context";
 
 const MODE_OPTIONS: { key: ThemeMode; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: "system", label: "System", icon: "phone-portrait-outline" },
-  { key: "light", label: "Light", icon: "sunny-outline" },
-  { key: "dark", label: "Dark", icon: "moon-outline" },
+  { key: "system", label: "System", icon: "phone-portrait" },
+  { key: "light", label: "Light", icon: "sunny" },
+  { key: "dark", label: "Dark", icon: "moon" },
 ];
 
 const DISPLAY_OPTIONS: { key: DisplaySize; label: string }[] = [

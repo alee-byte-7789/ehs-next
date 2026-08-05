@@ -74,7 +74,7 @@ export default function LoginScreen() {
           accessibilityLabel="Appearance settings"
           style={[styles.themeBtn, { borderColor: colors.border, backgroundColor: colors.surfaceElevated }]}
         >
-          <Ionicons name="color-palette-outline" size={19} color={colors.textPrimary} />
+          <Ionicons name="color-palette" size={19} color={colors.textPrimary} />
         </Pressable>
       </View>
 

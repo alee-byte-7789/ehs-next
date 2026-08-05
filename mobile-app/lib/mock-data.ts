@@ -57,17 +57,17 @@ export interface PrayerTiming {
   name: string;
   arabicName: string;
   time: string;
-  icon: "partly-sunny-outline" | "sunny-outline" | "cloudy-outline" | "moon-outline" | "star-outline" | "people-outline";
+  icon: "partly-sunny" | "sunny" | "cloudy" | "moon" | "star" | "people";
 }
 
 export const PRAYER_TIMINGS: PrayerTiming[] = [
-  { id: "fajr", name: "Fajr", arabicName: "الفجر", time: "4:52 AM", icon: "partly-sunny-outline" },
-  { id: "sunrise", name: "Sunrise", arabicName: "الشروق", time: "6:14 AM", icon: "sunny-outline" },
-  { id: "dhuhr", name: "Dhuhr", arabicName: "الظهر", time: "12:18 PM", icon: "sunny-outline" },
-  { id: "asr", name: "Asr", arabicName: "العصر", time: "4:47 PM", icon: "cloudy-outline" },
-  { id: "maghrib", name: "Maghrib", arabicName: "المغرب", time: "7:02 PM", icon: "moon-outline" },
-  { id: "isha", name: "Isha", arabicName: "العشاء", time: "8:24 PM", icon: "star-outline" },
-  { id: "jummah", name: "Jummah", arabicName: "الجمعة", time: "1:30 PM", icon: "people-outline" },
+  { id: "fajr", name: "Fajr", arabicName: "الفجر", time: "4:52 AM", icon: "partly-sunny" },
+  { id: "sunrise", name: "Sunrise", arabicName: "الشروق", time: "6:14 AM", icon: "sunny" },
+  { id: "dhuhr", name: "Dhuhr", arabicName: "الظهر", time: "12:18 PM", icon: "sunny" },
+  { id: "asr", name: "Asr", arabicName: "العصر", time: "4:47 PM", icon: "cloudy" },
+  { id: "maghrib", name: "Maghrib", arabicName: "المغرب", time: "7:02 PM", icon: "moon" },
+  { id: "isha", name: "Isha", arabicName: "العشاء", time: "8:24 PM", icon: "star" },
+  { id: "jummah", name: "Jummah", arabicName: "الجمعة", time: "1:30 PM", icon: "people" },
 ];
 
 export interface EmergencyContact {

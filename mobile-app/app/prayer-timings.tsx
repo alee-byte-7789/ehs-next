@@ -9,6 +9,7 @@ import { AppButton } from "../components/AppButton";
 import { AppTextField } from "../components/AppTextField";
 import { Card, IconCircle } from "../components/ui/Card";
 import { Pressable } from "../components/ui/Pressable";
+import { GlassSegmentedControl } from "../components/ui/GlassSegmentedControl";
 import { ScreenHeader } from "../components/ui/ScreenHeader";
 import { useAdminAuth } from "../lib/admin-auth-context";
 import { useUpdatePrayerTiming } from "../lib/admin-prayer-timing-mutations";
@@ -26,11 +27,11 @@ const MOSQUE_LABELS: Record<MosqueName, string> = {
 type PrayerKey = "fajr" | "zuhr" | "asr" | "maghrib" | "isha";
 
 const PRAYER_ORDER: { key: PrayerKey; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: "fajr", icon: "partly-sunny-outline" },
-  { key: "zuhr", icon: "sunny-outline" },
-  { key: "asr", icon: "cloudy-outline" },
-  { key: "maghrib", icon: "moon-outline" },
-  { key: "isha", icon: "star-outline" },
+  { key: "fajr", icon: "partly-sunny" },
+  { key: "zuhr", icon: "sunny" },
+  { key: "asr", icon: "cloudy" },
+  { key: "maghrib", icon: "moon" },
+  { key: "isha", icon: "star" },
 ];
 
 /** Parses a "4:52 AM" / "12:18 PM" style string into a Date on the given day. Returns null if unparsable. */
@@ -105,32 +106,18 @@ export default function PrayerTimingsScreen() {
 
       {isLoading && <Text style={{ color: colors.textSecondary }}>…</Text>}
 
-      {timings && timings.length > 1 && (
-        <View style={[styles.toggleRow, { backgroundColor: colors.surfaceSunken, borderRadius: colors.radii.pill }]}>
-          {timings.map((tm) => {
-            const active = tm.mosque_name === activeMosque;
-            return (
-              <Pressable
-                key={tm.mosque_name}
-                onPress={() => setSelectedMosque(tm.mosque_name)}
-                style={[
-                  styles.toggleItem,
-                  { borderRadius: colors.radii.pill },
-                  active ? { backgroundColor: colors.primary } : null,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.toggleLabel,
-                    { color: active ? colors.onPrimary : colors.textSecondary },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {MOSQUE_LABELS[tm.mosque_name]}
-                </Text>
-              </Pressable>
-            );
-          })}
+      {timings && timings.length > 1 && activeMosque && (
+        <View style={styles.mosqueSwitcher}>
+          <GlassSegmentedControl
+            options={timings.map((tm) => ({
+              key: tm.mosque_name,
+              label: MOSQUE_LABELS[tm.mosque_name],
+              icon: "moon" as const,
+            }))}
+            value={activeMosque}
+            onChange={setSelectedMosque}
+            iconAbove={false}
+          />
         </View>
       )}
 
@@ -275,7 +262,7 @@ function MosqueCard({
             <View style={styles.row}>
               <View style={styles.rowLeft}>
                 <IconCircle backgroundColor={colors.surfaceSunken} size={32}>
-                  <Ionicons name="people-outline" size={15} color={colors.textSecondary} />
+                  <Ionicons name="people" size={15} color={colors.textSecondary} />
                 </IconCircle>
                 <Text style={{ color: colors.textPrimary, fontSize: 14 }}>{t("prayer_jummah")}</Text>
               </View>
@@ -308,9 +295,7 @@ function MosqueCard({
 }
 
 const styles = StyleSheet.create({
-  toggleRow: { flexDirection: "row", padding: 4, marginBottom: 16, gap: 4 },
-  toggleItem: { flex: 1, paddingVertical: 9, alignItems: "center", justifyContent: "center" },
-  toggleLabel: { fontSize: 13, fontWeight: "600" },
+  mosqueSwitcher: { marginBottom: 16 },
   nextCard: { padding: 20, marginBottom: 20, alignItems: "center" },
   nextLabel: {
     color: "rgba(255,255,255,0.8)",

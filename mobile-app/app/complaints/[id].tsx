@@ -57,7 +57,7 @@ export default function ComplaintDetailScreen() {
       <ScreenContainer>
         <ScreenHeader title="Complaint" />
         <EmptyState
-          icon="alert-circle-outline"
+          icon="alert-circle"
           title="Couldn't load this complaint"
           body={extractApiErrorMessage(error, "It may not exist, or you may not have access to it.")}
         />

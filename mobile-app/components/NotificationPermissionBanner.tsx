@@ -27,7 +27,7 @@ export function NotificationPermissionBanner() {
 
   return (
     <View style={[styles.banner, { backgroundColor: colors.dangerTint, borderRadius: colors.radii.md }]}>
-      <Ionicons name="notifications-off-outline" size={18} color={colors.danger} />
+      <Ionicons name="notifications-off" size={18} color={colors.danger} />
       <View style={styles.textWrap}>
         <Text style={[styles.title, { color: colors.danger }]}>Notifications are blocked</Text>
         <Text style={[styles.body, { color: colors.danger }]}>

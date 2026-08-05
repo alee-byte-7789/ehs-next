@@ -118,7 +118,7 @@ export default function ComplaintsListScreen() {
       ) : isError ? (
         <View style={styles.centerState}>
           <EmptyState
-            icon="cloud-offline-outline"
+            icon="cloud-offline"
             title="Couldn't load complaints"
             body={extractApiErrorMessage(error, "Check your connection and try again.")}
           />
@@ -130,7 +130,7 @@ export default function ComplaintsListScreen() {
         </View>
       ) : results.length === 0 ? (
         <EmptyState
-          icon="file-tray-outline"
+          icon="file-tray"
           title={complaints && complaints.length > 0 ? "No complaints found" : "No complaints yet"}
           body={
             complaints && complaints.length > 0

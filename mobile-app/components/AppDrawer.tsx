@@ -101,11 +101,11 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
         </RNPressable>
 
         <View style={styles.itemsWrap}>
-          <DrawerItem icon="person-outline" label="Profile" onPress={() => go("/profile")} />
-          <DrawerItem icon="settings-outline" label="Settings" onPress={() => go("/settings")} />
+          <DrawerItem icon="person" label="Profile" onPress={() => go("/profile")} />
+          <DrawerItem icon="settings" label="Settings" onPress={() => go("/settings")} />
 
           <DrawerItem
-            icon="language-outline"
+            icon="language"
             label="Language"
             value={locale === "ur" ? "اردو" : "English"}
             onPress={() => setLocale(locale === "en" ? "ur" : "en")}
@@ -118,7 +118,7 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
             onPress={handleLogout}
             style={[styles.logoutBtn, { backgroundColor: colors.dangerTint, borderRadius: colors.radii.button }]}
           >
-            <Ionicons name="log-out-outline" size={18} color={colors.danger} />
+            <Ionicons name="log-out" size={18} color={colors.danger} />
             <Text style={[styles.logoutText, { color: colors.danger }]}>{t("log_out")}</Text>
           </RNPressable>
 

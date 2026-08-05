@@ -7,6 +7,7 @@ import { AppText as Text } from "../components/ui/AppText";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { Card } from "../components/ui/Card";
 import { Pressable } from "../components/ui/Pressable";
+import { GlassSegmentedControl } from "../components/ui/GlassSegmentedControl";
 import { ScreenHeader } from "../components/ui/ScreenHeader";
 import { useAuth } from "../lib/auth-context";
 import { LOCALE_LABEL, useLocale, type Locale } from "../lib/i18n/locale-context";
@@ -15,9 +16,9 @@ import { useAppTheme, type ThemeMode } from "../lib/theme/theme-context";
 import type { DisplaySize } from "../lib/theme/palette";
 
 const MODE_OPTIONS: { key: ThemeMode; labelKey: "settings_follow_system" | "settings_light" | "settings_dark"; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: "system", labelKey: "settings_follow_system", icon: "phone-portrait-outline" },
-  { key: "light", labelKey: "settings_light", icon: "sunny-outline" },
-  { key: "dark", labelKey: "settings_dark", icon: "moon-outline" },
+  { key: "system", labelKey: "settings_follow_system", icon: "phone-portrait" },
+  { key: "light", labelKey: "settings_light", icon: "sunny" },
+  { key: "dark", labelKey: "settings_dark", icon: "moon" },
 ];
 
 const DISPLAY_OPTIONS: { key: DisplaySize; labelKey: "settings_display_small" | "settings_display_default" | "settings_display_large" | "settings_display_xlarge" }[] = [
@@ -46,32 +47,11 @@ export default function SettingsScreen() {
       <ScreenHeader title={t("settings_title")} subtitle={t("settings_subtitle")} />
 
       <SectionLabel text={t("settings_appearance")} />
-      <Card style={styles.segmentCard}>
-        <View style={styles.segmentRow}>
-          {MODE_OPTIONS.map((opt) => {
-            const active = mode === opt.key;
-            return (
-              <Pressable key={opt.key} onPress={() => setMode(opt.key)} style={styles.segmentPress} scaleTo={0.96}>
-                <View
-                  style={[
-                    styles.segmentItem,
-                    {
-                      backgroundColor: active ? colors.primaryTint : "transparent",
-                      borderColor: active ? colors.primary : colors.border,
-                      borderRadius: colors.radii.sm,
-                    },
-                  ]}
-                >
-                  <Ionicons name={opt.icon} size={18} color={active ? colors.primary : colors.textSecondary} />
-                  <Text style={[styles.segmentLabel, { color: active ? colors.primary : colors.textSecondary }]}>
-                    {t(opt.labelKey)}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
-      </Card>
+      <GlassSegmentedControl
+        options={MODE_OPTIONS.map((opt) => ({ key: opt.key, label: t(opt.labelKey), icon: opt.icon }))}
+        value={mode}
+        onChange={setMode}
+      />
 
       <SectionLabel text={t("settings_theme_color")} />
       <Card>
@@ -111,7 +91,7 @@ export default function SettingsScreen() {
       <SectionLabel text={t("settings_general")} />
       <Card padding={0} style={styles.listCard}>
         <Row
-          icon="language-outline"
+          icon="language"
           label={t("settings_language")}
           value={LOCALE_LABEL[locale]}
           expanded={languageOpen}
@@ -142,15 +122,15 @@ export default function SettingsScreen() {
           </View>
         ) : null}
         <Divider />
-        <Row icon="notifications-outline" label={t("settings_notifications")} onPress={() => router.push("/notifications")} />
+        <Row icon="notifications" label={t("settings_notifications")} onPress={() => router.push("/notifications")} />
         <Divider />
-        <Row icon="lock-closed-outline" label={t("settings_privacy")} onPress={() => {}} />
+        <Row icon="lock-closed" label={t("settings_privacy")} onPress={() => {}} />
         <Divider />
-        <Row icon="information-circle-outline" label={t("settings_about")} onPress={() => {}} />
+        <Row icon="information-circle" label={t("settings_about")} onPress={() => {}} />
       </Card>
 
       <Pressable onPress={handleLogout} style={styles.logoutRow}>
-        <Ionicons name="log-out-outline" size={18} color={colors.danger} />
+        <Ionicons name="log-out" size={18} color={colors.danger} />
         <Text style={[styles.logoutText, { color: colors.danger }]}>{t("log_out")}</Text>
       </Pressable>
     </ScreenContainer>
@@ -222,10 +202,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   segmentCard: { padding: 8, marginBottom: 4 },
-  segmentRow: { flexDirection: "row", gap: 8 },
-  segmentPress: { flex: 1 },
-  segmentItem: { alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 12, borderWidth: 1.5 },
-  segmentLabel: { fontSize: 11, fontWeight: "600" },
   switchRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, marginTop: 12 },
   switchLeft: { flexDirection: "row", alignItems: "center", gap: 12, flexShrink: 1 },
   switchDesc: { fontSize: 11, marginTop: 2, maxWidth: 220 },
