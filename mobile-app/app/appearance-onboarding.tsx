@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { StyleSheet, Switch, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { AppText as Text } from "../components/ui/AppText";
 
 import { ScreenContainer } from "../components/ScreenContainer";
@@ -31,7 +31,7 @@ const DISPLAY_OPTIONS: { key: DisplaySize; label: string }[] = [
  * screen doesn't need to know or care which flow it's part of.
  */
 export default function AppearanceOnboardingScreen() {
-  const { colors, mode, setMode, accent, setAccent, displaySize, setDisplaySize, glassEffect, setGlassEffect } =
+  const { colors, mode, setMode, accent, setAccent, displaySize, setDisplaySize } =
     useAppTheme();
   const { next } = useLocalSearchParams<{ next?: string }>();
 
@@ -74,24 +74,6 @@ export default function AppearanceOnboardingScreen() {
               </Pressable>
             );
           })}
-        </View>
-      </Card>
-
-      <Card padding={0} style={styles.listCard}>
-        <View style={styles.switchRow}>
-          <View style={styles.switchLeft}>
-            <Ionicons name="water-outline" size={18} color={colors.textSecondary} />
-            <View>
-              <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>Glass Effect</Text>
-              <Text style={[styles.switchDesc, { color: colors.textTertiary }]}>Frosted, translucent surfaces</Text>
-            </View>
-          </View>
-          <Switch
-            value={glassEffect}
-            onValueChange={setGlassEffect}
-            trackColor={{ true: colors.primary, false: colors.border }}
-            thumbColor="#FFFFFF"
-          />
         </View>
       </Card>
 

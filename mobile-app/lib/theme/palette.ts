@@ -174,7 +174,11 @@ export const STATUS_COLORS = {
   closed: "#6B7280",
 } as const;
 
-export const RADII = { sm: 8, md: 14, lg: 20, xl: 28, pill: 999 };
+// All corner radii are 4px by request — a tighter, squarer look than the
+// previous 8/14/20/28 ramp. `pill` stays 999 because it's what makes
+// genuinely circular things (chips, the FAB) circular rather than
+// rounded-rectangular.
+export const RADII = { sm: 4, md: 4, lg: 4, xl: 4, pill: 999 };
 
 export const SPACING = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 };
 

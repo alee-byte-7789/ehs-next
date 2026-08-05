@@ -33,7 +33,7 @@ interface CardProps extends ViewProps {
  *    mode specifically, without reintroducing the hard-edged borders.
  */
 export function Card({ variant = "elevated", padding, style, children, ...rest }: CardProps) {
-  const { colors, glassEffect } = useAppTheme();
+  const { colors } = useAppTheme();
   const radius = colors.radii.lg;
   const pad = padding ?? colors.spacing.md;
 
@@ -45,10 +45,16 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
     elevation: variant === "elevated" ? 4 : 0,
   };
 
-  if (variant === "elevated" && glassEffect) {
+  if (variant === "elevated") {
     const fillColor = colors.isDark ? "rgba(28,30,34,0.55)" : "rgba(255,255,255,0.58)";
     const tintColor = colors.isDark ? withAlpha(colors.primary, 0.12) : withAlpha(colors.primary, 0.14);
-    const sheenTop = colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.45)";
+
+    // Smoother sheen: the previous version was a hard 2-stop ramp that read
+    // as a visible diagonal seam across the card. Three stops with a low
+    // starting opacity and a mid-point make the falloff gradual instead.
+    const sheen: [string, string, string] = colors.isDark
+      ? ["rgba(255,255,255,0.06)", "rgba(255,255,255,0.02)", "rgba(255,255,255,0)"]
+      : ["rgba(255,255,255,0.30)", "rgba(255,255,255,0.10)", "rgba(255,255,255,0)"];
 
     return (
       // borderRadius here (not just on the inner glassClip) is the fix —
@@ -66,9 +72,10 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
               pass, so the glass reads as colorful rather than dull grey. */}
           <View style={[ABSOLUTE_FILL, { backgroundColor: tintColor }]} />
           <LinearGradient
-            colors={[sheenTop, "rgba(255,255,255,0)"]}
-            start={{ x: 0.1, y: 0 }}
-            end={{ x: 0.8, y: 0.9 }}
+            colors={sheen}
+            locations={[0, 0.55, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={ABSOLUTE_FILL}
           />
           <View style={{ padding: pad }} {...rest}>

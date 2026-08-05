@@ -41,14 +41,28 @@ export function ScreenContainer({
   );
 }
 
+// The app is designed for a phone. On a desktop browser an unconstrained
+// layout stretched content across the full window width, which looked
+// broken — rows of text running the whole screen, cards absurdly wide.
+// Capping the content column and centring it keeps the intended proportions
+// on any screen, while changing nothing on an actual phone (where the
+// viewport is narrower than the cap anyway).
+const MAX_CONTENT_WIDTH = 480;
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: {
     flexGrow: 1,
     padding: 20,
     paddingBottom: 40,
+    width: "100%",
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: "center",
   },
   contentFlush: {
     flexGrow: 1,
+    width: "100%",
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: "center",
   },
 });

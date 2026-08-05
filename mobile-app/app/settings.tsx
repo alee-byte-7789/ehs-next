@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Switch, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { AppText as Text } from "../components/ui/AppText";
 
 import { ScreenContainer } from "../components/ScreenContainer";
@@ -30,7 +30,7 @@ const DISPLAY_OPTIONS: { key: DisplaySize; labelKey: "settings_display_small" | 
 const LOCALE_OPTIONS: Locale[] = ["en", "ur"];
 
 export default function SettingsScreen() {
-  const { colors, mode, setMode, accent, setAccent, displaySize, setDisplaySize, glassEffect, setGlassEffect } =
+  const { colors, mode, setMode, accent, setAccent, displaySize, setDisplaySize } =
     useAppTheme();
   const { locale, setLocale, t } = useLocale();
   const { logout } = useAuth();
@@ -70,24 +70,6 @@ export default function SettingsScreen() {
               </Pressable>
             );
           })}
-        </View>
-      </Card>
-
-      <Card padding={0} style={styles.listCard}>
-        <View style={styles.switchRow}>
-          <View style={styles.switchLeft}>
-            <Ionicons name="water-outline" size={18} color={colors.textSecondary} />
-            <View>
-              <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{t("settings_glass_effect")}</Text>
-              <Text style={[styles.switchDesc, { color: colors.textTertiary }]}>{t("settings_glass_effect_desc")}</Text>
-            </View>
-          </View>
-          <Switch
-            value={glassEffect}
-            onValueChange={setGlassEffect}
-            trackColor={{ true: colors.primary, false: colors.border }}
-            thumbColor="#FFFFFF"
-          />
         </View>
       </Card>
 

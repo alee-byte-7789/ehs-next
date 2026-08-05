@@ -52,7 +52,13 @@ export default function LoginScreen() {
       setSubmitting(false);
     }
     if (loggedIn) {
-      router.replace("/appearance-onboarding?next=/");
+      // Straight to the splash gate, which routes to home/pending.
+      //
+      // This deliberately does NOT send the user to the appearance screen.
+      // That screen is shown once, on a device's very first app open (see
+      // app/index.tsx) — routing here as well meant being asked to pick a
+      // theme on every single login, which got annoying fast.
+      router.replace("/");
     }
   };
 
