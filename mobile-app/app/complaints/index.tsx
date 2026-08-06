@@ -143,7 +143,9 @@ export default function ComplaintsListScreen() {
           <Pressable key={c.id} onPress={() => router.push(`/complaints/${c.id}`)} style={styles.cardPress} scaleTo={0.98}>
             <Card style={styles.card}>
               <View style={styles.cardTop}>
-                <Text style={[styles.code, { color: colors.textTertiary }]}>{c.complaint_code}</Text>
+                <Text style={[styles.code, { color: colors.textSecondary }]}>
+                  {lastUpdatedLabel(c.status, c.updated_at)}
+                </Text>
                 <StatusChip status={c.status} />
               </View>
               <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
@@ -151,8 +153,8 @@ export default function ComplaintsListScreen() {
               </Text>
               <View style={styles.cardBottom}>
                 <PriorityChip priority={c.priority} />
-                <Text style={[styles.meta, { color: colors.textSecondary }]}>
-                  {formatCategory(c.category)} · {formatDate(c.created_at)}
+                <Text style={[styles.meta, { color: colors.textTertiary }]}>
+                  {c.complaint_code} · {formatDate(c.created_at)}
                 </Text>
               </View>
             </Card>
@@ -163,8 +165,31 @@ export default function ComplaintsListScreen() {
   );
 }
 
-function formatCategory(cat: string) {
-  return cat.charAt(0).toUpperCase() + cat.slice(1);
+/**
+ * How long since this complaint last moved, phrased by state.
+ *
+ * A waiting resident's real question is "has anything happened, and how
+ * long has it been?" — not "what is my reference number", which is what
+ * this slot used to show. The code is still on the card, just demoted to
+ * the meta line where it remains available for phoning the office.
+ */
+function lastUpdatedLabel(status: string, updatedAt: string): string {
+  const verb =
+    status === "resolved" ? "Resolved" :
+    status === "closed" ? "Closed" :
+    status === "pending" ? "Filed" : "Updated";
+  return `${verb} ${relativeTime(updatedAt)}`;
+}
+
+function relativeTime(iso: string): string {
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
 }
 
 function formatDate(iso: string) {

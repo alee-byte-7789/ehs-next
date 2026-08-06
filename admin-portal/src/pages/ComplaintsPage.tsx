@@ -146,8 +146,7 @@ export function ComplaintsPage() {
               <thead className="border-b border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-xs uppercase text-[color:var(--color-text-secondary)]">
                 <tr>
                   <th className="px-4 py-3"></th>
-                  <th className="px-4 py-3">Code</th>
-                  <th className="px-4 py-3">House</th>
+                  <th className="px-4 py-3">Complaint / House</th>
                   <th className="px-4 py-3">Title</th>
                   <th className="px-4 py-3">Priority</th>
                   <th className="px-4 py-3">Status</th>
@@ -166,8 +165,10 @@ export function ComplaintsPage() {
                         <Link to={`/complaints/${c.id}`} className="font-medium text-[color:var(--color-primary)]">
                           {c.complaint_code}
                         </Link>
+                        <div className="text-xs font-semibold text-[color:var(--color-text-secondary)]">
+                          {c.house_code}
+                        </div>
                       </td>
-                      <td className="px-4 py-3 font-semibold text-[color:var(--color-secondary,#1E3A5F)]">{c.house_code}</td>
                       <td className="px-4 py-3 text-[color:var(--color-text-primary)]">{c.subcategory}</td>
                       <td className="px-4 py-3">
                         {c.priority !== "normal" && (
