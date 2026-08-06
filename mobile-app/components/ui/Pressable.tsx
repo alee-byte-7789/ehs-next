@@ -76,7 +76,9 @@ export function Pressable({
   const showGlow = glow && !disabled;
   const supportsHover = Platform.OS === "web" && showGlow;
 
-  const animatePress = (toScale: number, toOpacity: number, pressed: boolean) => {
+  const pulse = useRef<Animated.CompositeAnimation | null>(null);
+
+  const animatePress = (toScale: number, toOpacity: number) => {
     Animated.parallel([
       Animated.spring(scale, { toValue: toScale, useNativeDriver: true, speed: 22, bounciness: 8 }),
       Animated.timing(opacity, {
@@ -85,24 +87,49 @@ export function Pressable({
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-      // Glows in fast on press-down, fades out slower on release — an
-      // equal-speed fade reads as a flicker rather than a pulse.
-      Animated.timing(glowAmount, {
-        toValue: pressed ? 1 : 0,
-        duration: pressed ? 110 : 280,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
     ]).start();
   };
 
-  const animateHover = (to: number) =>
+  /**
+   * Fires a complete glow pulse, in and out, on press-down.
+   *
+   * This deliberately does NOT track finger-down state. A tap on a phone
+   * lasts around 100ms — roughly the time the glow took just to reach full
+   * brightness — so tying the fade-out to release meant a tap produced
+   * almost no visible glow at all. Running the pulse as a fixed sequence
+   * guarantees the full effect regardless of how briefly the screen was
+   * touched, which is what makes it read on touch rather than only hover.
+   */
+  const firePulse = () => {
+    pulse.current?.stop();
+    glowAmount.setValue(0);
+    pulse.current = Animated.sequence([
+      Animated.timing(glowAmount, {
+        toValue: 1,
+        duration: 90,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(glowAmount, {
+        toValue: 0,
+        duration: 420,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]);
+    pulse.current.start();
+  };
+
+  const animateHover = (to: number) => {
+    // A pulse in flight owns the value; hover must not yank it mid-flight.
+    pulse.current?.stop();
     Animated.timing(glowAmount, {
       toValue: to,
       duration: 180,
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
+  };
 
   return (
     <RNPressable
@@ -111,9 +138,12 @@ export function Pressable({
       disabled={disabled}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={accessibilityRole}
-      onPressIn={() => animatePress(scaleTo, 0.85, true)}
-      onPressOut={() => animatePress(1, 1, false)}
-      onHoverIn={supportsHover ? () => animateHover(0.55) : undefined}
+      onPressIn={() => {
+        animatePress(scaleTo, 0.85);
+        if (showGlow) firePulse();
+      }}
+      onPressOut={() => animatePress(1, 1)}
+      onHoverIn={supportsHover ? () => animateHover(0.45) : undefined}
       onHoverOut={supportsHover ? () => animateHover(0) : undefined}
       style={style}
     >
@@ -124,9 +154,9 @@ export function Pressable({
             style={[
               StyleSheet.absoluteFill,
               {
-                // Inset so the opaque child hides the halo's body and only
-                // the bloom escapes around the edges.
-                margin: 3,
+                // Flush with the content, not inset. Inset by 3px the bloom
+                // started from inside the card's own edge and most of it was
+                // hidden underneath the opaque child.
                 borderRadius: radius,
                 backgroundColor: colors.primary,
                 opacity: glowAmount,
@@ -134,7 +164,7 @@ export function Pressable({
                 // opacity is what animates.
                 shadowColor: colors.primary,
                 shadowOpacity: 1,
-                shadowRadius: 16,
+                shadowRadius: 22,
                 shadowOffset: { width: 0, height: 0 },
               },
             ]}
