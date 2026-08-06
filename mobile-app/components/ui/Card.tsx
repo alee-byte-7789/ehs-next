@@ -37,12 +37,15 @@ export function Card({ variant = "elevated", padding, style, children, ...rest }
   const radius = colors.radii.lg;
   const pad = padding ?? colors.spacing.md;
 
+  // A tighter, deeper shadow than before. The previous 20px-radius / 0.14
+  // opacity spread was so diffuse it read as a faint haze rather than the
+  // card actually sitting above the background — especially in light mode.
   const shadowStyle = {
     shadowColor: colors.shadowColor,
-    shadowOpacity: variant === "elevated" ? (colors.isDark ? 0.35 : 0.14) : 0,
-    shadowRadius: variant === "elevated" ? 20 : 0,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: variant === "elevated" ? 4 : 0,
+    shadowOpacity: variant === "elevated" ? (colors.isDark ? 0.45 : 0.22) : 0,
+    shadowRadius: variant === "elevated" ? 14 : 0,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: variant === "elevated" ? 8 : 0,
   };
 
   if (variant === "elevated") {

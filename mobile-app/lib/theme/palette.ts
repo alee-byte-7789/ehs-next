@@ -179,14 +179,14 @@ export const STATUS_COLORS = {
 // genuinely circular things (chips, the FAB) circular rather than
 // rounded-rectangular.
 export const RADII = {
-  // Surfaces — cards, banners, tiles, inputs. Deliberately square-ish.
-  sm: 4,
-  md: 4,
-  lg: 4,
-  xl: 4,
-  // Buttons are fully rounded pills, NOT squares with softened corners.
-  // A separate token from `pill` so button shape can be tuned without
-  // also changing chips and circular elements.
+  // Surfaces are rounded, not sharp. The earlier flat-4px pass made cards
+  // read as hard rectangles once they had shadows under them; these values
+  // are still tighter than the original 8/14/20/28 ramp.
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  // Buttons stay fully rounded pills, independent of surface radius.
   button: 999,
   pill: 999,
 };
