@@ -60,8 +60,18 @@ export function useMarkAllNotificationsRead() {
       await Promise.all(unreadIds.map((id) => apiClient.post(`/notifications/${id}/read`)));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: MINE_KEY });
-      queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_KEY });
+      // Zero the badge immediately rather than waiting for a round trip —
+      // the server is already known to be at zero, since every unread id
+      // was just marked read.
+      queryClient.setQueryData(UNREAD_COUNT_KEY, { count: 0 });
+
+      // refetchType "all" matters here. invalidateQueries only REFETCHES
+      // active queries by default; an inactive one is merely flagged stale.
+      // The unread-count query lives on Home, which may be unmounted while
+      // the user is on the notifications screen — so without this the badge
+      // could survive until something else happened to refetch it.
+      queryClient.invalidateQueries({ queryKey: MINE_KEY, refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_KEY, refetchType: "all" });
     },
   });
 }

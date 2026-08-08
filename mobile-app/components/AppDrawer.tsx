@@ -1,7 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Animated, Dimensions, Easing, Pressable as RNPressable, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Easing,
+  Pressable as RNPressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { AppText as Text } from "./ui/AppText";
 
 import { useAuth } from "../lib/auth-context";
@@ -9,7 +16,17 @@ import { useLocale } from "../lib/i18n/locale-context";
 import { useResidentMe } from "../lib/resident-queries";
 import { useAppTheme } from "../lib/theme/theme-context";
 
-const DRAWER_WIDTH = Math.min(300, Dimensions.get("window").width * 0.82);
+/**
+ * Measured inside the component via useWindowDimensions, NOT at module
+ * scope with Dimensions.get().
+ *
+ * Dimensions.get("window").width is evaluated once when the module is first
+ * imported. During Expo's web static rendering that happens before any
+ * layout exists, so it can return 0 — which made DRAWER_WIDTH 0, so the
+ * closed drawer's translateX(-0) left the panel sitting at x=0 with zero
+ * width, spilling its contents across the Home screen.
+ */
+const MAX_DRAWER_WIDTH = 300;
 
 interface AppDrawerProps {
   visible: boolean;
@@ -30,13 +47,16 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
   const { logout } = useAuth();
   const { data: resident } = useResidentMe(true);
 
-  const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+  const { width: windowWidth } = useWindowDimensions();
+  const drawerWidth = Math.min(MAX_DRAWER_WIDTH, Math.max(240, windowWidth * 0.82));
+
+  const translateX = useRef(new Animated.Value(-MAX_DRAWER_WIDTH)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.spring(translateX, {
-        toValue: visible ? 0 : -DRAWER_WIDTH,
+        toValue: visible ? 0 : -drawerWidth,
         useNativeDriver: true,
         speed: 16,
         bounciness: 4,
@@ -48,7 +68,7 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [visible, translateX, backdropOpacity]);
+  }, [visible, drawerWidth, translateX, backdropOpacity]);
 
   const go = (path: string) => {
     onClose();
@@ -80,7 +100,7 @@ export function AppDrawer({ visible, onClose }: AppDrawerProps) {
         style={[
           styles.panel,
           {
-            width: DRAWER_WIDTH,
+            width: drawerWidth,
             backgroundColor: colors.surfaceElevated,
             transform: [{ translateX }],
           },
