@@ -35,6 +35,17 @@ class RegisterRequest(BaseModel):
     # digits, so "12345-1234567-1" and "1234512345671" are the same person.
     cnic: str = Field(min_length=13, max_length=15, description='e.g. "12345-1234567-1"')
 
+    # Device push tokens, captured HERE rather than after sign-in.
+    #
+    # A pending resident cannot authenticate at all (authenticate_resident
+    # rejects PENDING), so there is no later moment to collect these before
+    # approval. Without them the one notification a waiting resident most
+    # wants — "your registration is approved" — has no device to go to.
+    # Optional: registration must still work if the user declines
+    # notification permission.
+    fcm_token: str | None = None
+    expo_push_token: str | None = None
+
     is_tenant: bool = False
     owner_house_number: str | None = None
     owner_name: str | None = None

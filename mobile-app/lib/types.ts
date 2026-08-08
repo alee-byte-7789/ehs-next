@@ -28,6 +28,8 @@ export interface RegisterRequest {
   email?: string;
   password: string;
   cnic: string;
+  fcm_token?: string;
+  expo_push_token?: string;
   is_tenant?: boolean;
   owner_house_number?: string;
   owner_name?: string;

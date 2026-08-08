@@ -56,19 +56,32 @@ export function ScreenContainer({
   const showSidebar =
     withSidebar && Platform.OS === "web" && width >= DESKTOP_BREAKPOINT && status === "signed-in";
 
-  const Content = scroll
-    ? ScrollView
-    : (props: { children: ReactNode; style?: any }) => <>{props.children}</>;
-
+  // Branch on the ELEMENT, never on the component type.
+  //
+  // This previously did `const Content = scroll ? ScrollView : (props) => ...`,
+  // defining an arrow component inline during render. That creates a NEW
+  // component type on every render, so React unmounted and remounted the
+  // entire subtree each time — which destroyed any focused TextInput
+  // mid-keystroke and made non-scrolling forms impossible to type into.
+  // It also silently dropped contentContainerStyle, since a fragment cannot
+  // accept one, so those screens lost their padding and width cap too.
   const body = (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Content
-        contentContainerStyle={padded ? styles.content : styles.contentFlush}
-        style={styles.flex}
-        showsVerticalScrollIndicator={false}
-      >
-        {children}
-      </Content>
+      {scroll ? (
+        <ScrollView
+          contentContainerStyle={padded ? styles.content : styles.contentFlush}
+          style={styles.flex}
+          showsVerticalScrollIndicator={false}
+          // Without this a ScrollView eats the first tap while the keyboard
+          // is open, so tapping straight from one field to another just
+          // dismisses the keyboard instead of moving focus.
+          keyboardShouldPersistTaps="handled"
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={[styles.flex, padded ? styles.content : styles.contentFlush]}>{children}</View>
+      )}
     </KeyboardAvoidingView>
   );
 

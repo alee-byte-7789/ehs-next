@@ -15,12 +15,13 @@ from app.core.security import (
     verify_password,
     InvalidTokenError,
 )
-from app.models.enums import ResidentType, VerificationStatus
+from app.models.enums import NotificationRecipientType, PushTokenKind, ResidentType, VerificationStatus
 from app.models.resident import Resident
 from app.models.admin import Admin
 from app.repositories import (
     admin_repository,
     house_repository,
+    push_token_repository,
     refresh_token_repository,
     resident_repository,
 )
@@ -63,6 +64,20 @@ def register_resident(db: Session, req: RegisterRequest) -> Resident:
     db.add(resident)
     db.commit()
     db.refresh(resident)
+
+    # Register the device now, while we have it. This is what lets the
+    # approval notification actually reach them later.
+    if req.fcm_token:
+        push_token_repository.upsert(
+            db, NotificationRecipientType.RESIDENT, resident.id, req.fcm_token, PushTokenKind.FCM
+        )
+    if req.expo_push_token:
+        push_token_repository.upsert(
+            db, NotificationRecipientType.RESIDENT, resident.id, req.expo_push_token, PushTokenKind.EXPO
+        )
+    if req.fcm_token or req.expo_push_token:
+        db.commit()
+
     return resident
 
 

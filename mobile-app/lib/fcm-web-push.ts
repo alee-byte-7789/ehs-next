@@ -41,6 +41,36 @@ export function getWebPushPermissionState(): WebPushResult {
  * blocked — here's how to fix it") rather than nothing happening with
  * no explanation.
  */
+/**
+ * Obtains an FCM token WITHOUT sending it anywhere.
+ *
+ * registerForWebPush() posts the token to an authenticated endpoint, which
+ * is no use during registration — the resident has no account yet. This
+ * returns the raw token so it can be included in the registration payload
+ * instead, which is the only chance to capture a device before approval
+ * (a pending resident cannot log in).
+ */
+export async function getWebPushToken(): Promise<string | null> {
+  if (Platform.OS !== "web") return null;
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return null;
+  if (typeof Notification === "undefined") return null;
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return null;
+
+    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+      scope: "/firebase-cloud-messaging-push-scope",
+    });
+    const { initializeApp } = await import("firebase/app");
+    const { getMessaging, getToken } = await import("firebase/messaging");
+    const messaging = getMessaging(initializeApp(firebaseConfig));
+    return (await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration })) || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function registerForWebPush(): Promise<WebPushResult> {
   if (Platform.OS !== "web") return "unsupported";
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return "unsupported";

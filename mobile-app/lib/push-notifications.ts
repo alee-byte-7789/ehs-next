@@ -37,6 +37,24 @@ Notifications.addNotificationResponseReceivedListener((response) => {
  * non-physical devices (simulators can't receive real pushes) rather
  * than throwing.
  */
+/** Expo push token without posting it — see getWebPushToken() for why. */
+export async function getExpoPushToken(): Promise<string | null> {
+  if (Platform.OS === "web") return null;
+  if (!Device.isDevice) return null;
+  try {
+    const { status: existing } = await Notifications.getPermissionsAsync();
+    let final = existing;
+    if (existing !== "granted") final = (await Notifications.requestPermissionsAsync()).status;
+    if (final !== "granted") return null;
+
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const res = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
+    return res.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function registerForPushNotifications(): Promise<void> {
   if (Platform.OS === "web") return;
   if (!Device.isDevice) return;

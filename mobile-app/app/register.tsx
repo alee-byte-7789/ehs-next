@@ -9,6 +9,8 @@ import { z } from "zod";
 import { AppButton } from "../components/AppButton";
 import { AppTextField } from "../components/AppTextField";
 import { ScreenContainer } from "../components/ScreenContainer";
+import { getWebPushToken } from "../lib/fcm-web-push";
+import { getExpoPushToken } from "../lib/push-notifications";
 import { extractApiErrorMessage } from "../lib/api-client";
 import { useAuth } from "../lib/auth-context";
 import { radii, spacing } from "../lib/theme";
@@ -119,6 +121,17 @@ export default function RegisterScreen() {
     setSubmitting(true);
     let registered = false;
     try {
+      // Ask for notification permission and capture the device token now.
+      //
+      // This is the ONLY opportunity: a pending resident cannot log in, so
+      // there is no authenticated moment between registering and being
+      // approved in which to collect it. Without this the approval
+      // notification has nowhere to be delivered.
+      //
+      // Both getters return null if permission is declined or the platform
+      // doesn't apply, and registration proceeds regardless.
+      const [fcmToken, expoToken] = await Promise.all([getWebPushToken(), getExpoPushToken()]);
+
       await registerResident({
         full_name: data.full_name,
         house_number: data.house_number,
@@ -131,6 +144,8 @@ export default function RegisterScreen() {
         owner_name: data.is_tenant ? data.owner_name : undefined,
         owner_cnic: data.is_tenant ? data.owner_cnic : undefined,
         owner_mobile_number: data.is_tenant ? data.owner_mobile_number : undefined,
+        fcm_token: fcmToken ?? undefined,
+        expo_push_token: expoToken ?? undefined,
       });
       registered = true;
     } catch (err) {
