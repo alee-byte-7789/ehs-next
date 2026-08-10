@@ -4,6 +4,8 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.models.enums import NotificationPreference, ResidentType, VerificationStatus
+from app.schemas.complaint import ComplaintOut
+from app.schemas.registration_approval import RegistrationApprovalOut
 
 
 class ResidentOut(BaseModel):
@@ -21,3 +23,16 @@ class ResidentOut(BaseModel):
     verification_status: VerificationStatus
     notification_preference: NotificationPreference
     created_at: datetime
+
+
+class ResidentDetailOut(BaseModel):
+    """A resident's full profile for the admin Users detail page: base
+    profile, complaint history, and who approved/rejected them and when."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    resident: ResidentOut
+    complaints: list[ComplaintOut]
+    approval_history: list[RegistrationApprovalOut]
+    feedback_count: int
+    complaint_count: int

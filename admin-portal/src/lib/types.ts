@@ -11,6 +11,7 @@ export interface ResidentOut {
   id: number;
   resident_code: string | null;
   house_id: number;
+  house_code: string;
   full_name: string;
   phone: string;
   email: string | null;
@@ -18,6 +19,39 @@ export interface ResidentOut {
   cnic: string | null;
   verification_status: VerificationStatus;
   created_at: string;
+}
+
+export interface RegistrationApprovalOut {
+  id: number;
+  resident_id: number;
+  house_id: number;
+  resident_name: string;
+  house_code: string;
+  resident_type: ResidentType;
+  resident_code: string | null;
+  decision: VerificationStatus;
+  decided_by_admin_id: number;
+  decided_by_admin_name: string;
+  reason: string | null;
+  decided_at: string;
+}
+
+/** Full profile shown on the admin Users detail page. */
+export interface ResidentDetailOut {
+  resident: ResidentOut;
+  complaints: ComplaintOut[];
+  approval_history: RegistrationApprovalOut[];
+  feedback_count: number;
+  complaint_count: number;
+}
+
+/** Query params accepted by GET /users. */
+export interface UserFilters {
+  q?: string;
+  resident_type?: ResidentType;
+  verification_status?: VerificationStatus;
+  created_from?: string;
+  created_to?: string;
 }
 
 export interface AdminOut {

@@ -19,6 +19,7 @@ from app.models.prayer_timing import PrayerTiming
 from app.models.complaint_internal_note import ComplaintInternalNote
 from app.models.audit_log import AuditLog
 from app.models.push_token import PushToken
+from app.models.registration_approval import RegistrationApproval
 
 __all__ = [
     "House",
@@ -37,4 +38,5 @@ __all__ = [
     "ComplaintInternalNote",
     "AuditLog",
     "PushToken",
+    "RegistrationApproval",
 ]
