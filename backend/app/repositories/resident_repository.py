@@ -1,8 +1,11 @@
 """Resident repository — plain DB access, no business rules."""
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from datetime import datetime
+
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.enums import ResidentType, VerificationStatus
+from app.models.house import House
 from app.models.resident import Resident
 
 
@@ -67,3 +70,45 @@ def next_tenant_sequence(db: Session, house_id: int) -> int:
         .scalar()
     )
     return (current_max or 0) + 1
+
+
+def search(
+    db: Session,
+    *,
+    q: str | None = None,
+    resident_type: ResidentType | None = None,
+    status: VerificationStatus | None = None,
+    created_from: datetime | None = None,
+    created_to: datetime | None = None,
+    limit: int = 200,
+) -> list[Resident]:
+    """All residents matching the given filters, newest first.
+
+    `q` is a single free-text box matching name, resident code, phone,
+    email, CNIC or house code — joined against House since house_code
+    lives on that table, not on Resident.
+    """
+    query = db.query(Resident).join(House, Resident.house_id == House.id).options(joinedload(Resident.house))
+
+    if q:
+        like = f"%{q.strip()}%"
+        query = query.filter(
+            or_(
+                Resident.full_name.ilike(like),
+                Resident.resident_code.ilike(like),
+                Resident.phone.ilike(like),
+                Resident.email.ilike(like),
+                Resident.cnic.ilike(like),
+                House.house_code.ilike(like),
+            )
+        )
+    if resident_type:
+        query = query.filter(Resident.resident_type == resident_type)
+    if status:
+        query = query.filter(Resident.verification_status == status)
+    if created_from:
+        query = query.filter(Resident.created_at >= created_from)
+    if created_to:
+        query = query.filter(Resident.created_at <= created_to)
+
+    return query.order_by(Resident.created_at.desc()).limit(limit).all()

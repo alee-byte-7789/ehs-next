@@ -8,6 +8,10 @@ def get_by_complaint(db: Session, complaint_id: int) -> Feedback | None:
     return db.query(Feedback).filter(Feedback.complaint_id == complaint_id).first()
 
 
+def list_for_resident(db: Session, resident_id: int) -> list[Feedback]:
+    return db.query(Feedback).filter(Feedback.resident_id == resident_id).all()
+
+
 def create(db: Session, complaint_id: int, resident_id: int, rating: int, comment: str | None) -> Feedback:
     row = Feedback(complaint_id=complaint_id, resident_id=resident_id, rating=rating, comment=comment)
     db.add(row)
