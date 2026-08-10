@@ -6,9 +6,12 @@ import { AuditLogPage } from "./pages/AuditLogPage";
 import { ComplaintDetailPage } from "./pages/ComplaintDetailPage";
 import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { AddUserPage } from "./pages/AddUserPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StaffPage } from "./pages/StaffPage";
+import { UserDetailPage } from "./pages/UserDetailPage";
+import { UsersPage } from "./pages/UsersPage";
 
 export default function App() {
   return (
@@ -67,6 +70,16 @@ export default function App() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+      <Route path="/users/:id" element={<ProtectedRoute><UserDetailPage /></ProtectedRoute>} />
+      <Route
+        path="/users/new"
+        element={
+          <ProtectedRoute>
+            <AddUserPage />
           </ProtectedRoute>
         }
       />

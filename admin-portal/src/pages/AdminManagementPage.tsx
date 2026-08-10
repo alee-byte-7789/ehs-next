@@ -5,9 +5,11 @@ import { Link } from "react-router-dom";
 import { z } from "zod";
 
 import { Button } from "../components/Button";
+import { ActionDialog } from "../components/ActionDialog";
 import { Select } from "../components/Select";
 import { extractApiErrorMessage } from "../lib/api-client";
-import { useAdminsList, useCreateAdmin } from "../lib/admin-management-queries";
+import type { AdminOut } from "../lib/types";
+import { useAdminsList, useCreateAdmin, useResetAdminPassword } from "../lib/admin-management-queries";
 import { useAdminMe } from "../lib/registration-queries";
 import type { AdminRole } from "../lib/types";
 
@@ -29,6 +31,23 @@ type FormValues = z.infer<typeof schema>;
 export function AdminManagementPage() {
   const { data: me } = useAdminMe(true);
   const isSuperAdmin = me?.role === "super_admin";
+
+  const resetAdminPassword = useResetAdminPassword();
+  const [resetTarget, setResetTarget] = useState<AdminOut | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetNotice, setResetNotice] = useState<string | null>(null);
+
+  const handleResetAdmin = async (newPassword: string) => {
+    if (!resetTarget) return;
+    setResetError(null);
+    try {
+      await resetAdminPassword.mutateAsync({ adminId: resetTarget.id, newPassword });
+      setResetNotice(`Password reset for ${resetTarget.full_name}. Give it to them directly.`);
+      setResetTarget(null);
+    } catch (err) {
+      setResetError(extractApiErrorMessage(err, "Could not reset that password."));
+    }
+  };
 
   const { data: admins, isLoading, isError } = useAdminsList(isSuperAdmin);
   const createAdmin = useCreateAdmin();
@@ -164,12 +183,13 @@ export function AdminManagementPage() {
               {isLoading && <p className="px-6 py-4 text-sm text-[color:var(--color-text-secondary)]">Loading...</p>}
               {isError && <p className="px-6 py-4 text-sm text-[color:var(--color-danger)]">Could not load admins.</p>}
               {admins && (
-                <table className="w-full text-left text-sm">
+                <table className="w-full min-w-[560px] text-left text-sm">
                   <thead className="border-b border-[color:var(--color-border)] text-xs uppercase text-[color:var(--color-text-secondary)]">
                     <tr>
                       <th className="px-6 py-3">Name</th>
                       <th className="px-6 py-3">Email</th>
                       <th className="px-6 py-3">Role</th>
+                      <th className="px-6 py-3"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -180,6 +200,20 @@ export function AdminManagementPage() {
                         <td className="px-6 py-3 capitalize text-[color:var(--color-text-secondary)]">
                           {a.role.replace("_", " ")}
                         </td>
+                        <td className="px-6 py-3 text-right">
+                          {/* Resetting your own password here is refused by the
+                              API — it's a different action with a different
+                              audit meaning — so it isn't offered. */}
+                          {a.id !== me?.id && (
+                            <Button
+                              variant="secondary"
+                              className="!px-3 !py-1.5 text-xs"
+                              onClick={() => { setResetTarget(a); setResetError(null); }}
+                            >
+                              Reset Password
+                            </Button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -189,6 +223,31 @@ export function AdminManagementPage() {
           </>
         )}
       </main>
+
+      {resetNotice && (
+        <div className="mx-auto max-w-3xl px-6 pb-4">
+          <p className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-primary-tint)] px-3 py-2 text-sm text-[color:var(--color-primary)]">
+            {resetNotice}
+          </p>
+        </div>
+      )}
+
+      <ActionDialog
+        open={resetTarget !== null}
+        title="Reset admin password"
+        description={
+          <>
+            Sets a new password for <strong>{resetTarget?.full_name}</strong> ({resetTarget?.email}).
+            Their current password is not needed. Logged against your account.
+          </>
+        }
+        confirmLabel="Reset Password"
+        input={{ label: "New password", type: "password", minLength: 8, hint: "At least 8 characters. Never stored or logged in plain text." }}
+        loading={resetAdminPassword.isPending}
+        error={resetError}
+        onConfirm={handleResetAdmin}
+        onCancel={() => setResetTarget(null)}
+      />
     </div>
   );
 }

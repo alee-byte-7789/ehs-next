@@ -21,3 +21,15 @@ export function useCreateAdmin() {
     },
   });
 }
+
+/** Resets another admin's password. Super Admin only, enforced server-side. */
+export function useResetAdminPassword() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ adminId, newPassword }: { adminId: number; newPassword: string }) =>
+      (await apiClient.post(`/admins/${adminId}/reset-password`, { new_password: newPassword })).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admins"] });
+    },
+  });
+}
