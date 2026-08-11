@@ -9,7 +9,6 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
@@ -21,28 +20,23 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    # These two enum TYPES already exist in the database (created by the
-    # initial schema migration for the `residents` table) — reused here,
-    # not redefined. `postgresql.ENUM(..., create_type=False)` is required
-    # for that: the generic `sa.Enum(..., create_type=False)` silently
-    # drops the flag when adapted to the Postgres dialect (confirmed by
-    # inspecting `.dialect_impl()` — it comes back `create_type=True`
-    # regardless), which is what caused the very first run of this
-    # migration to fail with `type "residenttype" already exists`.
-    resident_type_enum = postgresql.ENUM('OWNER', 'TENANT', name='residenttype', create_type=False)
-    verification_status_enum = postgresql.ENUM(
-        'PENDING', 'APPROVED', 'REJECTED', name='verificationstatus', create_type=False
-    )
-
     op.create_table('registration_approvals',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('resident_id', sa.Integer(), nullable=False),
     sa.Column('house_id', sa.Integer(), nullable=False),
     sa.Column('resident_name', sa.String(length=120), nullable=False),
     sa.Column('house_code', sa.String(length=30), nullable=False),
-    sa.Column('resident_type', resident_type_enum, nullable=False),
+    sa.Column(
+        'resident_type',
+        sa.Enum('OWNER', 'TENANT', name='residenttype', create_type=False),
+        nullable=False,
+    ),
     sa.Column('resident_code', sa.String(length=25), nullable=True),
-    sa.Column('decision', verification_status_enum, nullable=False),
+    sa.Column(
+        'decision',
+        sa.Enum('PENDING', 'APPROVED', 'REJECTED', name='verificationstatus', create_type=False),
+        nullable=False,
+    ),
     sa.Column('decided_by_admin_id', sa.Integer(), nullable=False),
     sa.Column('decided_by_admin_name', sa.String(length=120), nullable=False),
     sa.Column('reason', sa.Text(), nullable=True),
