@@ -1,3 +1,8 @@
+# NOTE: this file must stay identical to backend/requirements.txt.
+# It exists ONLY because Vercel Python builder looks for requirements.txt
+# at the project root (or beside the entrypoint) - it does not read
+# backend/requirements.txt directly since api/index.py lives outside that
+# folder. If you add or change a backend dependency, update BOTH files.
 alembic==1.18.5
 annotated-doc==0.0.4
 annotated-types==0.7.0
