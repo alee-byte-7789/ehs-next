@@ -64,14 +64,22 @@ export function UserDetailPage() {
     }
   };
 
+  // The resident's most recent APPROVED decision — who let them in, and when.
+  const approval = data?.approval_history?.find((a) => a.decision === "approved")
+    ?? data?.approval_history?.[0];
+
+  // Removing someone who has real history destroys it, so the confirmation
+  // has to say so and the admin has to opt in explicitly.
+  const activityCount = (data?.complaint_count ?? 0) + (data?.feedback_count ?? 0);
+
   const handleDelete = async (reason: string) => {
     if (!residentId) return;
     setError(null);
     try {
-      await deleteRegistration.mutateAsync({ residentId, reason });
+      await deleteRegistration.mutateAsync({ residentId, reason, force: activityCount > 0 });
       navigate("/users");
     } catch (err) {
-      setError(extractApiErrorMessage(err, "Could not delete this registration."));
+      setError(extractApiErrorMessage(err, "Could not remove this user."));
     }
   };
 
@@ -93,6 +101,15 @@ export function UserDetailPage() {
                 <p className="text-sm text-[color:var(--color-text-secondary)]">
                   {data.resident.resident_code ?? "No resident code yet"} · House {data.resident.house_code}
                 </p>
+                {approval && (
+                  <p className="mt-1 text-sm text-[color:var(--color-text-secondary)]">
+                    <span className="capitalize">{approval.decision}</span> by{" "}
+                    <strong className="text-[color:var(--color-text-primary)]">
+                      {approval.decided_by_admin_name}
+                    </strong>{" "}
+                    on {formatDateTime(approval.decided_at)}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <StatusBadge status={data.resident.verification_status} />
@@ -103,7 +120,7 @@ export function UserDetailPage() {
                 )}
                 {canDelete && (
                   <Button variant="danger" className="!px-4 !py-2 text-xs" onClick={() => { setError(null); setDialog("delete"); }}>
-                    Delete
+                    Remove User
                   </Button>
                 )}
               </div>
@@ -217,15 +234,20 @@ export function UserDetailPage() {
       <ActionDialog
         open={dialog === "delete"}
         danger
-        title="Delete this registration?"
+        title="Remove this user?"
         description={
           <>
             <strong>{data?.resident.full_name}</strong> ({data?.resident.phone}) will be permanently
-            removed. This cannot be undone. If they have any complaints on record the deletion will
-            be refused — reject the registration instead, which keeps the history.
+            removed. This cannot be undone.
+            {activityCount > 0 && (
+              <span className="mt-2 block font-semibold text-[color:var(--color-danger)]">
+                This will also delete {data?.complaint_count} complaint(s) and{" "}
+                {data?.feedback_count} feedback entry(s), including their full history.
+              </span>
+            )}
           </>
         }
-        confirmLabel="Delete Permanently"
+        confirmLabel={activityCount > 0 ? "Remove and Delete History" : "Remove Permanently"}
         input={{ label: "Reason", placeholder: "e.g. duplicate entry", minLength: 3, hint: "Stored in the audit log alongside your name and the time." }}
         loading={deleteRegistration.isPending}
         error={dialog === "delete" ? error : null}

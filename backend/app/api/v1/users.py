@@ -152,8 +152,8 @@ def delete_registration(
     complaints or feedback on record — reject those instead, which keeps
     the history."""
     try:
-        label = admin_action_service.delete_registration(db, resident_id, req.reason, admin)
-        return {"message": f"Deleted registration for {label}."}
+        label = admin_action_service.delete_registration(db, resident_id, req.reason, admin, force=req.force)
+        return {"message": f"Removed {label}."}
     except NotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except InvalidStateError as exc:

@@ -32,9 +32,15 @@ class ResetPasswordRequest(BaseModel):
 
 class DeleteRegistrationRequest(BaseModel):
     """Reason is required. A deletion is irreversible, so the audit entry
-    should say why it happened, not just that it did."""
+    should say why it happened, not just that it did.
+
+    `force` must be sent explicitly to remove a resident who has complaints
+    or feedback — the caller has to opt in to destroying that history, it
+    can never happen by accident.
+    """
 
     reason: str = Field(min_length=3, max_length=300)
+    force: bool = False
 
 
 class ManualRegisterRequest(BaseModel):

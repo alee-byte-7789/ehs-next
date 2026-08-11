@@ -73,51 +73,92 @@ def reset_resident_password(
 # --------------------------------------------------------------------------
 # Registration deletion
 # --------------------------------------------------------------------------
-def delete_registration(db: Session, resident_id: int, reason: str, acting_admin: Admin) -> str:
-    """Permanently removes a registration.
+def delete_registration(
+    db: Session, resident_id: int, reason: str, acting_admin: Admin, force: bool = False
+) -> str:
+    """Permanently removes a resident.
 
-    Refuses if the resident has any real activity (complaints or feedback).
-    Those rows carry foreign keys to residents, so deleting underneath them
-    would either fail at the database level or orphan records that the
-    housing office may later need. A resident who has actually used the
-    system should be rejected or deactivated, not erased — so this is
-    scoped to genuinely unwanted registrations.
+    Safe by default: refuses if the resident has real activity (complaints
+    or feedback), because deleting underneath those rows destroys history
+    the housing office may still need.
 
-    Returns a description of what was deleted, for the caller to surface.
+    `force=True` overrides that and removes everything belonging to them —
+    complaints, complaint history, internal notes, feedback, notifications,
+    tokens. Required for genuine removals (a resident who has moved out),
+    but the caller must ask for it explicitly, and the UI shows exactly how
+    much history will be destroyed before the admin confirms.
+
+    Either way the audit row records what was removed and why, and survives
+    the deletion.
     """
     resident = resident_repository.get_by_id(db, resident_id)
     if not resident:
         raise NotFoundError(f"No resident with id {resident_id}.")
 
     complaint_count = _count_complaints(db, resident_id)
-    if complaint_count:
-        raise InvalidStateError(
-            f"{resident.full_name} has {complaint_count} complaint(s) on record and cannot be "
-            "deleted. Reject the registration instead, which keeps the history intact."
-        )
-
     feedback_count = _count_feedback(db, resident_id)
-    if feedback_count:
+
+    if (complaint_count or feedback_count) and not force:
         raise InvalidStateError(
-            f"{resident.full_name} has submitted feedback and cannot be deleted. "
-            "Reject the registration instead."
+            f"{resident.full_name} has {complaint_count} complaint(s) and "
+            f"{feedback_count} feedback entry(s) on record. Confirm removal to delete "
+            "them as well, or reject the registration instead to keep the history."
         )
 
     label = f"{resident.full_name} ({resident.phone}) house={resident.house_code}"
 
-    # The audit row is written BEFORE the delete, while the resident still
-    # exists and can be described. audit_logs.entity_id is a plain integer,
-    # not a foreign key, so the record survives the row it refers to —
-    # which is what makes the history preservable at all.
+    # Written BEFORE the delete, while the resident still exists to be
+    # described. audit_logs.entity_id is a plain integer, not a foreign key,
+    # so this record outlives the row it refers to.
     audit_log_service.log(
         db, acting_admin.id, "delete_registration", "resident", resident.id,
-        details=f"{label} | status={resident.verification_status.value} | reason={reason}",
+        details=f"{label} | status={resident.verification_status.value} | "
+                f"complaints_deleted={complaint_count} feedback_deleted={feedback_count} | "
+                f"reason={reason}",
     )
 
+    if complaint_count or feedback_count:
+        _delete_activity_rows(db, resident_id)
     _delete_dependent_rows(db, resident_id)
     db.delete(resident)
     db.commit()
+
+    if complaint_count or feedback_count:
+        return f"{label}, along with {complaint_count} complaint(s) and {feedback_count} feedback entry(s)"
     return label
+
+
+def _delete_activity_rows(db: Session, resident_id: int) -> None:
+    """Removes a resident's complaints and feedback, children first.
+
+    Complaint history and internal notes reference complaints, so they must
+    go before the complaints themselves or the delete violates a foreign key.
+    """
+    from app.models.application_feedback import ApplicationFeedback
+    from app.models.complaint import Complaint
+    from app.models.complaint_history import ComplaintHistory
+    from app.models.complaint_internal_note import ComplaintInternalNote
+    from app.models.feedback import Feedback
+
+    complaint_ids = [c.id for c in db.query(Complaint).filter(Complaint.resident_id == resident_id).all()]
+
+    if complaint_ids:
+        db.query(ComplaintInternalNote).filter(
+            ComplaintInternalNote.complaint_id.in_(complaint_ids)
+        ).delete(synchronize_session=False)
+        db.query(ComplaintHistory).filter(
+            ComplaintHistory.complaint_id.in_(complaint_ids)
+        ).delete(synchronize_session=False)
+        db.query(Feedback).filter(
+            Feedback.complaint_id.in_(complaint_ids)
+        ).delete(synchronize_session=False)
+
+    db.query(Feedback).filter(Feedback.resident_id == resident_id).delete(synchronize_session=False)
+    db.query(ApplicationFeedback).filter(
+        ApplicationFeedback.resident_id == resident_id
+    ).delete(synchronize_session=False)
+    db.query(Complaint).filter(Complaint.resident_id == resident_id).delete(synchronize_session=False)
+    db.flush()
 
 
 def _count_complaints(db: Session, resident_id: int) -> int:

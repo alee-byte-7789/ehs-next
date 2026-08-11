@@ -54,9 +54,9 @@ export function useResetResidentPassword() {
 export function useDeleteRegistration() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ residentId, reason }: { residentId: number; reason: string }) =>
+    mutationFn: async ({ residentId, reason, force }: { residentId: number; reason: string; force?: boolean }) =>
       // DELETE with a body needs the `data` key in axios, not a second argument.
-      (await apiClient.delete(`/users/${residentId}`, { data: { reason } })).data,
+      (await apiClient.delete(`/users/${residentId}`, { data: { reason, force: force ?? false } })).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
