@@ -32,14 +32,14 @@ from app.schemas.admin_actions import (
 )
 from app.schemas.complaint import ComplaintOut
 from app.schemas.registration_approval import RegistrationApprovalOut
-from app.schemas.resident import ResidentDetailOut, ResidentOut
+from app.schemas.resident import ResidentDetailOut, ResidentListItemOut, ResidentOut
 from app.services import admin_action_service
 from app.services.errors import ConflictError, InvalidStateError, NotFoundError
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("", response_model=list[ResidentOut])
+@router.get("", response_model=list[ResidentListItemOut])
 def list_users(
     q: str | None = None,
     resident_type: ResidentType | None = None,
@@ -49,13 +49,14 @@ def list_users(
     limit: int = 200,
     db: Session = Depends(get_db),
     _admin=Depends(get_current_admin),
-) -> list[ResidentOut]:
+) -> list[ResidentListItemOut]:
     """All registered residents, searchable and filterable.
 
     `q` is a single free-text box matching name, resident code, phone,
-    email, CNIC or house code.
+    email, CNIC or house code. Each row also carries who approved that
+    resident (if anyone has, yet).
     """
-    return resident_repository.search(
+    rows = resident_repository.search_with_approver(
         db,
         q=q,
         resident_type=resident_type,
@@ -64,6 +65,14 @@ def list_users(
         created_to=created_to,
         limit=limit,
     )
+    return [
+        ResidentListItemOut(
+            **ResidentOut.model_validate(resident).model_dump(),
+            approved_by_admin_name=approved_by,
+            approved_at=approved_at,
+        )
+        for resident, approved_by, approved_at in rows
+    ]
 
 
 @router.get("/{resident_id}", response_model=ResidentDetailOut)

@@ -55,6 +55,15 @@ export function buildTokens(resolvedMode: "light" | "dark", accent: AccentKey) {
     primaryStrong: swatch.strong,
     primaryTint: isDark ? swatch.tintDark : swatch.tintLight,
     onPrimary: swatch.onBase,
+    // "Secondary" — a fixed informational blue, NOT tied to the user's
+    // chosen accent. Old screens (home/notifications/settings tabs, still
+    // on the pre-"Premium pass" design) use this for a second visual tone
+    // distinct from the primary action color, e.g. the Resident ID stat
+    // tile next to the accent-colored Status tile on Home. Deliberately
+    // fixed rather than accent-derived so it never collides with primary
+    // when a resident picks an accent close to this blue.
+    secondary: SEMANTIC.info.base,
+    secondaryTint: isDark ? SEMANTIC.info.tintDark : SEMANTIC.info.tintLight,
     // Semantic (fixed)
     success: SEMANTIC.success.base,
     successTint: isDark ? SEMANTIC.success.tintDark : SEMANTIC.success.tintLight,

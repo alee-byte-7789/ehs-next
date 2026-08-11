@@ -83,3 +83,25 @@ export const EMERGENCY_CONTACTS: EmergencyContact[] = [
   { id: "e3", name: "EHS Security Reception (Main Gate)", phone: "0514256594", icon: "shield" },
   { id: "e4", name: "CSO", phone: "03215081947", icon: "person" },
 ];
+
+export interface MaintenanceService {
+  id: string;
+  name: string;
+  description: string;
+  phone: string;
+  available: boolean;
+  icon: "water" | "flash" | "hammer" | "trash" | "leaf" | "construct";
+}
+
+/** Placeholder like the sections above — no `/maintenance-services`
+ * backend route exists yet. Routes calls through the real Complaint
+ * Office number (see EMERGENCY_CONTACTS) until each service has its own
+ * dedicated line the admin can configure. */
+export const MAINTENANCE_SERVICES: MaintenanceService[] = [
+  { id: "m1", name: "Plumbing", description: "Leaks, blockages, water supply issues.", phone: "03334256595", available: true, icon: "water" },
+  { id: "m2", name: "Electrical", description: "Wiring faults, outages, fixture repairs.", phone: "03334256595", available: true, icon: "flash" },
+  { id: "m3", name: "Carpentry", description: "Doors, windows, furniture repairs.", phone: "0514256595", available: true, icon: "hammer" },
+  { id: "m4", name: "Sanitation", description: "Garbage collection and disposal.", phone: "0514256595", available: true, icon: "trash" },
+  { id: "m5", name: "Gardening", description: "Lawn care and common-area landscaping.", phone: "0514256595", available: false, icon: "leaf" },
+  { id: "m6", name: "General Maintenance", description: "Anything else — we'll route it to the right team.", phone: "03334256595", available: true, icon: "construct" },
+];

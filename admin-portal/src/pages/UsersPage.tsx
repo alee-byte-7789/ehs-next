@@ -34,6 +34,11 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
 
+function approvedByLabel(u: { verification_status: string; approved_by_admin_name: string | null }): string {
+  if (u.verification_status !== "approved") return "—";
+  return u.approved_by_admin_name ?? "Unknown";
+}
+
 export function UsersPage() {
   const [q, setQ] = useState("");
   const [type, setType] = useState<string>("");
@@ -117,6 +122,7 @@ export function UsersPage() {
                     <th className="px-4 py-3">Type</th>
                     <th className="px-4 py-3">Contact</th>
                     <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Approved By</th>
                     <th className="px-4 py-3">Registered</th>
                   </tr>
                 </thead>
@@ -138,6 +144,7 @@ export function UsersPage() {
                         <div className="text-xs text-[color:var(--color-text-tertiary)]">{formatCnic(u.cnic)}</div>
                       </td>
                       <td className="px-4 py-3"><StatusBadge status={u.verification_status} /></td>
+                      <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{approvedByLabel(u)}</td>
                       <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{formatDate(u.created_at)}</td>
                     </tr>
                   ))}
@@ -162,6 +169,7 @@ export function UsersPage() {
                       <span>Type</span><span className="text-right capitalize">{u.resident_type}</span>
                       <span>Phone</span><span className="text-right">{u.phone}</span>
                       <span>CNIC</span><span className="text-right">{formatCnic(u.cnic)}</span>
+                      <span>Approved By</span><span className="text-right">{approvedByLabel(u)}</span>
                       <span>Registered</span><span className="text-right">{formatDate(u.created_at)}</span>
                     </div>
                   </GlassCard>

@@ -36,3 +36,14 @@ class ResidentDetailOut(BaseModel):
     approval_history: list[RegistrationApprovalOut]
     feedback_count: int
     complaint_count: int
+
+
+class ResidentListItemOut(ResidentOut):
+    """ResidentOut plus who approved this resident, for the Manage Users
+    list — kept separate from ResidentOut (rather than adding these fields
+    there directly) since ResidentOut is also used for residents' own
+    `/me` responses and other contexts where an "approved by" column
+    isn't relevant and isn't computed."""
+
+    approved_by_admin_name: str | None = None
+    approved_at: datetime | None = None

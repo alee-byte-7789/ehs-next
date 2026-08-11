@@ -175,3 +175,19 @@ export interface NotificationOut {
   is_read: boolean;
   created_at: string;
 }
+
+// --- Feedback (real backend, POST /complaints/{id}/feedback) ---
+
+export interface FeedbackCreateRequest {
+  rating: number;
+  comment?: string | null;
+}
+
+export interface FeedbackOut {
+  id: number;
+  complaint_id: number;
+  resident_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}

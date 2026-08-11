@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.models.enums import ResidentType, VerificationStatus
 from app.models.house import House
+from app.models.registration_approval import RegistrationApproval
 from app.models.resident import Resident
 
 
@@ -89,6 +90,76 @@ def search(
     lives on that table, not on Resident.
     """
     query = db.query(Resident).join(House, Resident.house_id == House.id).options(joinedload(Resident.house))
+
+    if q:
+        like = f"%{q.strip()}%"
+        query = query.filter(
+            or_(
+                Resident.full_name.ilike(like),
+                Resident.resident_code.ilike(like),
+                Resident.phone.ilike(like),
+                Resident.email.ilike(like),
+                Resident.cnic.ilike(like),
+                House.house_code.ilike(like),
+            )
+        )
+    if resident_type:
+        query = query.filter(Resident.resident_type == resident_type)
+    if status:
+        query = query.filter(Resident.verification_status == status)
+    if created_from:
+        query = query.filter(Resident.created_at >= created_from)
+    if created_to:
+        query = query.filter(Resident.created_at <= created_to)
+
+    return query.order_by(Resident.created_at.desc()).limit(limit).all()
+
+
+def search_with_approver(
+    db: Session,
+    *,
+    q: str | None = None,
+    resident_type: ResidentType | None = None,
+    status: VerificationStatus | None = None,
+    created_from: datetime | None = None,
+    created_to: datetime | None = None,
+    limit: int = 200,
+) -> list[tuple[Resident, str | None, datetime | None]]:
+    """Same filters as `search`, but each row is paired with who approved
+    that resident and when (their most recent APPROVED decision, if any) —
+    for the admin Manage Users list, which shows "approved by" per row
+    without a click-through to the detail page.
+
+    A resident can have more than one row in `registration_approvals` (a
+    rejection followed by a later re-approval, for example); this always
+    takes the latest APPROVED one, via a window-function subquery rather
+    than N+1 queries per row.
+    """
+    latest_rank = (
+        db.query(
+            RegistrationApproval.resident_id,
+            RegistrationApproval.decided_by_admin_name,
+            RegistrationApproval.decided_at,
+            func.row_number()
+            .over(
+                partition_by=RegistrationApproval.resident_id,
+                order_by=RegistrationApproval.decided_at.desc(),
+            )
+            .label("rn"),
+        )
+        .filter(RegistrationApproval.decision == VerificationStatus.APPROVED)
+        .subquery()
+    )
+
+    query = (
+        db.query(Resident, latest_rank.c.decided_by_admin_name, latest_rank.c.decided_at)
+        .join(House, Resident.house_id == House.id)
+        .outerjoin(
+            latest_rank,
+            (latest_rank.c.resident_id == Resident.id) & (latest_rank.c.rn == 1),
+        )
+        .options(joinedload(Resident.house))
+    )
 
     if q:
         like = f"%{q.strip()}%"

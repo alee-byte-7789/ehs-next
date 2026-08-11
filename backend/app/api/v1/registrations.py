@@ -27,10 +27,10 @@ def list_pending(
 def approve(
     resident_id: int,
     db: Session = Depends(get_db),
-    _admin=Depends(require_admin_roles(*_approver_roles)),
+    admin=Depends(require_admin_roles(*_approver_roles)),
 ) -> RegistrationApprovedOut:
     try:
-        resident = registration_service.approve(db, resident_id)
+        resident = registration_service.approve(db, resident_id, admin)
     except NotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except (ConflictError, InvalidStateError) as exc:
@@ -46,10 +46,10 @@ def approve(
 def reject(
     resident_id: int,
     db: Session = Depends(get_db),
-    _admin=Depends(require_admin_roles(*_approver_roles)),
+    admin=Depends(require_admin_roles(*_approver_roles)),
 ) -> RegistrationRejectedOut:
     try:
-        resident = registration_service.reject(db, resident_id)
+        resident = registration_service.reject(db, resident_id, admin)
     except NotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except InvalidStateError as exc:

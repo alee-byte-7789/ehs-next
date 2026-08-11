@@ -21,6 +21,13 @@ export interface ResidentOut {
   created_at: string;
 }
 
+/** ResidentOut plus who approved this resident — returned by the Manage
+ * Users list only (see backend ResidentListItemOut). */
+export interface ResidentListItemOut extends ResidentOut {
+  approved_by_admin_name: string | null;
+  approved_at: string | null;
+}
+
 export interface RegistrationApprovalOut {
   id: number;
   resident_id: number;

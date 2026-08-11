@@ -39,19 +39,40 @@ export default function SettingsScreen() {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [pwError, setPwError] = useState<string | null>(null);
   const [pwSuccess, setPwSuccess] = useState(false);
 
   const scale = fontScaleMultiplier(settings.fontScale);
 
+  const resetChangePasswordForm = () => {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setPwError(null);
+  };
+
   const handleChangePassword = async () => {
     setPwError(null);
     setPwSuccess(false);
+
+    // Client-side checks first — the server would also reject a too-short
+    // password, but a mismatched confirmation is only ever knowable here.
+    if (newPassword.length < 8) {
+      setPwError(t("passwordTooShort"));
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError(t("passwordsDontMatch"));
+      return;
+    }
+
     try {
       await changePassword.mutateAsync({ current_password: currentPassword, new_password: newPassword });
       setPwSuccess(true);
       setCurrentPassword("");
       setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
       setPwError(extractApiErrorMessage(err, "Could not change password."));
     }
@@ -175,11 +196,19 @@ export default function SettingsScreen() {
             <View style={{ marginTop: spacing.sm }}>
               <AppTextField label={t("currentPassword")} secureTextEntry value={currentPassword} onChangeText={setCurrentPassword} />
               <AppTextField label={t("newPassword")} secureTextEntry value={newPassword} onChangeText={setNewPassword} />
+              <AppTextField label={t("confirmNewPassword")} secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
               {pwError && <Text style={{ color: theme.danger, fontSize: 12 * scale, marginBottom: spacing.sm }}>{pwError}</Text>}
               {pwSuccess && <Text style={{ color: theme.primary, fontSize: 12 * scale, marginBottom: spacing.sm }}>{t("passwordChanged")}</Text>}
               <View style={{ flexDirection: "row", gap: spacing.sm }}>
                 <AppButton label={t("save")} onPress={handleChangePassword} loading={changePassword.isPending} />
-                <AppButton label={t("cancel")} variant="secondary" onPress={() => setShowChangePassword(false)} />
+                <AppButton
+                  label={t("cancel")}
+                  variant="secondary"
+                  onPress={() => {
+                    resetChangePasswordForm();
+                    setShowChangePassword(false);
+                  }}
+                />
               </View>
             </View>
           )}

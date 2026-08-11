@@ -34,9 +34,12 @@ const translations = {
     logout: "Log out",
     currentPassword: "Current Password",
     newPassword: "New Password",
+    confirmNewPassword: "Confirm New Password",
     save: "Save",
     cancel: "Cancel",
     passwordChanged: "Password changed successfully.",
+    passwordsDontMatch: "New password and confirmation don't match.",
+    passwordTooShort: "New password must be at least 8 characters.",
     back: "Back",
 
     hi: "Hi",
@@ -110,6 +113,12 @@ const translations = {
     jummah: "Jummah",
     edit: "Edit",
 
+    ehsMap: "EHS Map",
+    searchHouseOrStreet: "Search house number or street",
+    mapComingSoon: "Map coming soon",
+    mapDescription: "We're working on an interactive map of the society. In the meantime, use Prayer Timings and Emergency Contacts from Home.",
+    searchingFor: "Searching for",
+
   },
   ur: {
     settings: "ترتیبات",
@@ -138,9 +147,12 @@ const translations = {
     logout: "لاگ آؤٹ",
     currentPassword: "موجودہ پاس ورڈ",
     newPassword: "نیا پاس ورڈ",
+    confirmNewPassword: "نئے پاس ورڈ کی تصدیق کریں",
     save: "محفوظ کریں",
     cancel: "منسوخ کریں",
     passwordChanged: "پاس ورڈ کامیابی سے تبدیل ہو گیا۔",
+    passwordsDontMatch: "نیا پاس ورڈ اور تصدیق مماثل نہیں ہیں۔",
+    passwordTooShort: "نیا پاس ورڈ کم از کم 8 حروف کا ہونا چاہیے۔",
     back: "واپس",
 
     hi: "ہیلو",
@@ -213,6 +225,12 @@ const translations = {
     isha: "عشاء",
     jummah: "جمعہ",
     edit: "ترمیم",
+
+    ehsMap: "ای ایچ ایس نقشہ",
+    searchHouseOrStreet: "گھر نمبر یا گلی تلاش کریں",
+    mapComingSoon: "نقشہ جلد آ رہا ہے",
+    mapDescription: "ہم سوسائٹی کا انٹرایکٹو نقشہ بنانے پر کام کر رہے ہیں۔ فی الحال ہوم سے نماز کے اوقات اور ہنگامی رابطے استعمال کریں۔",
+    searchingFor: "تلاش کیا جا رہا ہے",
 
   },
 } as const;

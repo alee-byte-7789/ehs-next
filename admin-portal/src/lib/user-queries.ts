@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "./api-client";
-import type { ResidentDetailOut, ResidentOut, UserFilters } from "./types";
+import type { ResidentDetailOut, ResidentListItemOut, ResidentOut, UserFilters } from "./types";
 
-/** All residents, with the filters applied server-side. */
+/** All residents, with the filters applied server-side. Each row includes
+ * who approved that resident, if anyone has yet. */
 export function useUsers(filters: UserFilters) {
-  return useQuery<ResidentOut[]>({
+  return useQuery<ResidentListItemOut[]>({
     // Filters are part of the key so each combination caches separately and
     // changing a filter refetches rather than showing the previous result.
     queryKey: ["users", filters],
@@ -14,7 +15,7 @@ export function useUsers(filters: UserFilters) {
       Object.entries(filters).forEach(([k, v]) => {
         if (v) params.append(k, String(v));
       });
-      const { data } = await apiClient.get<ResidentOut[]>(`/users?${params.toString()}`);
+      const { data } = await apiClient.get<ResidentListItemOut[]>(`/users?${params.toString()}`);
       return data;
     },
   });

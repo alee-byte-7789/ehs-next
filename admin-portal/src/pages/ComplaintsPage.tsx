@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
+import { GlassCard } from "../components/GlassCard";
 import { Select } from "../components/Select";
 import { StatusBadge } from "../components/StatusBadge";
 import {
@@ -64,27 +66,24 @@ export function ComplaintsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[color:var(--color-surface)]">
-      <header className="flex items-center justify-between border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] px-6 py-4">
-        <h1 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Complaints</h1>
-        <Link to="/" className="text-sm font-medium text-[color:var(--color-primary)]">
-          ← Back to Dashboard
-        </Link>
-      </header>
+    <AppShell>
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-xl font-bold text-[color:var(--color-text-primary)]">Complaints</h1>
+        </div>
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search complaint ID, resident, house, phone..."
-            className="w-72 rounded-lg border border-[color:var(--color-border)] px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text-primary)] outline-none focus:border-[color:var(--color-primary)] sm:w-72"
           />
           <Select
             value={priorityFilter}
             onChange={setPriorityFilter}
             options={PRIORITY_FILTERS}
-            className="w-44"
+            className="w-full sm:w-44"
           />
         </div>
 
@@ -105,7 +104,7 @@ export function ComplaintsPage() {
         </div>
 
         {selected.size > 0 && (
-          <div className="mb-4 flex items-center gap-3 rounded-lg bg-amber-50 px-4 py-3">
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg bg-amber-50 px-4 py-3">
             <span className="text-sm font-medium text-[color:var(--color-text-primary)]">
               {selected.size} selected
             </span>
@@ -141,56 +140,101 @@ export function ComplaintsPage() {
         )}
 
         {complaints && complaints.length > 0 && (
-          <div className="overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)]">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-xs uppercase text-[color:var(--color-text-secondary)]">
-                <tr>
-                  <th className="px-4 py-3"></th>
-                  <th className="px-4 py-3">Complaint / House</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Priority</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                {complaints.map((c) => {
-                  const priorityMeta = PRIORITY_FILTERS.find((p) => p.value === c.priority);
-                  return (
-                    <tr key={c.id} className="border-b border-[color:var(--color-border)] last:border-0 hover:bg-[color:var(--color-surface)]">
-                      <td className="px-4 py-3">
-                        <input type="checkbox" checked={selected.has(c.id)} onChange={() => toggleSelect(c.id)} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link to={`/complaints/${c.id}`} className="font-medium text-[color:var(--color-primary)]">
-                          {c.complaint_code}
-                        </Link>
-                        <div className="text-xs font-semibold text-[color:var(--color-text-secondary)]">
-                          {c.house_code}
+          <>
+            {/* Card list — small screens. A wide table with 6 columns has no
+                room on a phone; forcing it to fit just truncates the status
+                column, which is what was happening before. */}
+            <div className="space-y-2 sm:hidden">
+              {complaints.map((c) => {
+                const priorityMeta = PRIORITY_FILTERS.find((p) => p.value === c.priority);
+                return (
+                  <GlassCard key={c.id} className="!p-4">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(c.id)}
+                        onChange={() => toggleSelect(c.id)}
+                        className="mt-1 shrink-0"
+                      />
+                      <Link to={`/complaints/${c.id}`} className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-[color:var(--color-primary)]">{c.complaint_code}</p>
+                            <p className="text-xs font-semibold text-[color:var(--color-text-secondary)]">{c.house_code}</p>
+                          </div>
+                          <StatusBadge status={c.status} />
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-[color:var(--color-text-primary)]">{c.subcategory}</td>
-                      <td className="px-4 py-3">
-                        {c.priority !== "normal" && (
-                          <span className="text-xs font-bold" style={{ color: priorityMeta?.color }}>
-                            {c.priority.toUpperCase()}
+                        <p className="mt-2 truncate text-sm text-[color:var(--color-text-primary)]">{c.subcategory}</p>
+                        <div className="mt-2 flex items-center justify-between">
+                          {c.priority !== "normal" ? (
+                            <span className="text-xs font-bold" style={{ color: priorityMeta?.color }}>
+                              {c.priority.toUpperCase()}
+                            </span>
+                          ) : <span />}
+                          <span className="text-xs text-[color:var(--color-text-tertiary)]">
+                            {new Date(c.created_at).toLocaleDateString()}
                           </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={c.status} />
-                      </td>
-                      <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">
-                        {new Date(c.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  </GlassCard>
+                );
+              })}
+            </div>
+
+            {/* Table — sm and up. overflow-x-auto is a safety net for narrow
+                sm/md widths so columns scroll instead of clipping. */}
+            <div className="hidden overflow-x-auto rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] sm:block">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="border-b border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-xs uppercase text-[color:var(--color-text-secondary)]">
+                  <tr>
+                    <th className="px-4 py-3"></th>
+                    <th className="px-4 py-3">Complaint / House</th>
+                    <th className="px-4 py-3">Title</th>
+                    <th className="px-4 py-3">Priority</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {complaints.map((c) => {
+                    const priorityMeta = PRIORITY_FILTERS.find((p) => p.value === c.priority);
+                    return (
+                      <tr key={c.id} className="border-b border-[color:var(--color-border)] last:border-0 hover:bg-[color:var(--color-surface)]">
+                        <td className="px-4 py-3">
+                          <input type="checkbox" checked={selected.has(c.id)} onChange={() => toggleSelect(c.id)} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <Link to={`/complaints/${c.id}`} className="font-medium text-[color:var(--color-primary)]">
+                            {c.complaint_code}
+                          </Link>
+                          <div className="text-xs font-semibold text-[color:var(--color-text-secondary)]">
+                            {c.house_code}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-[color:var(--color-text-primary)]">{c.subcategory}</td>
+                        <td className="px-4 py-3">
+                          {c.priority !== "normal" && (
+                            <span className="text-xs font-bold" style={{ color: priorityMeta?.color }}>
+                              {c.priority.toUpperCase()}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusBadge status={c.status} />
+                        </td>
+                        <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">
+                          {new Date(c.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

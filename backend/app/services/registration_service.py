@@ -7,9 +7,10 @@ Housing Office approval" rule.
 """
 from sqlalchemy.orm import Session
 
+from app.models.admin import Admin
 from app.models.enums import ResidentType, VerificationStatus
 from app.models.resident import Resident
-from app.repositories import house_repository, resident_repository
+from app.repositories import house_repository, registration_approval_repository, resident_repository
 from app.services import email_templates, notification_service
 from app.services.errors import ConflictError, InvalidStateError, NotFoundError
 from app.services.id_generation import owner_resident_code, tenant_resident_code
@@ -19,7 +20,7 @@ def list_pending(db: Session) -> list[Resident]:
     return resident_repository.list_pending(db)
 
 
-def approve(db: Session, resident_id: int) -> Resident:
+def approve(db: Session, resident_id: int, acting_admin: Admin) -> Resident:
     resident = resident_repository.get_by_id(db, resident_id)
     if not resident:
         raise NotFoundError(f"No resident with id {resident_id}.")
@@ -42,6 +43,20 @@ def approve(db: Session, resident_id: int) -> Resident:
         resident.resident_code = tenant_resident_code(house.house_code, sequence)
 
     resident.verification_status = VerificationStatus.APPROVED
+
+    registration_approval_repository.record(
+        db,
+        resident_id=resident.id,
+        house_id=house.id,
+        resident_name=resident.full_name,
+        house_code=house.house_code,
+        resident_type=resident.resident_type,
+        resident_code=resident.resident_code,
+        decision=VerificationStatus.APPROVED,
+        decided_by_admin_id=acting_admin.id,
+        decided_by_admin_name=acting_admin.full_name,
+    )
+
     db.commit()
     db.refresh(resident)
 
@@ -57,7 +72,7 @@ def approve(db: Session, resident_id: int) -> Resident:
     return resident
 
 
-def reject(db: Session, resident_id: int) -> Resident:
+def reject(db: Session, resident_id: int, acting_admin: Admin) -> Resident:
     resident = resident_repository.get_by_id(db, resident_id)
     if not resident:
         raise NotFoundError(f"No resident with id {resident_id}.")
@@ -67,6 +82,20 @@ def reject(db: Session, resident_id: int) -> Resident:
         )
 
     resident.verification_status = VerificationStatus.REJECTED
+
+    registration_approval_repository.record(
+        db,
+        resident_id=resident.id,
+        house_id=resident.house_id,
+        resident_name=resident.full_name,
+        house_code=resident.house_code,
+        resident_type=resident.resident_type,
+        resident_code=resident.resident_code,
+        decision=VerificationStatus.REJECTED,
+        decided_by_admin_id=acting_admin.id,
+        decided_by_admin_name=acting_admin.full_name,
+    )
+
     db.commit()
     db.refresh(resident)
     return resident

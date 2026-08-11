@@ -9,6 +9,7 @@ import {
   Settings,
   ShieldCheck,
   Sun,
+  UserCog,
   Users,
   X,
 } from "lucide-react";
@@ -32,6 +33,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutGrid },
   { to: "/complaints", label: "Complaints", icon: MessageSquareWarning },
+  { to: "/users", label: "Manage Users", icon: UserCog },
   { to: "/staff", label: "Staff", icon: Users },
   { to: "/admins", label: "Manage Admins", icon: ShieldCheck, superAdminOnly: true },
   { to: "/audit-logs", label: "Audit Logs", icon: History, superAdminOnly: true },
@@ -143,7 +145,7 @@ function SidebarContent({
 
       <nav className="flex-1 space-y-1 px-3 py-4">
         {visibleNav.map((item) => {
-          const active = currentPath === item.to;
+          const active = currentPath === item.to || (item.to !== "/" && currentPath.startsWith(`${item.to}/`));
           const Icon = item.icon;
           return (
             <Link
