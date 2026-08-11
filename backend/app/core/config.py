@@ -31,6 +31,34 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def normalize_postgres_scheme(cls, v: str) -> str:
+        """Cleans the value, then switches the scheme to psycopg3.
+
+        The cleaning step exists because Supabase presents the connection
+        string as a shell assignment:
+
+            DATABASE_URL="postgresql://user:pass@host:5432/postgres"
+
+        Copying that line wholesale into a hosting provider's value field
+        yields a value that still carries the `DATABASE_URL=` prefix and/or
+        the surrounding quotes. Neither matches the scheme prefixes below,
+        so the string used to pass through untouched and SQLAlchemy failed
+        at import time with:
+
+            Could not parse SQLAlchemy URL from given URL string
+
+        which crashes every request rather than just the database call.
+        Stripping these makes the common paste mistake harmless.
+        """
+        v = v.strip()
+
+        # An accidentally-included `KEY=` prefix (DATABASE_URL=, export DATABASE_URL=, ...).
+        if "=" in v and "://" in v and v.index("=") < v.index("://"):
+            v = v.split("=", 1)[1].strip()
+
+        # Surrounding quotes, single or double.
+        if len(v) >= 2 and v[0] == v[-1] and v[0] in ("'", '"'):
+            v = v[1:-1].strip()
+
         if v.startswith("postgres://"):
             return "postgresql+psycopg://" + v[len("postgres://") :]
         if v.startswith("postgresql://"):
